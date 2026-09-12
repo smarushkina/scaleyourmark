@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ScaleYourMark — заявете търговската си марка сами по ясни стъпки. Адвокат преглежда преписката лично и я подава в ведомството. България, ЕС и Мадридската система.">
+<meta property="og:title" content="ScaleYourMark">
+<meta property="og:description" content="Заявете марката си сами. Адвокат я преглежда и я подава.">
+<meta property="og:type" content="website">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>ScaleYourMark — заявяване на търговска марка</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  /* --- ScaleYourMark brand --- */
+  --navy:#0A1730; --navy-2:#16294D; --navy-soft:#E8DFCD;
+  --gold:#7A5520;          /* bronze — accent text on beige, AA */
+  --gold-bright:#BE9666;   /* logo gold — on navy surfaces */
+  --gold-soft:#EDE2D0;
+  --band:#0A1730; --band-ink:#F0E9DE; --warm:#E9E0D1;
+  /* --- beige surfaces --- */
+  --ground:#F2ECE2; --surface:#FCFAF6; --raise:#F7F1E7;
+  --ink:#0A1730; --ink-2:#2C3C59; --ink-3:#6A6155;
+  --line:#DFD5C4; --line-2:#E9E1D4;
+  /* --- accent aliases used through the components --- */
+  --violet:var(--navy); --violet-soft:var(--navy-soft); --violet-deep:var(--navy-2);
+  --teal:#0E6B58; --teal-soft:#DFF0EB;
+  --amber:#8A5A06; --amber-soft:#FBF0DF;
+  --lift:0 1px 2px rgba(10,23,48,.05), 0 8px 24px -12px rgba(10,23,48,.16);
+  --lift-lg:0 2px 4px rgba(10,23,48,.06), 0 24px 56px -24px rgba(10,23,48,.26);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --navy:#0A1730; --navy-2:#1D3564; --navy-soft:#1A2742;
+    --gold:#D6B183; --gold-bright:#C9A87C; --gold-soft:#2A2113;
+    --band:#0E1D3E; --band-ink:#F0E9DE; --warm:#1C1812;
+    --ground:#070F24; --surface:#0E1B37; --raise:#142348;
+    --ink:#F0E9DE; --ink-2:#BEC9DA; --ink-3:#8E8779;
+    --line:#22355C; --line-2:#1A2947;
+    --violet:#9FC0EE; --violet-soft:#132348; --violet-deep:#C3D6F2;
+    --teal:#5FC3A8; --teal-soft:#0D2620;
+    --amber:#D9A45C; --amber-soft:#2A1E10;
+    --lift:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+    --lift-lg:0 2px 4px rgba(0,0,0,.6), 0 24px 56px -24px rgba(0,0,0,.85);
+  }
+}
+:root[data-theme="dark"]{
+  --navy:#0A1730; --navy-2:#1D3564; --navy-soft:#1A2742;
+  --gold:#D6B183; --gold-bright:#C9A87C; --gold-soft:#2A2113;
+  --ground:#070F24; --surface:#0E1B37; --raise:#142348;
+  --ink:#F0E9DE; --ink-2:#BEC9DA; --ink-3:#8E8779;
+  --line:#22355C; --line-2:#1A2947;
+  --violet:#9FC0EE; --violet-soft:#132348; --violet-deep:#C3D6F2;
+  --teal:#5FC3A8; --teal-soft:#0D2620;
+  --amber:#D9A45C; --amber-soft:#2A1E10;
+  --lift:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+  --lift-lg:0 2px 4px rgba(0,0,0,.6), 0 24px 56px -24px rgba(0,0,0,.85);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink);
+  font:400 15px/1.62 "Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0; font-family:"Fraunces","Iowan Old Style",Georgia,serif;
+  font-variation-settings:"SOFT" 8,"WONK" 0; font-weight:400; text-wrap:balance; letter-spacing:-.015em}
+h1{font-size:clamp(27px,4.3vw,44px); line-height:1.08}
+h2{font-size:clamp(21px,2.7vw,29px); line-height:1.16}
+h3{font-size:18px; line-height:1.25}
+p{margin:0}
+a{color:inherit}
+button{font:inherit; color:inherit}
+.num{font-family:"DM Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); font-weight:500}
+.wrap{max-width:1080px; margin:0 auto; padding-inline:22px}
+.narrow{max-width:720px; margin:0 auto; padding-inline:22px}
+.stack{display:flex; flex-direction:column}
+
+/* --- navy top bar --- */
+header.top{position:sticky; top:0; z-index:45; background:var(--navy); border-bottom:1px solid rgba(255,255,255,.08)}
+.top-in{display:flex; align-items:center; gap:10px; min-height:80px; flex-wrap:nowrap}
+header.top .brandplate{padding:0}
+header.top .brandlogo{height:40px}
+header.top .lang{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.15)}
+header.top .lang button{color:#CFC5B4}
+header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); color:#0A1730}
+.brand{display:flex; align-items:center; white-space:nowrap}
+.brandplate{display:inline-flex; align-items:center; line-height:0}
+.brandlogo{height:32px; width:auto; display:block}
+.btn-gold{background:var(--gold-bright); color:#0A1730; box-shadow:var(--lift); font-weight:600}
+.btn-gold:hover{background:#CBA678}
+.goldrule{height:3px; width:52px; border-radius:2px; background:var(--gold-bright)}
+section.sec.pagehead{padding-block:clamp(24px,3.6vw,38px); min-height:314px;
+  display:flex; align-items:center}
+.pagehead .lede{max-width:none}
+.pagehead h1{line-height:1.06}
+@media (max-width:860px){ section.sec.pagehead{min-height:0} }
+.meter i{background:linear-gradient(90deg,var(--gold-bright),var(--gold))}
+.mark-tile{background:var(--navy)!important; border-color:var(--navy)!important; color:#fff!important;
+  font-variation-settings:"SOFT" 0,"WONK" 0}
+.tag.g{background:var(--gold-soft); color:var(--gold)}
+.opt .op{color:var(--gold)}
+nav.main{display:flex; gap:0; margin-left:auto; padding-left:24px; flex-wrap:nowrap}
+nav.main button{background:none; border:0; padding:9px 8px; font-size:13px; white-space:nowrap; color:#CFC5B4; cursor:pointer; border-radius:8px}
+nav.main button:hover{background:rgba(255,255,255,.08); color:#fff}
+nav.main button[aria-current="page"]{background:rgba(190,150,102,.18); color:#fff; font-weight:600;
+  box-shadow:inset 0 -2px 0 var(--gold-bright)}
+.navgroup{display:none}
+.tools{display:flex; gap:8px; align-items:center}
+.lang{display:flex; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:2px}
+.lang button{border:0; background:none; border-radius:999px; padding:5px 11px; font-size:12px; font-weight:600; letter-spacing:.04em; cursor:pointer; color:var(--ink-3)}
+.lang button[aria-pressed="true"]{background:var(--violet); color:#fff}
+.burger{display:none; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  border-radius:10px; padding:7px 11px; cursor:pointer; color:#fff; margin-left:auto}
+.btn{display:inline-flex; align-items:center; gap:9px; border:1px solid transparent; border-radius:999px; padding:11px 20px; font-size:14.5px; font-weight:500; cursor:pointer; text-decoration:none; transition:transform .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--violet); color:#fff; box-shadow:var(--lift)}
+.btn-ghost{background:var(--surface); border-color:var(--line); color:var(--ink)}
+.btn-quiet{background:none; color:var(--ink-2); padding:12px 8px}
+.btn:disabled{opacity:.35; cursor:not-allowed; transform:none}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:18px; box-shadow:var(--lift)}
+.pad{padding:clamp(20px,3.4vw,34px)}
+section.sec{padding-block:clamp(44px,7vw,80px)}
+.lede{font-size:16.5px; line-height:1.6; color:var(--ink-2); max-width:62ch}
+.copy{font-size:15px; line-height:1.7; color:var(--ink-2); max-width:68ch}
+.quiet{font-size:13px; color:var(--ink-3); line-height:1.58}
+
+/* hero */
+.hero{display:grid; grid-template-columns:1fr .8fr; gap:52px; align-items:center}
+.sample{background:var(--raise); border:1px solid var(--line); border-radius:18px; padding:26px; box-shadow:var(--lift-lg)}
+.mark-tile{display:grid; place-items:center; height:120px; border-radius:14px; background:linear-gradient(135deg,var(--violet-soft),var(--surface)); border:1px solid var(--line);
+  font-family:"Fraunces",serif; font-size:34px; font-variation-settings:"SOFT" 0,"WONK" 0; letter-spacing:.1em; color:var(--violet-deep)}
+.meter{height:5px; border-radius:999px; background:var(--line-2); overflow:hidden}
+.meter i{display:block; height:100%; background:var(--violet); border-radius:999px; transition:width .4s ease}
+
+/* --- brand bands --- */
+.sec-navy{background:var(--band); color:var(--band-ink)}
+.sec-navy h1,.sec-navy h2,.sec-navy h3{color:#fff}
+.sec-navy .lede{color:#D9D0C2}
+.sec-navy .quiet{color:#ABA294}
+.sec-navy .kicker{color:var(--gold-bright)}
+.sec-navy .card{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.13); box-shadow:none}
+.sec-navy .card .quiet{color:#B3AA9B}
+.sec-navy .btn-ghost{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.2); color:#fff}
+.sec-navy .btn-quiet{color:#D9D0C2}
+.sec-navy .num{color:var(--gold-bright)}
+.sec-navy .row{border-color:rgba(255,255,255,.1)}
+.sec-navy .trow{border-color:rgba(255,255,255,.1)}
+.sec-navy .chip{background:rgba(190,150,102,.18); color:var(--gold-bright)}
+.sec-navy .tag.v{background:rgba(190,150,102,.2); color:var(--gold-bright)}
+.sec-warm{background:var(--warm); border-block:1px solid var(--line-2)}
+.goldtop{border-top:3px solid var(--gold-bright)}
+.tbl th{background:var(--navy-soft); color:var(--ink); border-bottom-color:var(--navy)}
+.chip{background:var(--gold-soft); color:var(--gold)}
+.railcard{border-top:3px solid var(--gold-bright)}
+.btn-primary:hover{box-shadow:0 0 0 2px var(--gold-bright), var(--lift)}
+
+/* filing page: form on the left, compact step rail on the right */
+.filegrid{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:26px; align-items:start}
+.rail{position:sticky; top:88px; display:flex; flex-direction:column; gap:12px}
+.railcard{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--lift)}
+.railsteps{display:flex; flex-direction:column; gap:1px; margin-top:8px}
+.railstep{display:grid; grid-template-columns:22px minmax(0,1fr) 24px; gap:9px; align-items:center;
+  padding:8px 9px; border-radius:9px; cursor:pointer; background:none; border:0; text-align:left; width:100%}
+.railstep:hover{background:var(--navy-soft)}
+.railstep[aria-current="step"]{background:var(--navy-soft); box-shadow:inset 3px 0 0 var(--gold-bright)}
+.railstep .rn{font-family:"DM Mono",monospace; font-size:11.5px; color:var(--ink-3)}
+.railstep[aria-current="step"] .rn{color:var(--gold)}
+.railstep .rt{font-size:13.4px; line-height:1.3; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.railstep[aria-current="step"] .rt{color:var(--ink); font-weight:700}
+.railstep .rq{width:22px; height:22px; border-radius:6px; border:1px solid var(--line); background:var(--raise);
+  display:grid; place-items:center; font-size:11px; color:var(--ink-3); flex:none}
+.railstep .rq:hover{border-color:var(--gold-bright); color:var(--gold)}
+.raildone{color:var(--teal); font-weight:700; font-size:12px}
+@media (max-width:1000px){
+  .filegrid{grid-template-columns:1fr}
+  .rail{position:static}
+  .railstep .rt{white-space:normal}
+}
+
+/* wizard */
+.q-head{display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px}
+.opts{display:grid; gap:12px}
+.opt{display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:start; text-align:left;
+  background:var(--raise); border:1.5px solid var(--line); border-radius:14px; padding:17px 18px; cursor:pointer; width:100%}
+.opt:hover{border-color:var(--violet)}
+.opt[data-on="1"]{border-color:var(--violet); background:var(--violet-soft)}
+.tick{width:19px; height:19px; border-radius:50%; border:1.5px solid var(--ink-3); margin-top:3px; flex:none}
+.opt[data-on="1"] .tick{border:6px solid var(--violet)}
+.opt .ot,.opt .os{display:block}
+.opt .ot{font-weight:600; font-size:16px}
+.opt .os{font-size:14px; color:var(--ink-2); margin-top:4px; line-height:1.5}
+.opt .op{font-family:"DM Mono",monospace; font-size:14px; color:var(--violet); white-space:nowrap}
+.field{display:flex; flex-direction:column; gap:7px; margin-bottom:18px}
+.field label{font-size:14px; font-weight:600}
+input[type=text],input[type=email],select,textarea{width:100%; padding:13px 15px; border:1.5px solid var(--line); border-radius:12px;
+  background:var(--raise); color:var(--ink); font:inherit; font-size:15.5px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.opt:focus-visible{outline:2.5px solid var(--violet); outline-offset:2px}
+.hint{font-size:13px; color:var(--ink-3)}
+
+/* help drawer */
+.helpbar{display:flex; gap:10px; align-items:center; justify-content:space-between; background:var(--violet-soft); border-radius:14px; padding:13px 16px; margin-top:8px}
+.helpbar .ht{font-size:14.5px; font-weight:600; color:var(--violet-deep)}
+.drawer{position:fixed; inset:0 0 0 auto; width:min(430px,100%); background:var(--surface); border-left:1px solid var(--line);
+  box-shadow:var(--lift-lg); z-index:60; transform:translateX(102%); transition:transform .28s cubic-bezier(.4,0,.2,1); overflow:auto; padding:26px 24px 60px}
+.drawer.open{transform:none}
+.drawer h4{margin:0; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+.drawer ul{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:9px; font-size:15px; color:var(--ink-2)}
+.drawer .close{position:absolute; top:18px; right:18px; background:var(--raise); border:1px solid var(--line); border-radius:999px; width:34px; height:34px; cursor:pointer}
+.caution{background:var(--amber-soft); border-radius:12px; padding:14px 16px; font-size:14.5px; color:var(--ink-2); line-height:1.55}
+.scrim{position:fixed; inset:0; background:rgba(20,16,27,.38); z-index:55; opacity:0; pointer-events:none; transition:opacity .28s}
+.scrim.on{opacity:1; pointer-events:auto}
+
+/* terms */
+.tlist{border:1.5px solid var(--line); border-radius:14px; overflow:hidden; max-height:320px; overflow-y:auto; background:var(--raise)}
+.trow{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; padding:12px 15px; border-bottom:1px solid var(--line-2); cursor:pointer; font-size:15px}
+.trow:last-child{border-bottom:0}
+.trow:hover{background:var(--surface)}
+.trow[data-on="1"]{background:var(--teal-soft)}
+.chip{font-family:"DM Mono",monospace; font-size:11.5px; padding:3px 8px; border-radius:999px; background:var(--violet-soft); color:var(--violet); white-space:nowrap}
+.badge{font-size:10.5px; letter-spacing:.08em; font-weight:600; padding:3px 8px; border-radius:999px}
+.badge.hdb{background:var(--teal-soft); color:var(--teal)}
+.badge.free{background:var(--amber-soft); color:var(--amber)}
+.sum{background:var(--raise); border:1.5px dashed var(--line); border-radius:14px; padding:18px}
+.drop{border:1.5px dashed var(--line); background:var(--raise); border-radius:14px; padding:18px;
+  display:grid; grid-template-columns:minmax(0,1fr) 124px; gap:16px; align-items:center; cursor:pointer;
+  transition:border-color .15s ease, background .15s ease}
+.drop:hover{border-color:var(--gold-bright)}
+.drop.over{border-color:var(--gold-bright); background:var(--gold-soft)}
+.drop ul{margin:8px 0 0; padding-left:16px; display:flex; flex-direction:column; gap:3px}
+.thumb{width:124px; height:124px; border-radius:12px; border:1px solid var(--line); background:#fff;
+  display:flex; align-items:center; justify-content:center; overflow:hidden; padding:6px}
+.thumb img{max-width:100%; max-height:100%; display:block}
+.fileline{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px}
+.fileline .btn{padding:8px 15px; font-size:13.5px}
+.imgerr{color:#9B2C1E; font-size:13px; margin-top:8px}
+@media (max-width:700px){ .drop{grid-template-columns:1fr} .thumb{width:100%; height:150px} }
+
+/* generic bits */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px}
+.rows{display:flex; flex-direction:column; gap:0}
+.row{display:flex; justify-content:space-between; gap:16px; padding:13px 0; border-bottom:1px solid var(--line-2)}
+.row:last-child{border-bottom:0}
+.tag{display:inline-flex; align-self:start; font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px}
+.tag.v{background:var(--violet-soft); color:var(--violet)}
+.tag.t{background:var(--teal-soft); color:var(--teal)}
+.tag.a{background:var(--amber-soft); color:var(--amber)}
+.steps-strip{display:flex; gap:8px; overflow-x:auto; padding-bottom:6px}
+.chipstep{flex:none; display:flex; gap:8px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:8px 14px; font-size:13.5px; color:var(--ink-2); cursor:pointer; white-space:nowrap}
+.chipstep[aria-current="step"]{background:var(--violet); border-color:var(--violet); color:#fff}
+.chipstep .n{font-family:"DM Mono",monospace; font-size:12px; opacity:.7}
+.tbl{width:100%; border-collapse:collapse; font-size:15px}
+.tbl th{text-align:left; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:600; padding:10px 12px; border-bottom:1.5px solid var(--line)}
+.tbl td{padding:14px 12px; border-bottom:1px solid var(--line-2); vertical-align:top}
+.tbl td.r{text-align:right; font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+.tblwrap{overflow-x:auto}
+footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-top:0; border-top:3px solid var(--gold-bright)}
+.foot .kicker{color:var(--gold-bright)}
+.foot .quiet{color:#ABA294}
+.foot .brandplate{background:none}
+.fgrid{display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:26px}
+.foot a{display:block; padding:4px 0; font-size:14px; color:#D9D0C2; text-decoration:none}
+.foot a:hover{color:var(--gold-bright)}
+
+@media (max-width:1180px){
+  .top-in{flex-wrap:wrap}
+  header.top .brandlogo{height:32px}
+  nav.main{gap:2px; padding-left:0; font-size:14px; flex-wrap:wrap; display:none; order:3; width:100%; margin-left:0; flex-direction:column; padding-bottom:10px}
+  header.top.open nav.main{display:flex}
+  nav.main button{text-align:left; padding:12px}
+  .burger{display:inline-flex}
+  header.top .lang{order:2}
+}
+@media (max-width:900px){
+  .hero,.grid2,.fgrid{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .drawer{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="top" id="side">
+  <div class="wrap top-in">
+    <div class="brand"><span class="brandplate"><img class="brandlogo" src="data:image/png;base64,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" alt="ScaleYourMark"></span></div>
+    <button class="burger" id="burger" aria-label="Меню">☰</button>
+    <nav class="main" id="nav"></nav>
+    <div class="lang" id="lang">
+      <button data-l="bg" aria-pressed="true">БГ</button>
+      <button data-l="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+<footer class="foot"><div class="wrap fgrid" id="foot"></div></footer>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Help"></aside>
+
+<script>
+let lang='bg';
+const L = o => (o && o[lang]!==undefined) ? o[lang] : o;
+
+const NAV=[{id:'about',bg:'За нас',en:'About'},
+{id:'home',bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
+{id:'file',bg:'Заявяване',en:'File a mark'},{id:'guides',bg:'Ръководства',en:'Guides'},
+{id:'price',bg:'Цени',en:'Pricing'},{id:'blog',bg:'Блог',en:'Journal'},
+{id:'contact',bg:'Контакти',en:'Contact'},{id:'acct',bg:'Профил',en:'Account'},{id:'office',bg:'Панел',en:'Queue'}];
+
+const NAVGROUPS=[
+ {after:'about', bg:'Услугата', en:'The service'},
+ {after:'price', bg:'Кантората', en:'The practice'},
+ {after:'contact', bg:'Вашият достъп', en:'Your access'}
+];
+
+const ROUTES={
+ bg_nat:{code:'BG',bg:'Национална марка (България)',en:'National mark (Bulgaria)',office:{bg:'Патентно ведомство на РБ',en:'Bulgarian Patent Office'},
+   cur:'EUR',base:265.87,extra:15.33,incl:3,cert:25.56,
+   bg_s:'Закрила само в България. Държавната такса покрива до 3 класа.',en_s:'Protection in Bulgaria only. The official fee covers up to 3 classes.'},
+ eutm:{code:'EUTM',bg:'Марка на Европейския съюз',en:'European Union trade mark',office:{bg:'EUIPO, Аликанте',en:'EUIPO, Alicante'},
+   cur:'EUR',base:850,second:50,third:150,incl:1,
+   bg_s:'Едно заявяване, единна закрила в 27 държави членки.',en_s:'One filing, unitary protection across 27 Member States.'},
+ madrid:{code:'WO',bg:'Международна регистрация (Мадрид)',en:'International registration (Madrid)',office:{bg:'СОИС, Женева',en:'WIPO, Geneva'},
+   cur:'CHF',base:653,colour:903,party:100,overclass:100,incl:3,
+   bg_s:'Надгражда базова марка и се разширява към 130+ територии.',en_s:'Builds on a basic mark and extends to 130+ territories.'}
+};
+
+const STEPS=[
+ {n:1,key:'territory',t:{bg:'Къде ви трябва закрила?',en:'Where do you need protection?'},
+  i:{bg:'Марката е териториално право — тя действа само там, където е регистрирана. Този избор определя цената, срока и обхвата.',
+     en:'A trade mark is a territorial right — it only bites where it is registered. This choice drives price, timing and scope.'},
+  need:{bg:['Къде продавате днес','Къде ще продавате след 3 години','Дали вече имате регистрация някъде'],
+        en:['Where you sell today','Where you will sell in three years','Whether you already own a registration somewhere']},
+  man:{bg:['Само български пазар — националната марка е по-евтина и по-бърза.',
+           'Онлайн продажби в ЕС, дори през един магазин — EUTM почти винаги е по-изгодна от 2–3 национални заявки.',
+           'EUTM е „всичко или нищо“: една успешна опозиция сваля марката за целия ЕС. Преобразуването (conversion) е резервният план.',
+           'Мадрид изисква базова заявка или регистрация и зависи от нея 5 години — „централна атака“ е реален риск.'],
+       en:['Bulgarian market only — the national mark is cheaper and faster.',
+           'Online sales in the EU, even through one storefront — an EUTM almost always beats 2–3 national filings.',
+           'An EUTM is all-or-nothing: one successful opposition kills it EU-wide. Conversion is the fallback.',
+           'Madrid needs a basic filing and depends on it for five years — central attack is a live risk.']},
+  err:{bg:'Честа грешка: заявяване само в България, когато продажбите вече са в целия ЕС. Приоритетът по Парижката конвенция е само 6 месеца.',
+       en:'Common mistake: filing only in Bulgaria while already selling EU-wide. The Paris priority window is only 6 months.'}},
+ {n:2,key:'search',t:{bg:'Свободна ли е марката?',en:'Is the mark available?'},
+  i:{bg:'Ведомствата в ЕС не отказват служебно заради чужди по-ранни марки. Ако не проверите вие, ще разберете при опозиция — след като сте платили.',
+     en:'EU offices do not refuse of their own motion over earlier third-party rights. If you do not check, you find out at opposition — after you have paid.'},
+  need:{bg:['Точното изписване','Класовете, които ви интересуват','Имената на конкурентите ви'],
+        en:['The exact wording','The classes you care about','Your competitors’ names']},
+  man:{bg:['Търсим едновременно в BPO, EUIPO eSearch и Madrid Monitor.',
+           'Рискът не е само идентичност — сходство до степен на объркване за сходни стоки също блокира.',
+           'Проверете и фирмени наименования, домейни и нерегистрирани марки в реално ползване.',
+           '„Чисто“ е оценка на риск, не становище за регистрируемост.'],
+       en:['We query BPO, EUIPO eSearch and Madrid Monitor at once.',
+           'Identity is not the only risk — similarity with a likelihood of confusion for similar goods also blocks.',
+           'Check company names, domains and unregistered marks in genuine use too.',
+           '"Clear" is a risk assessment, not an opinion on registrability.']},
+  err:{bg:'Честа грешка: търсене само на точното изписване. Тествайте фонетични и визуални варианти.',
+       en:'Common mistake: searching only the exact spelling. Test phonetic and visual variants.'}},
+ {n:3,key:'mark',t:{bg:'Как изглежда марката?',en:'What does the mark look like?'},
+  i:{bg:'Това, което подадете тук, се фиксира завинаги. Изображението на марката не може да се променя след датата на подаване.',
+     en:'What you file here is frozen. The representation cannot be amended after the filing date.'},
+  need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: файл JPEG или PNG до 2 MB','Звукова: MP3 до 2 MB'],
+        en:['Word mark: text only','Figurative or combined: a JPEG or PNG file up to 2 MB','Sound: MP3 up to 2 MB']},
+  man:{bg:['Словната марка е най-широка — покрива всяко изписване. Изберете нея, ако логото се променя често.',
+           'Фигуративната закриля точно това изображение. Черно-бялото вече не покрива автоматично всички цветове.',
+           'Описателни думи се отказват на абсолютно основание — чл. 11 ЗМГО и чл. 7 EUTMR.',
+           'Придобитата отличителност се доказва трудно и скъпо. По-добре отличителна марка от самото начало.'],
+       en:['A word mark is broadest — it covers any styling. Choose it if your logo changes often.',
+           'A figurative mark protects that exact image. Black and white no longer covers every colour.',
+           'Descriptive wording is refused on absolute grounds — art. 11 BG TMA and art. 7 EUTMR.',
+           'Acquired distinctiveness is hard and costly to prove. Better a distinctive mark from the start.']},
+  err:{bg:'Честа грешка: логото се заявява с адрес или слоган в изображението. Всичко в квадратчето става част от марката.',
+       en:'Common mistake: filing the logo with an address or strapline in the image. Everything in the box becomes the mark.'}},
+ {n:4,key:'goods',t:{bg:'Какво продавате?',en:'What do you sell?'},
+  i:{bg:'Класовете определят и цената, и обхвата. Работим с Хармонизираната база данни — над 70 000 термина, приети автоматично от EUIPO и всички национални ведомства в ЕС.',
+     en:'Classes drive both price and scope. We work from the Harmonised Database — 70 000+ terms accepted automatically by EUIPO and every EU national office.'},
+  need:{bg:['Какво продавате днес','Какво ще продавате след 5 години','Стока, услуга или и двете'],
+        en:['What you sell today','What you will sell in five years','Goods, services or both']},
+  man:{bg:['Термин от Хармонизираната база минава без възражение. Свободен текст отива на експертиза и бави заявката.',
+           'Заглавието на класа не покрива „всичко в класа“ — след IP Translator списъкът трябва да е ясен и точен.',
+           'Не заявявайте класове „за всеки случай“ — след 5 години марката е атакуема за отмяна поради неизползване (чл. 58 EUTMR).',
+           'Софтуер е клас 9 като продукт и клас 42 като SaaS. Повечето платформи заявяват и двата.'],
+       en:['A Harmonised Database term clears with no objection. Free text goes to examination and delays the file.',
+           'A class heading does not cover "everything in the class" — after IP Translator the list must be clear and precise.',
+           'Do not file classes just in case — after five years the mark is open to revocation for non-use (art. 58 EUTMR).',
+           'Software is class 9 as a product and class 42 as SaaS. Most platforms file both.']},
+  err:{bg:'Честа грешка: един клас, за да е евтино. Разширяване след подаване не съществува — само нова заявка с по-късна дата.',
+       en:'Common mistake: one class to keep it cheap. You cannot broaden after filing — only a fresh application with a later date.'}},
+ {n:5,key:'applicant',t:{bg:'Кой ще е притежател?',en:'Who will own it?'},
+  i:{bg:'Заявителят става притежател. Ако дружеството още се учредява, решете сега — прехвърлянето по-късно струва такса и време.',
+     en:'The applicant becomes the proprietor. If the company is still being incorporated, decide now — assigning later costs a fee and time.'},
+  need:{bg:['ЕИК или ЕГН и точно наименование по регистъра','Адрес за кореспонденция','Ако сте извън ЕИП — представител'],
+        en:['Company or personal ID and the exact registered name','Address for service','If you are outside the EEA — a representative']},
+  man:{bg:['Дружество или физическо лице? Дружеството е по-чисто за инвеститорска проверка; физическото лице оцелява при ликвидация.',
+           'Заявители без седалище или реално предприятие в ЕИП задължително назначават представител пред EUIPO — чл. 119–120 EUTMR.',
+           'Заявители с реално предприятие в ЕИП могат да подадат сами или чрез служител.',
+           'Наименованието трябва да съвпада буква по буква с търговския регистър.'],
+       en:['Company or individual? A company is cleaner for investor due diligence; an individual survives a liquidation.',
+           'Applicants with no seat or real establishment in the EEA must appoint a representative before EUIPO — arts. 119–120 EUTMR.',
+           'Applicants with a real EEA establishment may file themselves or through an employee.',
+           'The name must match the commercial register letter for letter.']},
+  err:{bg:'Честа грешка: марката е на основателя, а бизнесът — на дружеството. Инвеститорите го намират веднага.',
+       en:'Common mistake: the mark sits with the founder while the business sits in the company. Investors find this immediately.'}},
+ {n:6,key:'priority',t:{bg:'Имате ли по-ранна дата?',en:'Do you have an earlier date?'},
+  i:{bg:'Ако вече сте подали същата марка другаде през последните 6 месеца, можете да си върнете онази дата. Това е най-евтиното предимство в системата.',
+     en:'If you filed the same mark elsewhere in the last six months you can claim that earlier date. It is the cheapest advantage in the system.'},
+  need:{bg:['Номер и дата на по-ранната заявка','Приоритетен документ','За EUTM — по-ранни национални марки (сеньорност)'],
+        en:['Number and date of the earlier application','The priority document','For an EUTM — earlier national marks (seniority)']},
+  man:{bg:['Конвенционен приоритет по чл. 4 от Парижката конвенция: 6 месеца, същата марка, същите стоки.',
+           'Сеньорността при EUTM позволява да оставите националните марки да изтекат, без да губите датите им.',
+           'Изложбен приоритет — 6 месеца от официално признато международно изложение.',
+           'Декларацията за достоверност не е формалност: невярна декларация води до недействителност поради недобросъвестност.'],
+       en:['Convention priority under art. 4 Paris: 6 months, same mark, same goods.',
+           'EUTM seniority lets national marks lapse without losing their dates.',
+           'Exhibition priority — 6 months from an officially recognised international exhibition.',
+           'The declaration of accuracy is not a formality: a false one grounds invalidity for bad faith.']},
+  err:{bg:'Честа грешка: пропуснат 6-месечен срок. Приоритетът не се възстановява.',
+       en:'Common mistake: missing the six-month window. Priority cannot be restored.'}},
+ {n:7,key:'engage',t:{bg:'Кой възлага и кой подписва?',en:'Who engages, and who signs?'},
+  i:{bg:'От тук нататък преписката се води от адвокат. Договорът за правна помощ определя обхвата на поръчката, а пълномощното е това, което позволява подаването пред ведомството от ваше име.',
+     en:'From here the matter is handled by a lawyer. The engagement letter fixes the scope; the power of attorney is what allows the filing to be made on your behalf.'},
+  need:{bg:['Данни за подписващото лице и представителната власт','Квалифициран електронен подпис или сканирано подписано пълномощно','Потвърден обхват на поръчката'],
+        en:['The signatory and their authority to represent','A qualified electronic signature or a scanned signed power of attorney','Confirmed scope of the engagement']},
+  man:{bg:['Пълномощното се генерира предварително попълнено с данните от стъпка 5 — не го преписвайте на ръка.',
+           'Подписва се с квалифициран електронен подпис (Evrotrust, B-Trust) или се сваля, подписва и се качва сканирано.',
+           'За дружество подписва лицето с представителна власт по търговския регистър. При съвместно представителство подписват всички.',
+           'Договорът казва какво влиза в цената: изготвяне и подаване влизат; отговор на опозиция или на отказ се възлага отделно.'],
+       en:['The power of attorney is generated pre-filled from step 5 — do not retype it by hand.',
+           'Sign it with a qualified electronic signature (Evrotrust, B-Trust) or download, sign and upload the scan.',
+           'For a company, the person with authority under the commercial register signs. Where representation is joint, all of them sign.',
+           'The engagement letter states what the price covers: drafting and filing are included; opposition or refusal work is engaged separately.']},
+  err:{bg:'Честа грешка: пълномощно, подписано от лице без представителна власт. Ведомството го връща като нередовност и се губи време.',
+       en:'Common mistake: a power of attorney signed by someone without authority to represent. The office returns it as a deficiency and time is lost.'}},
+ {n:8,key:'pay',t:{bg:'Плащане',en:'Payment'},
+  i:{bg:'Плащате адвокатско възнаграждение и държавна такса. Възнаграждението е за услугата и е с ДДС; държавната такса е чужд разход, който плащам на ведомството от ваше име при подаването.',
+     en:'You pay a legal fee and an official fee. The legal fee is for the service and carries VAT; the official fee is a disbursement I pay to the office on your behalf at filing.'},
+  need:{bg:['Карта или банков превод','Данни за фактура (ЕИК, ДДС номер)','Потвърдено съдържание на заявката'],
+        en:['Card or bank transfer','Invoicing details (company and VAT number)','Confirmed contents of the application']},
+  man:{bg:['Плащането минава през myPOS Checkout — хоствана страница, 3-D Secure 2, SCA по PSD2.',
+           'Държавната такса още не е стигнала до ведомството в този момент — плаща се от мен при подаването. Затова дотогава възстановяване е възможно.',
+           'Таксата на EUIPO се плаща в евро; при Мадрид — в швейцарски франкове по курса на СОИС.',
+           'Фактурата се разделя на два реда: адвокатско възнаграждение (с ДДС) и държавна такса (чужд разход, без ДДС).'],
+       en:['Payment runs through myPOS Checkout — hosted page, 3-D Secure 2, PSD2 SCA.',
+           'The official fee has not reached the office at this point — I pay it at filing. Until then a refund is possible.',
+           'The EUIPO fee is paid in euro; Madrid in Swiss francs at the WIPO rate.',
+           'The invoice splits into two lines: legal fee (with VAT) and official fee (disbursement, no VAT).']},
+  err:{bg:'Честа грешка: плащане на „такса за публикация“ по измамен имейл след публикацията. Нито ведомствата, нито аз изпращаме такива покани за плащане.',
+       en:'Common mistake: paying a "publication fee" from a scam email after publication. Neither the offices nor I send payment requests of that kind.'}},
+ {n:9,key:'handover',t:{bg:'Какво следва?',en:'What happens next?'},
+  i:{bg:'След плащането преписката се заключва и идва при мен. Проверявам я лично, подавам я във ведомството и от този момент следя всички срокове вместо вас.',
+     en:'Once paid, the matter locks and comes to me. I review it personally, file it with the office, and from that point I watch every deadline for you.'},
+  need:{bg:['Нищо повече от ваша страна, освен ако не поискам корекция','Достъп до посочения имейл','Решение дали включвате мониторинг'],
+        en:['Nothing further from you unless I request a correction','Access to the email address you gave','A decision on monitoring']},
+  man:{bg:['Преглеждам в срок до 2 работни дни: отличителност, класове, заявител срещу търговския регистър, пълномощно и приоритет.',
+           'Ако намеря проблем, връщам преписката с маркирани полета и кратко обяснение. Поправяте само маркираното.',
+           'След подаването получавате входящ номер и дата на заявката. Оттам започва официалният срок.',
+           'България: формална експертиза ~1 месец, по същество ~2 месеца, публикация, 3 месеца опозиционен срок. EUIPO Fast Track публикува средно за около седмица.'],
+       en:['I review within two working days: distinctiveness, classes, applicant against the commercial register, power of attorney and priority.',
+           'If I find a problem I return the matter with the fields flagged and a short explanation. You fix only what is flagged.',
+           'After filing you receive a file number and the filing date. The official clock starts there.',
+           'Bulgaria: formalities ~1 month, substantive ~2 months, publication, 3 months for opposition. EUIPO Fast Track publishes in about a week on average.']},
+  err:{bg:'Честа грешка: пренебрегнато искане за корекция. Докато преписката е върната при вас, тя не е подадена и дата на подаване не се получава.',
+       en:'Common mistake: ignoring a correction request. While the matter sits returned with you it is not filed, and no filing date is secured.'}}
+];
+
+const STATUS={
+ draft:{bg:'чернова',en:'draft',cls:'v'},
+ received:{bg:'получена',en:'received',cls:'v'},
+ review:{bg:'в преглед от адвокат',en:'in review',cls:'v'},
+ returned:{bg:'върната за корекция',en:'returned for correction',cls:'a'},
+ ready:{bg:'готова за подаване',en:'ready to file',cls:'t'},
+ filed:{bg:'подадена във ведомството',en:'filed',cls:'t'},
+ opposition:{bg:'опозиционен срок',en:'opposition open',cls:'a'},
+ registered:{bg:'регистрирана',en:'registered',cls:'t'}
+};
+
+const QUEUE=[
+ {ref:'2026-0412',mark:'ORBITA',route:'eutm',cls:'25, 35',st:'review',sla:{bg:'остават 1 д. 4 ч.',en:'1d 4h left'},who:{bg:'ОРБИТА ЕООД',en:'ORBITA EOOD'}},
+ {ref:'2026-0411',mark:'ЛОЗЕН',route:'bg_nat',cls:'33',st:'returned',sla:{bg:'при клиента от 2 д.',en:'with client 2d'},who:{bg:'Винарна Лозен АД',en:'Vinarna Lozen AD'}},
+ {ref:'2026-0409',mark:'KAVALINE',route:'eutm',cls:'30, 43',st:'ready',sla:{bg:'за подаване днес',en:'file today'},who:{bg:'Кавалине ООД',en:'Kavaline OOD'}},
+ {ref:'2026-0402',mark:'NUR TEXT',route:'madrid',cls:'25',st:'filed',sla:{bg:'подадена 04.09',en:'filed 04 Sep'},who:{bg:'Nur Textile FZE, Дубай',en:'Nur Textile FZE, Dubai'}},
+ {ref:'2026-0388',mark:'ТОПОЛА',route:'bg_nat',cls:'33',st:'registered',sla:{bg:'подновяване 2034',en:'renewal 2034'},who:{bg:'Топола ЕООД',en:'Topola EOOD'}}
+];
+
+const CHECKLIST=[
+ {ok:1,bg:'Отличителност — няма явно абсолютно основание по чл. 11 ЗМГО / чл. 7 EUTMR',en:'Distinctiveness — no obvious absolute ground under art. 11 BG TMA / art. 7 EUTMR'},
+ {ok:1,bg:'Всички термини са от Хармонизираната база данни',en:'All terms come from the Harmonised Database'},
+ {ok:0,bg:'Наименованието на заявителя съвпада с търговския регистър',en:'Applicant name matches the commercial register'},
+ {ok:1,bg:'Пълномощно — подписано от лице с представителна власт',en:'Power of attorney — signed by a person with authority'},
+ {ok:1,bg:'Проверка за конфликт на интереси — извършена',en:'Conflict of interest check — completed'},
+ {ok:1,bg:'Приоритет — в 6-месечния срок или непретендиран',en:'Priority — within the six-month window or not claimed'},
+ {ok:1,bg:'Плащането е потвърдено и осчетоводено',en:'Payment confirmed and reconciled'}
+];
+
+const TERMS=[
+ {c:3,hdb:1,bg:'козметика',en:'cosmetics'},{c:3,hdb:1,bg:'сапуни',en:'soaps'},{c:3,hdb:1,bg:'парфюмерия',en:'perfumery'},
+ {c:5,hdb:1,bg:'хранителни добавки за хора',en:'dietary supplements for human beings'},
+ {c:9,hdb:1,bg:'компютърен софтуер, записан',en:'computer software, recorded'},
+ {c:9,hdb:1,bg:'изтегляеми мобилни приложения',en:'downloadable mobile applications'},
+ {c:9,hdb:1,bg:'слънчеви очила',en:'sunglasses'},{c:16,hdb:1,bg:'печатни издания',en:'printed publications'},
+ {c:25,hdb:1,bg:'облекло',en:'clothing'},{c:25,hdb:1,bg:'обувки',en:'footwear'},{c:25,hdb:1,bg:'шапки',en:'headgear'},{c:25,hdb:1,bg:'тениски',en:'T-shirts'},
+ {c:29,hdb:1,bg:'млечни продукти',en:'dairy products'},{c:30,hdb:1,bg:'кафе',en:'coffee'},{c:32,hdb:1,bg:'бира',en:'beer'},
+ {c:33,hdb:1,bg:'вина',en:'wines'},{c:33,hdb:1,bg:'спиртни напитки',en:'spirits [beverages]'},
+ {c:35,hdb:1,bg:'реклама',en:'advertising'},{c:35,hdb:1,bg:'търговско управление на предприятия',en:'business management'},
+ {c:35,hdb:1,bg:'търговия на дребно с облекло',en:'retail services in relation to clothing'},
+ {c:36,hdb:1,bg:'застрахователни услуги',en:'insurance services'},
+ {c:41,hdb:1,bg:'образование',en:'education'},{c:41,hdb:1,bg:'организиране на семинари',en:'arranging of seminars'},
+ {c:42,hdb:1,bg:'софтуер като услуга [SaaS]',en:'software as a service [SaaS]'},
+ {c:42,hdb:1,bg:'разработване на компютърен софтуер',en:'development of computer software'},
+ {c:42,hdb:1,bg:'промишлен дизайн',en:'industrial design'},
+ {c:43,hdb:1,bg:'услуги за храна и напитки',en:'services for providing food and drink'},{c:43,hdb:1,bg:'кафене',en:'café services'},
+ {c:44,hdb:1,bg:'услуги на козметичен салон',en:'beauty salon services'},
+ {c:45,hdb:1,bg:'юридически услуги',en:'legal services'},{c:45,hdb:1,bg:'консултации по интелектуална собственост',en:'intellectual property consultancy'},
+ {c:9,hdb:0,bg:'AI агент за автоматизиран документооборот',en:'AI agent for automated document workflow'},
+ {c:35,hdb:0,bg:'услуги на маркетплейс за независими музиканти',en:'marketplace services for independent musicians'}
+];
+
+const POSTS=[
+ {d:'2026-09-02',c:{bg:'Практика',en:'Case law'},t:{bg:'Общият съд отново стеснява обхвата на заглавията на класове',en:'The General Court narrows class headings again'},
+  s:{bg:'Какво означава решението за спецификации отпреди IP Translator и кога си струва нова заявка.',en:'What the ruling means for pre-IP Translator specifications and when a fresh filing is worth the fee.'}},
+ {d:'2026-08-19',c:{bg:'България',en:'Bulgaria'},t:{bg:'Таксите на Патентно ведомство в евро: какво се промени от 1 януари',en:'Patent Office fees in euro: what changed on 1 January'},
+  s:{bg:'Преизчисляване по фиксирания курс, закръгляне и ефект върху заявки с повече от три класа.',en:'Conversion at the fixed rate, rounding, and the effect on filings with more than three classes.'}},
+ {d:'2026-07-30',c:{bg:'Стратегия',en:'Strategy'},t:{bg:'Мадрид или директни национални заявки за пазара в ОАЕ',en:'Madrid or direct national filings for the UAE market'},
+  s:{bg:'Сравнение на разходите за портфолио от четири класа и защо централната атака остава риск.',en:'A cost comparison over a four-class portfolio, and why central attack remains a risk.'}}
+];
+
+/* state */
+const KEY='sym_atelier_v1';
+let state = load() || {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,terms:[],done:{},status:'draft'};
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+let page='home';
+
+function classCount(){return new Set(state.terms.map(i=>TERMS[i].c)).size||1}
+function officialFee(){const n=classCount(),r=ROUTES[state.route];
+ if(state.route==='bg_nat')return{cur:'EUR',v:r.base+Math.max(0,n-3)*r.extra+r.cert};
+ if(state.route==='eutm')return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
+ return{cur:'CHF',v:(state.colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass}}
+const SERVICE={bg_nat:149,eutm:249,madrid:349};
+const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function pageHead(k,t,l,extra){
+ return `<section class="sec sec-navy pagehead">
+  <div class="wrap stack" style="gap:9px;max-width:880px;width:100%">
+   ${k?`<div class="kicker">${esc(L(k))}</div>`:''}
+   <h1 style="font-size:clamp(25px,3.5vw,37px)">${esc(L(t))}</h1>
+   <div class="goldrule"></div>
+   ${l?`<p class="lede" style="font-size:16px">${esc(L(l))}</p>`:''}
+   ${extra||''}
+  </div></section>`;
+}
+
+function chrome(){
+ const nav=document.getElementById('nav');
+ nav.innerHTML=NAV.map(n=>{
+   const g=NAVGROUPS.find(x=>x.after===n.id);
+   return `<button data-p="${n.id}" ${page===n.id?'aria-current="page"':''}>${esc(L(n))}</button>`
+        + (g?`<div class="navgroup">${esc(L(g))}</div>`:'');
+ }).join('');
+ nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{go(b.dataset.p);document.getElementById('side').classList.remove('open')});
+ const cur=NAV.find(n=>n.id===page); const cr=document.getElementById('crumb');
+ if(cr) cr.textContent = cur?esc(L(cur)):'';
+ document.getElementById('foot').innerHTML=`
+  <div><div class="brand" style="margin-bottom:12px"><span class="brandplate"><img class="brandlogo" src="data:image/png;base64,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" alt="ScaleYourMark"></span></div>
+   <p class="quiet" style="max-width:36ch">${lang==='bg'
+     ?'Самостоятелно заявяване на марки в България, ЕС и по Мадридската система. Съдържанието е информационно и не замества правен съвет.'
+     :'Self-service trade mark filing for Bulgaria, the EU and the Madrid System. Informational content, not legal advice.'}</p></div>
+  <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Заявяване':'Filing'}</div>
+   ${['file','guides','price','acct'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+  <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Дружество':'Company'}</div>
+   ${['about','blog','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+  <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Правни':'Legal'}</div>
+   <a href="#">${lang==='bg'?'Общи условия':'Terms'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookies'}</a></div>`;
+ document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
+}
+function go(p){page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
+function render(){chrome();app.innerHTML=({home:Home,file:File_,guides:Guides,price:Price,blog:Blog,about:About,contact:Contact,acct:Acct,office:Office}[page]||Home)();wire()}
+
+/* ---------- drawer ---------- */
+function openDrawer(n){
+ const s=STEPS[n-1], d=document.getElementById('drawer');
+ d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
+  <div class="kicker">${lang==='bg'?'Ръководство · стъпка':'Manual · step'} ${s.n}</div>
+  <h2 style="margin:8px 0 14px">${esc(L(s.t))}</h2>
+  <p style="color:var(--ink-2);font-size:15.5px">${esc(L(s.i))}</p>
+  <div style="display:flex;flex-direction:column;gap:20px;margin-top:22px">
+   <div><h4>${lang==='bg'?'Какво ви трябва':'What you need'}</h4><ul>${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+   <div><h4>${lang==='bg'?'Как да решите':'How to decide'}</h4><ul>${L(s.man).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+   <div class="caution"><strong>${lang==='bg'?'Внимавайте':'Watch out'}</strong><br>${esc(L(s.err))}</div>
+  </div>`;
+ d.classList.add('open');document.getElementById('scrim').classList.add('on');
+ d.querySelector('#dclose').onclick=closeDrawer;
+}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('scrim').classList.remove('on')}
+document.getElementById('scrim').onclick=closeDrawer;
+
+/* ---------- pages ---------- */
+function Home(){
+ const why=[
+  [{bg:'Платена консултация, преди да знаете дали ви трябва',en:'A paid consultation before you know whether you need one'},
+   {bg:'Часова ставка за информация, която при огромната част от заявките е една и съща. Заради това малкият бизнес отлага заявяването с години — а междувременно името стои незащитено.',
+    en:'An hourly rate for information that is the same in the vast majority of filings. That is why small businesses postpone filing for years — while the name sits unprotected.'}],
+  [{bg:'Или сам, срещу формуляр без обяснения',en:'Or alone, against a form with no explanations'},
+   {bg:'Ведомствените формуляри питат какво, но не казват защо. Грешка в класовете или в изображението не се поправя след подаването — плаща се с нова заявка и нова дата.',
+    en:'Official forms ask what, but never why. A mistake in the classes or the representation cannot be fixed after filing — it costs a fresh application and a later date.'}],
+  [{bg:'Трети път: информацията е свободна, работата е с фиксирана цена',en:'A third way: the information is free, the work is a flat fee'},
+   {bg:'Четете колкото искате и попълвате когато ви е удобно. Плащате веднъж, за резултат. Правната преценка и подаването остават при адвокат, защото там отговорността не се прехвърля на потребителя.',
+    en:'Read as much as you like and fill it in when it suits you. You pay once, for an outcome. The legal judgement and the filing stay with a lawyer, because that responsibility cannot be handed to the user.'}]
+ ];
+ const diff=[
+  [{bg:'Обяснението е в стъпката, не в консултация',en:'The explanation sits in the step, not in a consultation'},
+   {bg:'Всяка от деветте стъпки казва какво се пита, защо се пита, какво следва от отговора и коя е най-честата грешка на това място. Същото, което един адвокат би ви обяснил на среща — написано веднъж и достъпно по всяко време.',
+    en:'Each of the nine steps says what is asked, why it is asked, what follows from the answer, and the most common mistake at that point. The same things a lawyer would explain in a meeting — written once and available at any hour.'}],
+  [{bg:'Фиксирана цена за резултат, не часова ставка',en:'A flat fee for an outcome, not an hourly rate'},
+   {bg:'Знаете цената, преди да започнете. Държавната такса се показва отделно, преизчислява се на живо при добавяне на клас и се плаща на ведомството — тя не е наш приход.',
+    en:'You know the price before you start. The official fee is shown separately, recalculates live as classes are added, and goes to the office — it is not our revenue.'}],
+  [{bg:'Процесът е направен да завършва',en:'The process is built to be finished'},
+   {bg:'Черновата се пази след всяка стъпка и ви чака дни или седмици. Нищо не се пита два пъти. Деветте стъпки имат ясен край, а не отворен списък от въпроси, който се изоставя по средата.',
+    en:'The draft is saved after every step and waits for days or weeks. Nothing is asked twice. The nine steps have a clear end, not an open-ended list of questions that gets abandoned halfway.'}],
+  [{bg:'Накрая стои адвокат, не бутон „Изпрати“',en:'At the end there is a lawyer, not a Submit button'},
+   {bg:'Преписката се преглежда лично в срок до два работни дни и се подава от адвокат. Ако нещо не е наред, се връща с маркирани полета и обяснение — преди да е стигнала до ведомството, а не след това.',
+    en:'The matter is reviewed personally within two working days and filed by a lawyer. If something is wrong it comes back with the fields flagged and explained — before it reaches the office, not after.'}]
+ ];
+ return `${pageHead(
+  {bg:'Заявяване на марка без излишни консултации',en:'Trade mark filing without the unnecessary consultation'},
+  {bg:'Заявете марката си сами. Адвокат я преглежда и я подава.',en:'File your own trade mark. A lawyer reviews it and files it.'},
+  {bg:'Всичко, нужно за завършена заявка, е на този сайт — не в платена консултация. Накрая адвокат преглежда преписката лично и я подава във ведомството.',
+   en:'Everything you need for a finished application is on this site — not in a paid consultation. At the end a lawyer checks the matter personally and files it.'},
+  `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете →':'Begin →'}</button>
+    <button class="btn btn-quiet" data-p="file">${lang==='bg'?'Вижте деветте стъпки':'See the nine steps'}</button>
+   </div>`)}
+
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="narrow" style="padding:0;margin:0 0 26px">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Защо съществува':'Why this exists'}</div>
+   <h2>${lang==='bg'?'Досега изборът беше между скъпо и рисковано'
+                    :'Until now the choice was between expensive and risky'}</h2>
+   <p class="quiet" style="margin-top:12px;max-width:70ch">${lang==='bg'
+     ?'Фиксирана цена, без часова ставка и без абонамент. Държавната такса се показва отделно и се плаща на ведомството при подаването.'
+     :'A flat fee, no hourly rate and no subscription. The official fee is shown separately and paid to the office at filing.'}</p>
+  </div>
+  <div class="grid3" style="gap:18px">
+   ${why.map(([t,d],i)=>`<div class="card pad stack" style="gap:9px${i===2?';border-color:var(--gold-bright)':''}">
+     <span class="kicker" style="color:var(--gold)">${String(i+1).padStart(2,'0')}</span>
+     <h3 style="font-size:18px">${esc(L(t))}</h3>
+     <p class="quiet">${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>
+
+ <section class="sec"><div class="wrap">
+  <div class="narrow" style="padding:0;margin:0 0 26px">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво го различава':'What makes it different'}</div>
+   <h2>${lang==='bg'?'Четири неща, които решават дали ще стигнете до край'
+                    :'Four things that decide whether you actually finish'}</h2>
+  </div>
+  <div class="grid2" style="gap:18px">
+   ${diff.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+     <h3 style="font-size:18.5px">${esc(L(t))}</h3>
+     <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
+  </div>
+  <p class="quiet" style="max-width:66ch;margin-top:20px">${lang==='bg'
+    ?'Платформата не замества правния съвет там, където той е нужен. Случаите извън обичайното — опозиция, отказ на абсолютно основание, спор за по-ранно право — се поемат отделно и се възлагат изрично.'
+    :'The platform does not replace legal advice where advice is genuinely needed. Cases outside the ordinary — opposition, an absolute-grounds refusal, a dispute over an earlier right — are taken on separately and engaged expressly.'}</p>
+ </div></section>`;
+}
+
+function File_(){
+ const s=STEPS[state.step-1], pct=Math.round((state.step-1)/9*100);
+ const done=Object.keys(state.done).length;
+ return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
+  {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
+  {bg:'Шест стъпки събират фактите за бизнеса ви, седмата възлага работата, осмата я плаща, а деветата предава преписката на адвоката. Черновата се пази след всяка стъпка.',
+   en:'Six steps gather the facts about your business, the seventh engages the work, the eighth pays for it, and the ninth hands the matter to the lawyer. The draft is saved after every step.'})}
+
+ <section class="sec"><div class="wrap stack" style="gap:22px">
+  <div class="filegrid">
+
+   <div class="stack" style="gap:18px">
+    <div class="stack" style="gap:7px">
+     <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2)">
+      <span>${lang==='bg'?'Стъпка':'Step'} ${s.n} ${lang==='bg'?'от':'of'} 9 · ${esc(L(s.t))}</span>
+      <span class="num">${pct}%</span></div>
+     <div class="meter"><i style="width:${pct}%"></i></div>
+    </div>
+
+    <div class="card pad stack" style="gap:20px">
+     <div class="q-head">
+      <div><div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${s.n} / 9</div>
+       <h2 style="font-size:clamp(24px,3.4vw,32px);margin-top:8px">${esc(L(s.t))}</h2></div>
+      <span class="tag v">${lang==='bg'?'пази се автоматично':'saved automatically'}</span>
+     </div>
+     <p class="lede" style="font-size:16.5px">${esc(L(s.i))}</p>
+     ${body(s.key)}
+     <div class="helpbar">
+      <span class="ht">${lang==='bg'?'Не сте сигурни? Отворете ръководството.':'Not sure? Open the manual.'}</span>
+      <button class="btn btn-ghost" data-open="${s.n}" style="padding:8px 16px;font-size:14px">${lang==='bg'?'Помощ':'Help'}</button>
+     </div>
+     <div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line-2);padding-top:20px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="prev" ${state.step===1?'disabled':''}>← ${lang==='bg'?'Назад':'Back'}</button>
+      <div style="display:flex;gap:10px">
+       <button class="btn btn-quiet" id="savebtn">${lang==='bg'?'Запази и излез':'Save and exit'}</button>
+       <button class="btn btn-primary" id="next">${state.step===9?(lang==='bg'?'Предай на адвоката':'Hand over'):(lang==='bg'?'Напред':'Continue')} →</button>
+      </div>
+     </div>
+    </div>
+
+   </div>
+
+   <aside class="rail">
+    <div class="railcard">
+     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <span class="kicker">${lang==='bg'?'Деветте стъпки':'The nine steps'}</span>
+      <span class="num" style="font-size:12px;color:var(--ink-3)">${done}/9</span>
+     </div>
+     <div class="railsteps">
+      ${STEPS.map(x=>`<button class="railstep" data-step="${x.n}" ${x.n===state.step?'aria-current="step"':''} title="${esc(L(x.t))}">
+        <span class="rn">${state.done[x.n]?'<span class="raildone">✓</span>':String(x.n).padStart(2,'0')}</span>
+        <span class="rt">${esc(L(x.t))}</span>
+        <span class="rq" data-open="${x.n}" title="${lang==='bg'?'Ръководство':'Manual'}">?</span>
+       </button>`).join('')}
+     </div>
+    </div>
+    <p class="quiet" style="padding:0 4px">${lang==='bg'
+      ?'Знакът „?“ отваря ръководството към стъпката: какво се иска, как да решите и коя е най-честата грешка.'
+      :'The “?” opens that step’s manual: what is required, how to decide, and the most common mistake.'}</p>
+   </aside>
+
+  </div>
+ </div></section>
+
+ <section class="sec sec-navy"><div class="wrap">
+  <div class="kicker" style="margin-bottom:18px">${lang==='bg'?'Кой какво прави':'Who does what'}</div>
+  <div class="grid3" style="gap:18px;margin-bottom:34px">
+   ${[[{bg:'Вие',en:'You'},{bg:'Попълвате деветте стъпки',en:'Fill in the nine steps'},{bg:'Всяка стъпка идва с ръководство. Спирате и продължавате когато поискате.',en:'Every step comes with a manual. Stop and resume whenever you like.'}],
+      [{bg:'Адвокатът',en:'The lawyer'},{bg:'Преглежда лично в 2 работни дни',en:'Reviews personally within 2 working days'},{bg:'При проблем преписката се връща с маркирани полета и кратко обяснение.',en:'On a problem the matter returns with the fields flagged and a short note.'}],
+      [{bg:'Ведомството',en:'The office'},{bg:'Разглежда подадената заявка',en:'Examines the filed application'},{bg:'Адвокатът подава, плаща таксата и следи всеки срок до регистрацията.',en:'The lawyer files, pays the fee and dockets every deadline to registration.'}]]
+     .map(([who,what,d],i)=>`<div class="card pad stack" style="gap:8px">
+       <span class="kicker" style="color:var(--gold-bright)">${String(i+1).padStart(2,'0')} · ${esc(L(who))}</span>
+       <h3 style="font-size:18px">${esc(L(what))}</h3><p class="quiet">${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>
+`;
+}
+
+function uploader(){
+ const f=state.img;
+ const kb=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':Math.round(n/1024)+' KB';
+ const rules = lang==='bg'
+  ? ['JPEG или PNG, до 2 MB. Звукова марка: MP3. Марка с движение или мултимедийна: MP4.',
+     'Качете точно знака, който искате да защитите — без рамки, водни знаци и текст, който описва марката.',
+     'Ако не претендирате цвят, качете черно-бяло изображение. Цветното изображение защитава само тези цветове.',
+     'Бял или прозрачен фон. Препоръчително поне 945 × 945 px, за да не изглежда размито при публикацията.']
+  : ['JPEG or PNG, up to 2 MB. Sound mark: MP3. Motion or multimedia mark: MP4.',
+     'Upload exactly the sign you want protected — no frames, watermarks or text describing the mark.',
+     'If you are not claiming colour, upload a black-and-white image. A colour image protects only those colours.',
+     'White or transparent background. At least 945 × 945 px is advisable so it is not blurred on publication.'];
+ return `<div class="field" style="margin-top:20px">
+  <label>${lang==='bg'?'Изображение на марката':'Representation of the mark'}</label>
+  <div class="drop" id="drop">
+   <div>
+    <div style="font-weight:600;font-size:15px">${f?esc(f.name)
+      :(lang==='bg'?'Плъзнете файла тук или го изберете':'Drag the file here, or choose one')}</div>
+    ${f?`<div class="quiet" style="margin-top:4px">${kb(f.size)} · ${f.w} × ${f.h} px</div>`:''}
+    <ul class="quiet">${rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>
+    <div class="fileline">
+     <button class="btn btn-ghost" id="pickimg" type="button">${f?(lang==='bg'?'Замени файла':'Replace file')
+                                                                 :(lang==='bg'?'Изберете файл':'Choose file')}</button>
+     ${f?`<button class="btn btn-quiet" id="rmimg" type="button">${lang==='bg'?'Премахни':'Remove'}</button>`:''}
+    </div>
+    <div class="imgerr" id="imgerr"></div>
+   </div>
+   <div class="thumb">${f&&f.url?`<img src="${f.url}" alt="${esc(f.name)}">`
+     :`<span class="quiet" style="text-align:center;line-height:1.4">${lang==='bg'?'няма<br>файл':'no<br>file'}</span>`}</div>
+  </div>
+  <input type="file" id="imgin" accept="image/jpeg,image/png" hidden>
+  <span class="hint">${lang==='bg'
+    ?'Файлът се пази с черновата и се предава на адвоката заедно с преписката. Изображението се фиксира на датата на подаване и след това не може да се коригира.'
+    :'The file is kept with your draft and handed to the lawyer with the matter. The representation is frozen on the filing date and cannot be corrected afterwards.'}</span>
+ </div>`;
+}
+
+function handleImg(file){
+ const box=app.querySelector('#imgerr');
+ const say=t=>{if(box)box.textContent=t};
+ if(!file)return;
+ if(['image/jpeg','image/png'].indexOf(file.type)<0){
+  say(lang==='bg'?'Приемат се само JPEG и PNG файлове.':'Only JPEG and PNG files are accepted.');return}
+ if(file.size>2*1024*1024){
+  say(lang==='bg'?'Файлът е над 2 MB. Намалете размера и качете отново.':'The file is over 2 MB. Reduce it and upload again.');return}
+ say('');
+ const r=new FileReader();
+ r.onload=()=>{
+  const im=new Image();
+  im.onload=()=>{
+   const max=440, sc=Math.min(1,max/Math.max(im.width,im.height));
+   const c=document.createElement('canvas');
+   c.width=Math.max(1,Math.round(im.width*sc)); c.height=Math.max(1,Math.round(im.height*sc));
+   const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height);
+   x.drawImage(im,0,0,c.width,c.height);
+   let url=''; try{url=c.toDataURL('image/jpeg',0.85)}catch(e){url=''}
+   state.img={name:file.name,size:file.size,w:im.width,h:im.height,url:url};
+   save(); render();
+  };
+  im.onerror=()=>say(lang==='bg'?'Файлът не може да бъде прочетен като изображение.':'The file could not be read as an image.');
+  im.src=r.result;
+ };
+ r.onerror=()=>say(lang==='bg'?'Файлът не може да бъде прочетен.':'The file could not be read.');
+ r.readAsDataURL(file);
+}
+
+function body(k){
+ if(k==='territory')return `<div class="opts">${Object.entries(ROUTES).map(([id,v])=>`
+   <button class="opt" data-route="${id}" data-on="${state.route===id?1:0}">
+    <span class="tick"></span>
+    <span><span class="ot">${esc(L(v))}</span><span class="os">${esc(lang==='bg'?v.bg_s:v.en_s)}</span></span>
+    <span class="op">${v.code}</span></button>`).join('')}
+   ${state.route==='madrid'?`<button class="opt" id="colourtoggle" data-on="${state.colour?1:0}">
+     <span class="tick" style="border-radius:6px"></span>
+     <span><span class="ot">${lang==='bg'?'Марката е цветна':'The mark is in colour'}</span>
+      <span class="os">${lang==='bg'?'Базовата такса става CHF 903 вместо CHF 653.':'The basic fee becomes CHF 903 instead of CHF 653.'}</span></span>
+     <span class="op">WO</span></button>`:''}</div>`;
+
+ if(k==='search')return `
+  <div class="field"><label for="q_mark">${lang==='bg'?'Марка за проверка':'Mark to search'}</label>
+   <input type="text" id="q_mark" value="${esc(state.mark||'')}" placeholder="ORBITA">
+   <span class="hint">${lang==='bg'?'Проверяваме BPO, EUIPO eSearch и Madrid Monitor едновременно.':'We query BPO, EUIPO eSearch and Madrid Monitor at once.'}</span></div>
+  <div class="tblwrap"><table class="tbl"><thead><tr>
+   <th>${lang==='bg'?'Регистър':'Register'}</th><th>${lang==='bg'?'Намерено':'Hit'}</th><th>${lang==='bg'?'Класове':'Classes'}</th><th>${lang==='bg'?'Риск':'Risk'}</th></tr></thead>
+   <tbody>
+    <tr><td class="num">EUIPO</td><td>ORBITA MEDIA</td><td class="num">35, 41</td><td><span class="tag a">${lang==='bg'?'висок':'high'}</span></td></tr>
+    <tr><td class="num">BPO</td><td>ORBIT</td><td class="num">9, 42</td><td><span class="tag v">${lang==='bg'?'среден':'medium'}</span></td></tr>
+    <tr><td class="num">WIPO</td><td>ORBITTA</td><td class="num">25</td><td><span class="tag t">${lang==='bg'?'нисък':'low'}</span></td></tr>
+   </tbody></table></div>
+  <p class="quiet">${lang==='bg'?'Примерни данни. В производство резултатите идват на живо от EUIPO Trademark Search API и от националния регистър.'
+                                :'Illustrative data. In production these come live from the EUIPO Trademark Search API and the national register.'}</p>`;
+
+ if(k==='mark'){
+  const kinds=[{id:'word',bg:'Словна марка',en:'Word mark',sb:{bg:'Само текст. Най-широка закрила.',en:'Text only. Broadest protection.'}},
+               {id:'fig',bg:'Фигуративна',en:'Figurative',sb:{bg:'Лого или стилизирано изписване.',en:'A logo or stylised wording.'}},
+               {id:'comb',bg:'Комбинирана',en:'Combined',sb:{bg:'Текст и изображение заедно.',en:'Text and image together.'}},
+               {id:'other',bg:'Друга (3D, звук, движение)',en:'Other (3D, sound, motion)',sb:{bg:'Изисква специфичен формат на файла.',en:'Requires a specific file format.'}}];
+  return `<div class="field"><label for="mk">${lang==='bg'?'Изписване на марката':'Wording of the mark'}</label>
+   <input type="text" id="mk" value="${esc(state.mark||'')}" placeholder="ORBITA">
+   <span class="hint">${lang==='bg'?'Точно както ще се използва. Не добавяйте ®.':'Exactly as it will be used. Do not add ®.'}</span></div>
+   <div class="opts">${kinds.map(x=>`<button class="opt" data-kind="${x.id}" data-on="${state.kind===x.id?1:0}">
+     <span class="tick"></span><span><span class="ot">${esc(L(x))}</span><span class="os">${esc(L(x.sb))}</span></span><span></span></button>`).join('')}</div>
+   ${(state.kind==='fig'||state.kind==='comb'||state.kind==='other')?uploader():''}`;
+ }
+
+ if(k==='goods'){
+  const g={};state.terms.forEach(i=>{const t=TERMS[i];(g[t.c]=g[t.c]||[]).push(t)});
+  return `<div class="field"><label for="tq">${lang==='bg'?'Търсете в Хармонизираната база':'Search the Harmonised Database'}</label>
+    <input type="text" id="tq" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"></div>
+   <div class="tlist" id="termlist"></div>
+   <p class="quiet" style="margin-top:10px">${lang==='bg'?'HDB = приема се автоматично. FREE = свободен текст, отива на експертиза.':'HDB = accepted automatically. FREE = free text, goes to examination.'}</p>
+   <div class="sum" style="margin-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px">
+     <span class="kicker">${lang==='bg'?'Вашата спецификация':'Your specification'}</span>
+     <span class="quiet">${classCount()} ${lang==='bg'?'клас(а) · таксите са в раздел Цени':'class(es) · fees are under Pricing'}</span>
+    </div>
+    ${Object.keys(g).length?Object.entries(g).sort((a,b)=>a[0]-b[0]).map(([c,ts])=>`
+      <div style="margin-bottom:10px"><span class="chip">${lang==='bg'?'Клас':'Class'} ${c}</span>
+      <div style="font-size:14.5px;color:var(--ink-2);margin-top:5px">${ts.map(t=>esc(L(t))).join('; ')}</div></div>`).join('')
+      :`<p class="quiet">${lang==='bg'?'Още нищо не е избрано. Изберете поне един термин, за да продължите.':'Nothing selected yet. Pick at least one term to continue.'}</p>`}
+   </div>`;
+ }
+
+ if(k==='applicant')return `
+  <div class="grid2" style="gap:0 20px">
+   <div class="field"><label for="an">${lang==='bg'?'Наименование / име':'Legal name'}</label><input type="text" id="an" placeholder="ОРБИТА ЕООД"></div>
+   <div class="field"><label for="ae">${lang==='bg'?'ЕИК / ЕГН':'Company or personal ID'}</label><input type="text" id="ae" placeholder="204512345"></div>
+   <div class="field"><label for="aa">${lang==='bg'?'Адрес за кореспонденция':'Address for service'}</label><input type="text" id="aa" placeholder="${lang==='bg'?'гр. София, ул. …':'Sofia, …'}"></div>
+   <div class="field"><label for="ac">${lang==='bg'?'Държава на седалището':'Country of seat'}</label>
+    <select id="ac"><option>България</option><option>Deutschland</option><option>United Arab Emirates</option><option>United States</option></select></div>
+  </div>
+  <div class="caution">${lang==='bg'
+    ?'Ако седалището е извън ЕИП, назначаването на представител пред EUIPO е задължително (чл. 119–120 EUTMR). Платформата открива това автоматично и добавя стъпката.'
+    :'If the seat is outside the EEA, appointing a representative before EUIPO is mandatory (arts. 119–120 EUTMR). The platform detects this and inserts the step.'}</div>`;
+
+ if(k==='priority')return `<div class="opts">
+   <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Не претендирам приоритет':'No priority claimed'}</span>
+    <span class="os">${lang==='bg'?'Датата на подаване е днешната.':'The filing date is today.'}</span></span><span></span></button>
+   <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Конвенционен приоритет (6 месеца)':'Convention priority (6 months)'}</span>
+    <span class="os">${lang==='bg'?'Същата марка, същите стоки, подадена другаде след 12 март 2026 г.':'Same mark, same goods, filed elsewhere after 12 March 2026.'}</span></span><span></span></button>
+   <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Сеньорност (само EUTM)':'Seniority (EUTM only)'}</span>
+    <span class="os">${lang==='bg'?'Запазва датите на по-ранни национални марки.':'Preserves the dates of earlier national marks.'}</span></span><span></span></button></div>
+  <div class="field" style="margin-top:18px"><label for="pn">${lang==='bg'?'Номер на по-ранната заявка':'Earlier application number'}</label>
+   <input type="text" id="pn" placeholder="BG 2026/0142857"></div>`;
+
+ if(k==='engage')return `<div class="opts">
+   <button class="opt" data-on="1"><span class="tick" style="border-radius:6px"></span>
+    <span><span class="ot">${lang==='bg'?'Договор за правна помощ и съдействие':'Engagement letter for legal services'}</span>
+     <span class="os">${lang==='bg'?'Обхват: изготвяне на заявката, класификация, подаване и проследяване до регистрация. Опозиция и обжалване се възлагат отделно.'
+                                   :'Scope: drafting, classification, filing and docketing through to registration. Opposition and appeal are engaged separately.'}</span></span><span></span></button>
+   <button class="opt" data-on="1"><span class="tick" style="border-radius:6px"></span>
+    <span><span class="ot">${lang==='bg'?'Адвокатско пълномощно':'Power of attorney'}</span>
+     <span class="os">${lang==='bg'?'Генерирано предварително попълнено с данните от стъпка 5. Дава право за подаване и представителство пред ведомството.'
+                                   :'Generated pre-filled from step 5. Authorises filing and representation before the office.'}</span></span><span></span></button></div>
+  <div class="grid2" style="margin-top:18px;gap:16px">
+   <div class="card pad stack" style="gap:10px"><div class="kicker">${lang==='bg'?'Подписване':'Signing'}</div>
+    <button class="btn btn-primary" style="justify-content:center">${lang==='bg'?'Подпиши с КЕП (Evrotrust / B-Trust)':'Sign with a qualified e-signature'}</button>
+    <button class="btn btn-ghost" style="justify-content:center">${lang==='bg'?'Свали PDF, подпиши и качи':'Download PDF, sign and upload'}</button></div>
+   <div class="card pad stack" style="gap:8px"><div class="kicker">${lang==='bg'?'Подписващо лице':'Signatory'}</div>
+    <div class="field" style="margin:0"><label for="sg">${lang==='bg'?'Име и качество':'Name and capacity'}</label>
+     <input type="text" id="sg" placeholder="${lang==='bg'?'Иван Петров, управител':'Ivan Petrov, manager'}"></div>
+    <p class="quiet">${lang==='bg'?'Представителната власт се проверява срещу търговския регистър преди подаване.'
+                                  :'Authority to represent is verified against the commercial register before filing.'}</p></div></div>
+  <div class="caution" style="margin-top:16px">${lang==='bg'
+    ?'Заявители без седалище или реално предприятие в ЕИП задължително се представляват пред EUIPO (чл. 119–120 EUTMR). При този модел това не е пречка — представителството е част от услугата.'
+    :'Applicants with no seat or real establishment in the EEA must be represented before EUIPO (arts. 119–120 EUTMR). On this model that is no obstacle — representation is part of the service.'}</div>`;
+
+ if(k==='pay'){const f=officialFee(),sv=SERVICE[state.route];
+  return `<div class="tblwrap"><table class="tbl"><thead><tr>
+   <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
+   <tr><td>${lang==='bg'?'Адвокатско възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, с ДДС':'service, VAT applies'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
+   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">—</td><td class="r">€${(sv*.2).toFixed(2)}</td></tr>
+   <tr><td>${lang==='bg'?'Държавна такса, ':'Official fee, '}${classCount()} ${lang==='bg'?'клас(а)':'class(es)'}</td>
+       <td class="quiet">${lang==='bg'?'чужд разход — ':'disbursement — '}${esc(L(ROUTES[state.route].office))}</td><td class="r">${money(f.v,f.cur)}</td></tr>
+   <tr><td style="font-weight:600">${lang==='bg'?'Общо':'Total'}</td><td></td><td class="r" style="font-weight:600">${f.cur==='CHF'?`CHF ${f.v.toFixed(2)} + €${(sv*1.2).toFixed(2)}`:money(f.v+sv*1.2,'EUR')}</td></tr>
+   </tbody></table></div>
+  <div class="opts" style="margin-top:20px">
+   <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">myPOS Checkout</span>
+    <span class="os">${lang==='bg'?'Карта, Apple Pay, Google Pay. 3-D Secure 2. Плащането се извършва на хоствана страница на myPOS — картовите данни не преминават през нашия сървър.'
+                                  :'Card, Apple Pay, Google Pay. 3-D Secure 2. Payment happens on a myPOS-hosted page — card data never touches our server.'}</span></span><span></span></button>
+   <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банков превод (SEPA)':'Bank transfer (SEPA)'}</span>
+    <span class="os">${lang==='bg'?'Преписката влиза в опашката за преглед след потвърдено постъпване — обичайно един работен ден.':'The matter enters the review queue once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
+  <div class="caution" style="margin-top:16px">${lang==='bg'
+    ?'Държавната такса не се превежда на ведомството в момента на плащането — тя се плаща при подаването. Ако при прегледа реша, че марката не следва да се подава, таксата се възстановява изцяло.'
+    :'The official fee is not remitted when you pay — it is paid at filing. If on review I conclude the mark should not be filed, that fee is refunded in full.'}</div>`;
+ }
+
+ if(k==='handover')return `<div class="rows">
+  ${[[lang==='bg'?'Сега':'Now',lang==='bg'?'Преписката е заключена и е при адвоката. Получавате номер на преписка и потвърждение.':'The matter is locked and with the lawyer. You receive a matter number and confirmation.'],
+     [lang==='bg'?'До 2 работни дни':'Within 2 working days',lang==='bg'?'Личен преглед: отличителност, класове, заявител срещу търговския регистър, пълномощно, приоритет, конфликт на интереси.':'Personal review: distinctiveness, classes, applicant against the commercial register, power of attorney, priority, conflict check.'],
+     [lang==='bg'?'При нужда':'If needed',lang==='bg'?'Връщане за корекция с маркирани полета. Отваря се само това, което трябва да се поправи.':'Returned for correction with the fields flagged. Only what needs fixing reopens.'],
+     [lang==='bg'?'Подаване':'Filing',lang==='bg'?'Адвокатът подава и плаща държавната такса. Получавате входящ номер и дата на заявката.':'The lawyer files and pays the official fee. You receive a file number and the filing date.'],
+     [lang==='bg'?'След това':'Afterwards',lang==='bg'?'Формална експертиза, по същество, публикация, 3 месеца опозиционен срок, регистрация, подновяване на 10-ата година.':'Formalities, substantive examination, publication, 3-month opposition window, registration, renewal at year ten.']]
+    .map(([a,b])=>`<div class="row" style="align-items:start"><span class="num" style="min-width:130px;color:var(--gold);font-size:14px">${a}</span>
+      <span style="flex:1;font-size:15px;color:var(--ink-2)">${b}</span></div>`).join('')}
+  </div>
+  <div class="sum" style="margin-top:18px"><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво проверявам преди подаване':'What I check before filing'}</div>
+   ${CHECKLIST.map(c=>`<div style="display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:14.5px;color:var(--ink-2);padding:4px 0">
+     <span style="color:var(--teal)">✓</span><span>${esc(L(c))}</span></div>`).join('')}</div>`;
+ return '';
+}
+
+function Guides(){
+ return `${pageHead({bg:'Библиотека',en:'Library'},{bg:'Ръководства по стъпки',en:'Step-by-step manuals'},
+  {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The same manuals from inside the wizard, collected for reading before you start.'})}
+ <section class="sec"><div class="wrap grid2">
+   ${STEPS.map(s=>`<div class="card pad stack" style="gap:12px">
+     <div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${String(s.n).padStart(2,'0')}</div>
+     <h3>${esc(L(s.t))}</h3>
+     <p class="quiet" style="font-size:15px">${esc(L(s.i))}</p>
+     <div><h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:6px 0 0">${lang==='bg'?'Какво ви трябва':'What you need'}</h4>
+      <ul style="margin:8px 0 0;padding-left:18px;font-size:14.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px">
+       ${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+     <button class="btn btn-ghost" data-open="${s.n}" style="align-self:start;padding:9px 18px;font-size:14px">${lang==='bg'?'Цялото ръководство':'Full manual'}</button>
+    </div>`).join('')}</div></section>`;
+}
+
+function Price(){
+ const rows=[['bg_nat',149,{bg:'Само България. До 3 класа в държавната такса.',en:'Bulgaria only. Up to 3 classes inside the official fee.'}],
+             ['eutm',249,{bg:'27 държави членки с едно заявяване.',en:'27 Member States with one filing.'}],
+             ['madrid',349,{bg:'Разширяване към 130+ територии.',en:'Extension to 130+ territories.'}]];
+ return `${pageHead({bg:'Цени',en:'Pricing'},{bg:'Цени без изненади',en:'Pricing with nothing hidden'},
+  {bg:'Адвокатското възнаграждение е с фиксирана цена. Държавните такси отиват на ведомството, показват се отделно във фактурата и са възстановими до момента на подаването.',
+   en:'The legal fee is fixed. Official fees go to the office, appear separately on the invoice, and are refundable until I file.'})}
+ <section class="sec"><div class="wrap stack" style="gap:24px">
+   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
+    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Обхват':'Scope'}</th>
+     <th style="text-align:right">${lang==='bg'?'Държавна такса':'Official fee'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</th></tr></thead>
+    <tbody>${rows.map(([k,sv,d])=>{const r=ROUTES[k];return `<tr>
+     <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
+     <td class="quiet">${esc(L(d))}</td><td class="r">${r.cur==='CHF'?'CHF '+r.base.toFixed(2):'€'+r.base.toFixed(2)}</td>
+     <td class="r" style="padding-right:22px">€${sv.toFixed(2)}</td></tr>`}).join('')}</tbody></table></div></div>
+   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
+    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Как расте държавната такса':'How the official fee scales'}</th>
+     <th>${lang==='bg'?'Първи клас':'First class'}</th><th>${lang==='bg'?'Втори клас':'Second class'}</th>
+     <th style="padding-right:22px">${lang==='bg'?'Всеки следващ':'Each further class'}</th></tr></thead>
+    <tbody>
+     <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.bg_nat))}</strong></td>
+      <td colspan="2" class="quiet">${lang==='bg'?'265,87 € покриват до три класа':'€265.87 covers up to three classes'}</td>
+      <td class="r" style="padding-right:22px">+€15.33</td></tr>
+     <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.eutm))}</strong></td>
+      <td class="r">€850.00</td><td class="r">+€50.00</td><td class="r" style="padding-right:22px">+€150.00</td></tr>
+     <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.madrid))}</strong></td>
+      <td colspan="2" class="quiet">${lang==='bg'?'CHF 653 черно-бяла, CHF 903 цветна, до три класа; +CHF 100 за посочена държава':'CHF 653 black and white, CHF 903 in colour, up to three classes; +CHF 100 per designated country'}</td>
+      <td class="r" style="padding-right:22px">+CHF 100</td></tr>
+    </tbody></table></div></div>
+   <p class="quiet" style="max-width:70ch">${lang==='bg'
+     ?'Държавната такса се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и се потвърждава на стъпка 8 преди плащане. До подаването от адвоката тя е изцяло възстановима. Адвокатското възнаграждение е с ДДС; държавната такса е чужд разход и е без ДДС.'
+     :'The official fee is calculated at step 4, once the classes are settled, and confirmed at step 8 before payment. Until the lawyer files, it is fully refundable. The legal fee carries VAT; the official fee is a disbursement and carries none.'}</p>
+   <div class="grid3">
+    ${[[{bg:'Мониторинг',en:'Monitoring'},'€9',{bg:'на месец, за марка. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.',en:'per month, per mark. We alert you to similar third-party filings while their opposition window is open.'}],
+       [{bg:'Подновяване',en:'Renewal'},'€99',{bg:'плюс държавна такса. Напомняне 12 и 6 месеца преди изтичане.',en:'plus the official fee. Reminders 12 and 6 months before expiry.'}],
+       [{bg:'Отговор на нередовност',en:'Deficiency response'},'€180',{bg:'изготвяне и подаване на становище в срока на ведомството.',en:'drafting and filing observations within the office deadline.'}]]
+      .map(([t,p,d])=>`<div class="card pad stack" style="gap:8px"><div class="kicker">${esc(L(t))}</div>
+        <div class="num" style="font-size:32px;color:var(--gold)">${p}</div><p class="quiet">${esc(L(d))}</p></div>`).join('')}
+   </div></div></section>`;
+}
+
+function Blog(){
+ const [f,...rest]=POSTS;
+ return `${pageHead({bg:'Новини и практика',en:'News and practice'},
+  {bg:'Какво се променя в марковото право',en:'What is changing in trade mark law'},
+  {bg:'Решения на съдилищата, промени в тарифите и практика на ведомствата — обобщени така, че да се четат за пет минути.',
+   en:'Court rulings, fee changes and office practice — summarised to be read in five minutes.'})}
+ <section class="sec"><div class="wrap stack" style="gap:28px">
+  <article class="card pad grid2" style="align-items:center;gap:30px">
+   <div class="stack" style="gap:12px">
+    <div style="display:flex;gap:10px;align-items:center"><span class="tag v">${esc(L(f.c))}</span><span class="quiet num">${f.d}</span></div>
+    <h2>${esc(L(f.t))}</h2><p class="lede" style="font-size:17px">${esc(L(f.s))}</p>
+    <a href="#" style="color:var(--gold);font-weight:700;text-decoration:none">${lang==='bg'?'Прочети →':'Read →'}</a></div>
+   <div class="mark-tile" style="height:200px;font-size:26px">${lang==='bg'?'СЪДЕБНА ПРАКТИКА':'CASE LAW'}</div>
+  </article>
+  <div class="grid2">${rest.map(p=>`<article class="card pad stack" style="gap:10px">
+    <div style="display:flex;gap:10px;align-items:center"><span class="tag t">${esc(L(p.c))}</span><span class="quiet num">${p.d}</span></div>
+    <h3>${esc(L(p.t))}</h3><p class="quiet" style="font-size:15px">${esc(L(p.s))}</p>
+    <a href="#" style="color:var(--gold);font-weight:700;text-decoration:none;font-size:14.5px">${lang==='bg'?'Прочети →':'Read →'}</a></article>`).join('')}</div>
+  <div class="card pad" style="display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap">
+   <div><h3>${lang==='bg'?'Месечен бюлетин':'Monthly briefing'}</h3>
+    <p class="quiet">${lang==='bg'?'Практика на EUIPO и на Патентно ведомство, обобщена за пет минути четене.':'EUIPO and Bulgarian Patent Office practice in a five-minute read.'}</p></div>
+   <div style="display:flex;gap:10px"><input type="email" id="nl" placeholder="you@company.bg" style="width:240px">
+    <button class="btn btn-primary">${lang==='bg'?'Абонирай':'Subscribe'}</button></div></div>
+ </div></section>`;
+}
+
+function About(){
+ const gives=[
+  [{bg:'Изключително право за 10 години',en:'An exclusive right for 10 years'},
+   {bg:'Подновява се неограничено. Марка, поддържана 30 години, е на 30 години — за разлика от почти всеки друг актив, тя не се амортизира.',
+    en:'Renewable indefinitely. A mark kept alive for 30 years is 30 years old — unlike almost any other asset, it does not depreciate.'}],
+  [{bg:'Основание да спрете имитация',en:'A basis to stop imitation'},
+   {bg:'Включително по бързите процедури на онлайн платформите, които почти винаги искат номер на регистрация, а не обяснение.',
+    en:'Including through the fast takedown procedures of online platforms, which almost always ask for a registration number, not an explanation.'}],
+  [{bg:'Актив, който се прехвърля и лицензира',en:'An asset you can assign and licence'},
+   {bg:'Продава се, залага се, внася се като непарична вноска, отстъпва се за ползване срещу възнаграждение.',
+    en:'It can be sold, pledged, contributed in kind, or licensed for a royalty.'}],
+  [{bg:'Аргумент при проверка и при спор',en:'Leverage in diligence and in disputes'},
+   {bg:'Първото, което инвеститор проверява, е дали името е ваше. Същото важи и при спор за домейн.',
+    en:'The first thing an investor checks is whether the name is actually yours. The same applies in a domain dispute.'}]
+ ];
+ return `${pageHead({bg:'За марките и за тази услуга',en:'About trade marks and this service'},
+  {bg:'Името е това, с което ви помнят. Регистрацията е това, с което го задържате.',
+   en:'The name is what people remember you by. Registration is what lets you keep it.'})}
+ <section class="sec"><div class="wrap grid2" style="gap:46px">
+  <div class="stack" style="gap:18px">
+   <p class="copy">${lang==='bg'
+     ?'Търговската марка е знакът, по който клиентът разпознава вас, а не някой друг — име, лого или съчетание от двете. Регистрацията превръща това разпознаване в изключително право: правото да забраните на трето лице да използва същия или сходен знак за същите или сходни стоки и услуги. Без регистрация имате име, което ползвате. С регистрация имате актив, който притежавате.'
+     :'A trade mark is the sign by which a customer recognises you rather than someone else — a name, a logo, or the two together. Registration turns that recognition into an exclusive right: the right to stop a third party using the same or a similar sign for the same or similar goods and services. Without registration you have a name you use. With registration you have an asset you own.'}</p>
+   <p class="copy">${lang==='bg'
+     ?'Процедурата не е сложна, но е неопрощаваща. Няколко решения — на коя територия, какъв точно знак, за какви стоки и услуги, на чие име — се вземат в самото начало и след подаването не подлежат на промяна. Класовете не се разширяват, изображението не се коригира, датата не се връща назад. Почти всички скъпи грешки се правят в тези няколко точки, а не в попълването на формуляра.'
+     :'The procedure is not complicated, but it is unforgiving. A handful of decisions — which territory, exactly which sign, for which goods and services, in whose name — are taken at the outset and cannot be changed after filing. Classes cannot be broadened, the representation cannot be corrected, the date cannot be moved back. Almost every expensive mistake happens at those few points, not in filling out the form.'}</p>
+   <p class="copy">${lang==='bg'
+     ?'Затова услугата е разделена на две. Фактите за бизнеса знаете вие и ги въвеждате сами, стъпка по стъпка, като на всяка стъпка е обяснено какво се пита, защо се пита и какво следва от отговора. Правната преценка и подаването остават при адвокат — отличителност, обхват на класовете, представителна власт, срокове и отношенията с ведомството.'
+     :'So the service is split in two. You know the facts about your business and you enter them yourself, step by step, with each step explaining what is asked, why it is asked, and what follows from the answer. The legal judgement and the filing stay with a lawyer — distinctiveness, the scope of the classes, authority to represent, deadlines, and the correspondence with the office.'}</p>
+   <p class="copy">${lang==='bg'
+     ?'Целта е достъпност без компромис с качеството: прозрачността и цената на самостоятелното заявяване, съчетани с отговорността, която само представителството носи. Услугата е еднакво приложима за българска национална заявка, за марка на Европейския съюз и за международна регистрация по Мадридската система.'
+     :'The aim is access without a drop in quality: the transparency and price of filing it yourself, combined with the responsibility that only representation carries. The service works the same way for a Bulgarian national filing, an EU trade mark and an international registration under the Madrid System.'}</p>
+   <p class="copy">${lang==='bg'
+     ?'За кого е: за предприемачи и малки дружества, които тепърва пускат име на пазара; за марки, които вече работят години наред без регистрация и рискуват при първия конкурент; и за творци и свободни професии, за които името е част от самата работа.'
+     :'Who it is for: founders and small companies putting a name on the market; brands that have traded for years without registration and are exposed to the first competitor who files; and creators and independent professionals for whom the name is part of the work itself.'}</p>
+  </div>
+
+  <div class="stack" style="gap:16px">
+   <div class="card pad stack" style="gap:14px">
+    <div class="kicker">${lang==='bg'?'Какво дава регистрацията':'What registration gives you'}</div>
+    ${gives.map(([t,d])=>`<div style="border-bottom:1px solid var(--line-2);padding-bottom:12px">
+      <div style="font-weight:700;font-size:15.5px">${esc(L(t))}</div>
+      <div class="quiet" style="margin-top:4px">${esc(L(d))}</div></div>`).join('')}
+    <p class="quiet" style="margin:0">${lang==='bg'
+      ?'Срокът тече от датата на подаване, не от регистрацията — затова ранното подаване купува и време, и предимство пред по-късните заявители.'
+      :'The term runs from the filing date, not from registration — which is why filing early buys both time and priority over later applicants.'}</p>
+   </div>
+   <div class="card pad stack" style="gap:10px">
+    <div class="kicker">${lang==='bg'?'Често задаван въпрос':'A frequent question'}</div>
+    <div style="font-weight:700;font-size:15.5px">${lang==='bg'?'Регистрирах фирма — това пази ли името ми?':'I registered a company — does that protect my name?'}</div>
+    <p class="quiet">${lang==='bg'
+      ?'Не. Вписването в търговския регистър ви дава право да ползвате наименованието като фирма, но не и изключително право върху знака за стоки и услуги. Двата регистъра са различни и се проверяват поотделно.'
+      :'No. Registration in the commercial register lets you use the name as a company name; it does not give an exclusive right over the sign for goods and services. The two registers are separate and are checked separately.'}</p>
+   </div>
+   <div class="caution">${lang==='bg'
+     ?'Правен съвет по конкретна преписка се дава след сключване на договор за правна помощ. Материалите в блога и ръководствата са с информационен характер и не създават адвокатско правоотношение.'
+     :'Advice on a specific matter is given once an engagement letter is in place. The blog and the manuals are informational and do not create a lawyer–client relationship.'}</div>
+  </div></div></section>`;
+}
+
+function Contact(){
+ return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'},
+  {bg:'Отговаряме в рамките на един работен ден. За текущи заявки използвайте съобщенията в профила си — така всичко остава по преписката.',
+   en:'We reply within one working day. For live applications use the messages in your account so everything stays on file.'})}
+ <section class="sec"><div class="wrap grid2" style="gap:44px">
+  <div class="stack" style="gap:18px">
+   <div class="card pad"><div class="rows">
+    <div class="row"><span class="quiet">${lang==='bg'?'Имейл':'Email'}</span><span class="num">hello@scaleyourmark.eu</span></div>
+    <div class="row"><span class="quiet">${lang==='bg'?'Телефон':'Phone'}</span><span class="num">+359 2 000 0000</span></div>
+    <div class="row"><span class="quiet">${lang==='bg'?'Адрес':'Address'}</span><span class="num">${lang==='bg'?'София 1000':'Sofia 1000'}</span></div>
+   </div></div>
+  </div>
+  <div class="card pad">
+   <div class="grid2" style="gap:0 18px">
+    <div class="field"><label for="cn">${lang==='bg'?'Име':'Name'}</label><input type="text" id="cn"></div>
+    <div class="field"><label for="ce">${lang==='bg'?'Имейл':'Email'}</label><input type="email" id="ce"></div></div>
+   <div class="field"><label for="ct">${lang==='bg'?'Тема':'Subject'}</label>
+    <select id="ct"><option>${lang==='bg'?'Въпрос преди заявяване':'Question before filing'}</option>
+     <option>${lang==='bg'?'Текуща заявка':'Live application'}</option>
+     <option>${lang==='bg'?'Опозиция или отказ':'Opposition or refusal'}</option>
+     <option>${lang==='bg'?'Фактура и плащане':'Invoice and payment'}</option></select></div>
+   <div class="field"><label for="cm">${lang==='bg'?'Съобщение':'Message'}</label><textarea id="cm" rows="5"></textarea></div>
+   <button class="btn btn-primary">${lang==='bg'?'Изпрати':'Send'}</button>
+   <p class="quiet" style="margin-top:12px">${lang==='bg'?'Данните се обработват съгласно Политиката за поверителност. Не изпращайте поверителни документи през тази форма.'
+                                                        :'Data is processed under the Privacy Policy. Do not send confidential documents through this form.'}</p>
+  </div></div></section>`;
+}
+
+function Office(){
+ return `${pageHead({bg:'Вътрешен изглед · само за адвоката',en:'Internal view · lawyer only'},
+  {bg:'Опашка от преписки',en:'Matter queue'},
+  {bg:'Преписките, подредени по срок, с контролния лист преди подаване и действията по всяка.',
+   en:'Matters ordered by deadline, with the pre-filing checklist and the actions on each.'})}
+ <section class="sec"><div class="wrap stack" style="gap:22px">
+  <div class="grid3">
+   ${[[{bg:'За преглед днес',en:'To review today'},'2','v'],
+      [{bg:'При клиента за корекция',en:'With client for correction'},'1','a'],
+      [{bg:'Срок за държавна такса под 5 дни',en:'Official-fee deadline under 5 days'},'1','a']]
+     .map(([t,v,c])=>`<div class="card pad stack" style="gap:6px"><div class="kicker">${esc(L(t))}</div>
+       <div class="num" style="font-size:32px;color:var(--${c==='a'?'amber':'violet'})">${v}</div></div>`).join('')}
+  </div>
+  <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl"><thead><tr>
+   <th style="padding-left:22px">${lang==='bg'?'Преписка':'Matter'}</th><th>${lang==='bg'?'Клиент':'Client'}</th>
+   <th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
+   <th>${lang==='bg'?'Състояние':'Status'}</th><th style="padding-right:22px">${lang==='bg'?'Срок':'Clock'}</th></tr></thead>
+   <tbody>${QUEUE.map(q=>`<tr><td style="padding-left:22px"><strong>${q.mark}</strong><div class="quiet num">${q.ref}</div></td>
+    <td class="quiet">${esc(L(q.who))}</td><td class="num">${ROUTES[q.route].code}</td><td class="num">${q.cls}</td>
+    <td><span class="tag ${STATUS[q.st].cls}">${esc(L(STATUS[q.st]))}</span></td>
+    <td class="quiet" style="padding-right:22px">${esc(L(q.sla))}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="grid2">
+   <div class="card pad stack" style="gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+     <h3>${lang==='bg'?'Преглед · 2026-0412 · ORBITA':'Review · 2026-0412 · ORBITA'}</h3><span class="tag v">EUTM</span></div>
+    <div class="kicker">${lang==='bg'?'Контролен лист преди подаване':'Pre-filing checklist'}</div>
+    ${CHECKLIST.map(c=>`<div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:14.5px;padding:5px 0;border-bottom:1px solid var(--line-2)">
+      <span style="color:var(--${c.ok?'teal':'amber'});font-weight:700">${c.ok?'✓':'!'}</span>
+      <span style="color:var(--ink-2)">${esc(L(c))}</span></div>`).join('')}
+    <div class="caution">${lang==='bg'
+      ?'Заявителят е въвел „Орбита ЕООД“, а в търговския регистър е „ОРБИТА БГ“ ЕООД. Полето се връща за корекция — несъответствието води до нередовност.'
+      :'The applicant entered "Orbita EOOD"; the register says "ORBITA BG" EOOD. The field goes back for correction — a mismatch triggers a deficiency.'}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+     <button class="btn btn-ghost" data-setstatus="returned">${lang==='bg'?'Върни за корекция':'Return for correction'}</button>
+     <button class="btn btn-primary" data-setstatus="filed">${lang==='bg'?'Подай във ведомството':'File with the office'}</button></div>
+   </div>
+   <div class="card pad stack" style="gap:10px"><h3>${lang==='bg'?'Действия при подаване':'Actions at filing'}</h3>
+    <div class="rows">
+     ${[[{bg:'Плащане на държавната такса',en:'Pay the official fee'},{bg:'От текуща сметка в EUIPO; равнява се през Me API.',en:'From the EUIPO current account; reconciled through the Me API.'}],
+        [{bg:'Вписване на входящ номер и дата',en:'Record file number and date'},{bg:'Оттам тръгват всички срокове и уведомления.',en:'Every deadline and alert runs from there.'}],
+        [{bg:'Срок за такса — България',en:'Fee deadline — Bulgaria'},{bg:'14 дни от подаването, иначе двоен размер. Следи се автоматично.',en:'14 days from filing, otherwise it doubles. Tracked automatically.'}],
+        [{bg:'Архивиране на преписката',en:'Archive the matter'},{bg:'Заявка, пълномощно, договор, фактура и одитна следа в едно досие.',en:'Application, power of attorney, engagement letter, invoice and audit trail in one file.'}]]
+       .map(([a,b])=>`<div class="row" style="align-items:start"><span style="font-weight:600;font-size:14.5px;max-width:16ch">${esc(L(a))}</span>
+         <span class="quiet" style="flex:1;text-align:right">${esc(L(b))}</span></div>`).join('')}</div>
+    <p class="quiet">${lang==='bg'?'Изгледът не е достъпен за клиенти. В производството достъпът е с роли и всяко действие се записва в одитната следа.'
+                                 :'Not available to clients. In production access is role-based and every action is written to the audit trail.'}</p>
+   </div>
+  </div>
+ </div></section>`;
+}
+
+function Acct(){
+ const f=officialFee();
+ return `${pageHead({bg:'Профил',en:'Account'},{bg:'Моите заявки',en:'My applications'},
+  {bg:'Всяка преписка с текущото си състояние, следващия срок и документите по нея.',
+   en:'Every matter with its current status, the next deadline and its documents.'},
+  `<button class="btn btn-gold" data-p="file" style="align-self:start;margin-top:4px">${lang==='bg'?'Нова заявка':'New application'}</button>`)}
+ <section class="sec"><div class="wrap stack" style="gap:22px">
+  <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
+   <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
+    <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Такса':'Fee'}</th></tr></thead>
+   <tbody>
+    <tr><td style="padding-left:22px"><strong>${esc(state.mark||'ORBITA')}</strong><div class="quiet">${state.status==='draft'?(lang==='bg'?'чернова, стъпка':'draft, step')+' '+state.step+'/9':(lang==='bg'?'преписка 2026-0412':'matter 2026-0412')}</div></td>
+     <td class="num">${ROUTES[state.route].code}</td><td class="num">${[...new Set(state.terms.map(i=>TERMS[i].c))].sort((a,b)=>a-b).join(', ')||'—'}</td>
+     <td><span class="tag ${STATUS[state.status||'draft'].cls}">${esc(L(STATUS[state.status||'draft']))}</span></td><td class="r" style="padding-right:22px">${money(f.v,f.cur)}</td></tr>
+    <tr><td style="padding-left:22px"><strong>KAVALINE</strong><div class="quiet">EUTM 019 245 118</div></td><td class="num">EUTM</td><td class="num">30, 43</td>
+     <td><span class="tag a">${lang==='bg'?'опозиционен срок':'opposition open'}</span></td><td class="r" style="padding-right:22px">€900.00</td></tr>
+    <tr><td style="padding-left:22px"><strong>ТОПОЛА</strong><div class="quiet">BG 2024/158 220</div></td><td class="num">BG</td><td class="num">33</td>
+     <td><span class="tag t">${lang==='bg'?'регистрирана':'registered'}</span></td><td class="r" style="padding-right:22px">€291.43</td></tr>
+   </tbody></table></div></div>
+  <div class="grid2">
+   <div class="card pad stack" style="gap:12px"><div class="kicker">${lang==='bg'?'Как работи запазването':'How saving works'}</div>
+    <p class="quiet" style="font-size:15px">${lang==='bg'
+      ?'Всяка стъпка се записва при преминаване напред и при „Запази и излез“. В този прототип черновата стои в браузъра ви; в производството тя стои в PostgreSQL, свързана с профила, с версия на всяка стъпка и одитна следа.'
+      :'Every step is written on forward navigation and on "Save and exit". In this prototype the draft lives in your browser; in production it lives in PostgreSQL against your account, versioned per step, with an audit trail.'}</p>
+    <button class="btn btn-ghost" id="reset" style="align-self:start">${lang==='bg'?'Изчисти черновата':'Clear this draft'}</button></div>
+   <div class="card pad stack" style="gap:10px"><div class="kicker">${lang==='bg'?'Документи':'Documents'}</div>
+    <div class="rows">${[[lang==='bg'?'Фактура 2026-000418':'Invoice 2026-000418','PDF · 84 kB'],
+      [lang==='bg'?'Удостоверение ТОПОЛА':'Certificate ТОПОЛА','PDF · 310 kB'],
+      [lang==='bg'?'Пълномощно (образец)':'Power of attorney (template)','DOCX · 22 kB']]
+      .map(([a,b])=>`<div class="row"><a href="#" style="color:var(--violet);text-decoration:none;font-size:14.5px">${a}</a><span class="quiet num">${b}</span></div>`).join('')}</div></div>
+  </div></div></section>`;
+}
+
+/* ---------- wiring ---------- */
+function wire(){
+ app.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
+ app.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openDrawer(+b.dataset.open)});
+ app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{state.step=+b.dataset.step;save();render()});
+ const prev=app.querySelector('#prev'),next=app.querySelector('#next'),sb=app.querySelector('#savebtn'),rs=app.querySelector('#reset');
+ if(prev)prev.onclick=()=>{state.step=Math.max(1,state.step-1);save();render()};
+ if(next)next.onclick=()=>{state.done[state.step]=true;if(state.step<9){state.step++;save();render()}else{state.status='received';save();go('acct')}};
+ if(sb)sb.onclick=()=>{save();go('acct')};
+ if(rs)rs.onclick=()=>{state={route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,terms:[],done:{},status:'draft'};save();render()};
+ app.querySelectorAll('[data-setstatus]').forEach(b=>b.onclick=()=>{state.status=b.dataset.setstatus;if(state.status==='returned'){state.step=5}save();render()});
+ app.querySelectorAll('[data-route]').forEach(el=>el.onclick=()=>{state.route=el.dataset.route;save();render()});
+ const ct=app.querySelector('#colourtoggle');if(ct)ct.onclick=()=>{state.colour=!state.colour;save();render()};
+ app.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{state.kind=el.dataset.kind;save();render()});
+ const din=app.querySelector('#imgin'), dz=app.querySelector('#drop');
+ if(din){
+  const pk=app.querySelector('#pickimg'); if(pk)pk.onclick=e=>{e.stopPropagation();din.click()};
+  const rm=app.querySelector('#rmimg'); if(rm)rm.onclick=e=>{e.stopPropagation();state.img=null;save();render()};
+  din.onchange=e=>handleImg(e.target.files&&e.target.files[0]);
+  if(dz){
+   dz.onclick=e=>{if(!e.target.closest('button'))din.click()};
+   dz.ondragover=e=>{e.preventDefault();dz.classList.add('over')};
+   dz.ondragleave=()=>dz.classList.remove('over');
+   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('over');
+     handleImg(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0])};
+  }
+ }
+ const mk=app.querySelector('#mk');if(mk)mk.oninput=e=>{state.mark=e.target.value;save()};
+ const qm=app.querySelector('#q_mark');if(qm)qm.oninput=e=>{state.mark=e.target.value;save()};
+ const tq=app.querySelector('#tq');if(tq){renderTerms('');tq.oninput=e=>renderTerms(e.target.value)}
+}
+function renderTerms(q){
+ const box=app.querySelector('#termlist');if(!box)return;
+ const s=q.trim().toLowerCase();
+ const rows=TERMS.map((t,i)=>({t,i})).filter(({t})=>!s||L(t).toLowerCase().includes(s)||String(t.c)===s);
+ box.innerHTML=rows.length?rows.map(({t,i})=>`<div class="trow" data-i="${i}" data-on="${state.terms.includes(i)?1:0}">
+   <span class="chip">${lang==='bg'?'Кл.':'Cl.'} ${t.c}</span><span>${esc(L(t))}</span>
+   <span class="badge ${t.hdb?'hdb':'free'}">${t.hdb?'HDB':'FREE'}</span></div>`).join('')
+  :`<div class="trow" style="cursor:default"><span></span><span class="quiet">${lang==='bg'?'Няма съвпадения. Свободният текст ще бъде проверен от експерт.':'No matches. Free text will be reviewed by an examiner.'}</span><span></span></div>`;
+ box.querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>{
+  const i=+el.dataset.i,k=state.terms.indexOf(i);
+  k>=0?state.terms.splice(k,1):state.terms.push(i);
+  save();const keep=(app.querySelector('#tq')||{}).value||'';render();
+  const f=app.querySelector('#tq');if(f){f.value=keep;renderTerms(keep);f.focus()}});
+}
+
+document.getElementById('lang').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+ lang=b.dataset.l;
+ document.getElementById('lang').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.l===lang));
+ document.documentElement.lang=lang; closeDrawer(); render();
+});
+document.getElementById('burger').onclick=()=>document.getElementById('side').classList.toggle('open');
+render();
+</script>
+
+</body>
+</html>
