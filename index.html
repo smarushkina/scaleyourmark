@@ -127,10 +127,11 @@ nav.main button[aria-current="page"]{background:rgba(190,150,102,.18); color:#ff
 .pad{padding:clamp(16px,2.2vw,24px)}
 section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .lede{font-size:16.5px; line-height:1.6; color:var(--ink-2); max-width:62ch}
-.copy{font-size:15px; line-height:1.7; color:var(--ink-2); max-width:68ch}
-.twocol{columns:2; column-gap:46px}
-.twocol .copy{max-width:none; margin-bottom:17px; orphans:2; widows:2}
-@media (max-width:820px){ .twocol{columns:1} }
+.copy{font-size:15px; line-height:1.7; color:var(--ink-2); max-width:68ch; text-wrap:pretty}
+.twocol{display:grid; grid-template-columns:1fr 1fr; gap:0 48px; align-items:start}
+.twocol .copy{max-width:none; margin:0 0 18px}
+.twocol > div > .copy:last-child{margin-bottom:0}
+@media (max-width:820px){ .twocol{grid-template-columns:1fr} }
 .quiet{font-size:13px; color:var(--ink-3); line-height:1.58}
 
 /* hero */
@@ -158,9 +159,25 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .sec-navy .tag.v{background:rgba(190,150,102,.2); color:var(--gold-bright)}
 .sec-warm{background:var(--warm); border-block:1px solid var(--line-2)}
 .goldtop{border-top:3px solid var(--gold-bright)}
+/* еднакъв блок заглавие във всяка секция */
+.sechead{max-width:760px; margin:0 0 22px}
+.sechead .kicker{display:block; margin-bottom:10px}
+.sechead h2{margin:0}
+.sechead .copy{margin-top:14px}
+/* списък с определения: заглавие вляво, текст вдясно — без празни полета */
+.deflist{margin-top:26px; max-width:920px}
+.deflist > div{display:grid; grid-template-columns:minmax(0,270px) minmax(0,1fr); gap:34px;
+  padding:20px 0; border-top:1px solid var(--line); align-items:start}
+.deflist > div:first-child{border-top:2px solid var(--gold-bright)}
+.deflist > div:last-child{border-bottom:1px solid var(--line)}
+.deflist h3{font-size:17.5px; margin:0}
+.deflist p{margin:0; font-size:15px; line-height:1.68; color:var(--ink-2); max-width:none}
+@media (max-width:820px){ .deflist > div{grid-template-columns:1fr; gap:8px; padding:16px 0} }
 .tbl th{background:var(--navy-soft); color:var(--ink); border-bottom-color:var(--navy)}
 .chip{background:var(--gold-soft); color:var(--gold)}
 .railcard{border-top:3px solid var(--gold-bright)}
+.railnote{border-left:3px solid var(--gold-bright); background:var(--warm); border-radius:0 10px 10px 0;
+  padding:10px 13px; font-size:13px; line-height:1.55; color:var(--ink-2)}
 .btn-primary:hover{box-shadow:0 0 0 2px var(--gold-bright), var(--lift)}
 
 /* filing page: form on the left, compact step rail on the right */
@@ -271,8 +288,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 @media (max-width:1000px){ .signrow{flex-wrap:wrap} .signrow input[type=text]{flex:1 1 100%} }
 
 /* generic bits */
-.grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px}
-.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px; grid-auto-rows:1fr}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; grid-auto-rows:1fr}
 .rows{display:flex; flex-direction:column; gap:0}
 .row{display:flex; justify-content:space-between; gap:16px; padding:13px 0; border-bottom:1px solid var(--line-2)}
 .row:last-child{border-bottom:0}
@@ -586,6 +603,15 @@ const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG'
 const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// Две колони с цели абзаци: делим по обем на текста, не по брой абзаци,
+// за да свършват колоните приблизително на едно ниво.
+function twocol(arr){
+ const t=arr.map(x=>L(x));
+ const half=Math.ceil(t.length/2);          // еднакъв брой абзаци във всяка колона
+ const col=xs=>xs.map(x=>`<p class="copy">${esc(x)}</p>`).join('');
+ return `<div class="twocol"><div>${col(t.slice(0,half))}</div><div>${col(t.slice(half))}</div></div>`;
+}
+
 function pageHead(k,t,l,extra){
  return `<section class="sec sec-navy pagehead">
   <div class="wrap stack" style="gap:5px;max-width:900px;width:100%">
@@ -770,6 +796,9 @@ function File_(){
        </button>`).join('')}
      </div>
     </div>
+    <div class="railnote">${lang==='bg'
+      ?'Срокът тече от датата на подаване, не от регистрацията — затова ранното подаване купува и време, и предимство пред по-късните заявители.'
+      :'The term runs from the filing date, not from registration — which is why filing early buys both time and priority over later applicants.'}</div>
     <p class="quiet" style="padding:0 4px">${lang==='bg'
       ?'Знакът „?“ отваря ръководството към стъпката: какво се иска, как да решите и коя е най-честата грешка.'
       :'The “?” opens that step’s manual: what is required, how to decide, and the most common mistake.'}</p>
@@ -1121,57 +1150,172 @@ function Blog(){
 function About(){
  const gives=[
   [{bg:'Изключително право за 10 години',en:'An exclusive right for 10 years'},
-   {bg:'Подновява се неограничено. Марка, поддържана 30 години, е на 30 години — за разлика от почти всеки друг актив, тя не се амортизира.',
-    en:'Renewable indefinitely. A mark kept alive for 30 years is 30 years old — unlike almost any other asset, it does not depreciate.'}],
-  [{bg:'Основание да спрете имитация',en:'A basis to stop imitation'},
-   {bg:'Включително по бързите процедури на онлайн платформите, които почти винаги искат номер на регистрация, а не обяснение.',
-    en:'Including through the fast takedown procedures of online platforms, which almost always ask for a registration number, not an explanation.'}],
-  [{bg:'Актив, който се прехвърля и лицензира',en:'An asset you can assign and licence'},
-   {bg:'Продава се, залага се, внася се като непарична вноска, отстъпва се за ползване срещу възнаграждение.',
-    en:'It can be sold, pledged, contributed in kind, or licensed for a royalty.'}],
-  [{bg:'Аргумент при проверка и при спор',en:'Leverage in diligence and in disputes'},
-   {bg:'Първото, което инвеститор проверява, е дали името е ваше. Същото важи и при спор за домейн.',
-    en:'The first thing an investor checks is whether the name is actually yours. The same applies in a domain dispute.'}]
+   {bg:'Регистрацията предоставя изключително право върху търговската марка за срок от 10 години, който може да бъде подновяван неограничено. При надлежно поддържане защитата може да продължава десетилетия. За разлика от материалните активи, търговската марка не се амортизира с времето. Напротив — с годините тя може да се превърне в един от най-ценните активи на бизнеса, натрупвайки разпознаваемост, репутация и пазарна стойност.',
+    en:'Registration gives an exclusive right in the trade mark for ten years, renewable without limit. Kept up properly, the protection can run for decades. Unlike tangible assets, a trade mark does not depreciate over time. On the contrary — over the years it can become one of the most valuable assets a business holds, accumulating recognition, reputation and market value.'}],
+  [{bg:'Основание да спрете имитацията',en:'A basis to stop imitation'},
+   {bg:'Регистрираната търговска марка ви дава правно основание да се противопоставите на неправомерното използване на същия или сходен знак от трети лица. Това е особено важно при нарушения в онлайн среда. Много платформи и маркетплейси разполагат с ускорени процедури за подаване на сигнали за нарушаване на права върху интелектуална собственост, при които регистрационният номер на марката е ключово доказателство за съществуването на защитено право — не просто обяснение, че използвате дадено име.',
+    en:'A registered trade mark gives you a legal basis to object to the unlawful use of the same or a similar sign by third parties. This matters above all for infringement online. Many platforms and marketplaces run expedited procedures for intellectual-property complaints, in which the registration number of the mark is the key evidence that a protected right exists — not merely an explanation that you use a given name.'}],
+  [{bg:'Актив, който може да се прехвърля и лицензира',en:'An asset that can be assigned and licensed'},
+   {bg:'Регистрираната търговска марка е самостоятелен нематериален актив, който може да има реална икономическа стойност за бизнеса. Тя може да бъде прехвърляна, предоставяна за ползване срещу възнаграждение, използвана като обезпечение или внесена като непарична вноска в капитала на дружество.',
+    en:'A registered trade mark is a standalone intangible asset that can carry real economic value for the business. It can be assigned, licensed for use in return for a fee, used as security, or contributed in kind to a company’s capital.'}],
+  [{bg:'Аргумент при проверка, сделка или спор',en:'Leverage in diligence, deals and disputes'},
+   {bg:'При привличане на инвеститор, продажба на бизнес или спор относно име, домейн или бранд, важно е правата върху марката да са ясно уредени. Регистрацията превръща въпроса „на кого принадлежи името?“ от спорен въпрос в официално удостоверен факт. Това улеснява проверките и преговорите и намалява риска от неблагоприятни условия или намаляване на цената на бизнеса.',
+    en:'When an investor comes in, a business is sold, or a dispute arises over a name, a domain or a brand, it matters that the rights in the mark are clearly settled. Registration turns the question “whose name is this?” from a matter of argument into an officially certified fact. That makes diligence and negotiations easier and reduces the risk of unfavourable terms or a lower price for the business.'}]
  ];
- return `${pageHead({bg:'За марките и за тази услуга',en:'About trade marks and this service'},
-  {bg:'Името е това, с което ви помнят',en:'The name is what people remember you by'},
-  {bg:'Регистрацията е това, с което го задържате: правото да спрете трето лице да ползва същия знак.',
-   en:'Registration is what lets you keep it: the right to stop a third party using the same sign.'})}
+
+ const bio=[
+  {bg:'Тази услуга е създадена от адв. Силвия Марушкина — адвокат с над 10 години професионален опит в областта на правото и защитата на интелектуалната собственост, с основен фокус върху регистрацията и защитата на търговски марки.',
+   en:'This service was created by Silviya Marushkina, attorney-at-law, with over ten years of professional experience in intellectual property law, focused on the registration and protection of trade marks.'},
+  {bg:'Идеята зад платформата е проста: регистрацията на търговска марка трябва да бъде достъпна и разбираема за всеки бизнес, без това да означава компромис с професионалната правна преценка.',
+   en:'The idea behind the platform is simple: registering a trade mark should be accessible and understandable for any business, without compromising on professional legal judgement.'},
+  {bg:'На практика значителна част от решенията, които определят качеството и обхвата на една регистрация, се вземат още преди подаването на заявката.',
+   en:'In practice, a significant part of what determines the quality and scope of a registration is decided before the application is ever filed.'},
+  {bg:'Изборът на знак, стоките и услугите, за които ще бъде защитен, територията на защита и лицето, на чието име ще бъде регистриран, имат пряко значение за правата, които ще бъдат придобити.',
+   en:'The choice of sign, the goods and services it will cover, the territory of protection and the name in which it is registered all bear directly on the rights acquired.'},
+  {bg:'Затова платформата е изградена около професионалния опит, натрупан в реалната практика по регистрация и защита на търговски марки. Целта е да се съчетаят удобството и прозрачността на дигиталния процес с правната експертиза, необходима за вземането на правилните решения.',
+   en:'The platform is therefore built around experience drawn from actual practice in registering and defending trade marks. The aim is to combine the convenience and transparency of a digital process with the legal expertise needed to make the right decisions.'},
+  {bg:'Вашата марка заслужава повече от просто подадена заявка. Тя заслужава правилно изградена защита.',
+   en:'Your mark deserves more than a filed application. It deserves protection that is properly built.'}
+ ];
+
+ const asset=[
+  {bg:'Търговската марка е знакът, чрез който клиентите разпознават вашия бизнес и го отличават от останалите. Това може да бъде име, лого или съчетание от двете.',
+   en:'A trade mark is the sign by which customers recognise your business and tell it apart from the rest. It may be a name, a logo, or the two together.'},
+  {bg:'Регистрацията превръща това разпознаване в изключително право — признато и защитимо пред ведомството и пред съда.',
+   en:'Registration turns that recognition into an exclusive right — one recognised and enforceable before the office and before a court.'},
+  {bg:'Тя ви дава правна защита и възможност да забраните на трети лица да използват същия или сходен знак за идентични или сходни стоки и услуги.',
+   en:'It gives you legal protection and the ability to stop third parties from using the same or a similar sign for identical or similar goods and services.'},
+  {bg:'Без регистрация имате име, което използвате. С регистрация имате право върху актив, който притежавате.',
+   en:'Without registration you have a name you use. With registration you have a right over an asset you own.'}
+ ];
+
+ const before=[
+  {bg:'Процедурата по регистрация на търговска марка сама по себе си не е сложна. Тя обаче не оставя много място за грешки, когато става въпрос за решенията, които определят обхвата на защитата.',
+   en:'The registration procedure itself is not complicated. It does, however, leave little room for error in the decisions that define the scope of protection.'},
+  {bg:'Още в началото трябва да бъде преценено на коя територия ще бъде защитена марката, какъв точно знак ще бъде заявен, за кои стоки и услуги ще се предоставя защитата и на чие име ще бъде регистрирана марката.',
+   en:'At the very outset it must be settled in which territory the mark will be protected, exactly which sign will be applied for, which goods and services the protection will cover, and in whose name the mark will be registered.'},
+  {bg:'След подаването тези решения са ограничено променяеми или изобщо не могат да бъдат променени. Не можете впоследствие просто да разширите обхвата с нови стоки и услуги, да замените заявения знак или да върнете датата на подаване назад.',
+   en:'After filing, those decisions can be changed only within narrow limits, or not at all. You cannot simply broaden the scope with new goods and services, replace the sign applied for, or move the filing date back.'},
+  {bg:'Именно в тези първоначални решения се крият повечето съществени и скъпоструващи грешки. Не във формуляра, а в стратегията зад него.',
+   en:'This is where most of the serious and expensive mistakes are made — not in the form, but in the strategy behind it.'}
+ ];
+
+ const split=[
+  {bg:'Затова услугата е създадена така, че процесът да бъде едновременно достъпен, разбираем и професионално обезпечен — без компромис нито с удобството, нито с правната преценка.',
+   en:'The service is therefore designed so that the process is accessible, understandable and professionally supported at once — without compromising either the convenience or the legal judgement.'},
+  {bg:'Вие предоставяте информацията за своя бизнес и преминавате през процеса стъпка по стъпка. На всяка стъпка получавате ясно обяснение какво се изисква, защо е необходимо и какви са последиците от направения избор.',
+   en:'You supply the information about your business and work through the process step by step. At each step you get a clear explanation of what is required, why it is needed, and what follows from the choice you make.'},
+  {bg:'Правната преценка и подаването на заявката остават при адвокат: отличителност на марката, обхват на стоките и услугите, представителна власт, срокове и комуникация с ведомството.',
+   en:'The legal judgement and the filing stay with a lawyer: distinctiveness, the scope of the goods and services, authority to represent, deadlines, and correspondence with the office.'},
+  {bg:'Така получавате прозрачността на самостоятелното заявяване, съчетана с правната преценка и отговорност на адвокатското представителство — достъпността на единия подход и сигурността на другия.',
+   en:'You get the transparency of filing it yourself, combined with the judgement and responsibility of legal representation — the accessibility of the one approach and the certainty of the other.'}
+ ];
+
+ const who=[
+  [{bg:'Нов бранд на пазара',en:'A new brand entering the market'},
+   {bg:'За предприемачи и малки компании, които предстои да изведат ново име или бранд на пазара и искат да го защитят още в началото.',
+    en:'For founders and small companies about to bring a new name or brand to market who want it protected from the start.'}],
+  [{bg:'Утвърдена марка без регистрация',en:'An established mark with no registration'},
+   {bg:'За марки, които от години използват своето име или лого без регистрация и не искат да оставят защитата на бранда си на случайността, особено при появата на конкурент със сходно име или знак.',
+    en:'For brands that have used their name or logo for years without registering it and do not want to leave protection to chance — above all when a competitor appears with a similar name or sign.'}],
+  [{bg:'Творци и свободни професии',en:'Creators and independent professionals'},
+   {bg:'За творци и лица, упражняващи свободни професии, за които собственото име, псевдонимът или професионалният бранд е неразделна част от тяхната дейност и репутация.',
+    en:'For creators and independent professionals whose own name, pseudonym or professional brand is inseparable from their work and reputation.'}]
+ ];
+
+ return `${pageHead({bg:'За нас',en:'About'},
+  {bg:'Създадено от адвокат',en:'Created by a lawyer'},
+  {bg:'Адвокат с над 10 години опит в защитата на интелектуалната собственост, с фокус върху търговските марки.',
+   en:'A lawyer with over ten years in intellectual property, focused on trade marks.'})}
+
  <section class="sec"><div class="wrap">
-  <div class="twocol">
-   <p class="copy">${lang==='bg'
-     ?'Търговската марка е знакът, по който клиентът разпознава вас, а не някой друг — име, лого или съчетание от двете. Регистрацията превръща това разпознаване в изключително право: правото да забраните на трето лице да използва същия или сходен знак за същите или сходни стоки и услуги. Без регистрация имате име, което ползвате. С регистрация имате актив, който притежавате.'
-     :'A trade mark is the sign by which a customer recognises you rather than someone else — a name, a logo, or the two together. Registration turns that recognition into an exclusive right: the right to stop a third party using the same or a similar sign for the same or similar goods and services. Without registration you have a name you use. With registration you have an asset you own.'}</p>
-   <p class="copy">${lang==='bg'
-     ?'Процедурата не е сложна, но е неопрощаваща. Няколко решения — на коя територия, какъв точно знак, за какви стоки и услуги, на чие име — се вземат в самото начало и след подаването не подлежат на промяна. Класовете не се разширяват, изображението не се коригира, датата не се връща назад. Почти всички скъпи грешки се правят в тези няколко точки, а не в попълването на формуляра.'
-     :'The procedure is not complicated, but it is unforgiving. A handful of decisions — which territory, exactly which sign, for which goods and services, in whose name — are taken at the outset and cannot be changed after filing. Classes cannot be broadened, the representation cannot be corrected, the date cannot be moved back. Almost every expensive mistake happens at those few points, not in filling out the form.'}</p>
-   <p class="copy">${lang==='bg'
-     ?'Затова услугата е разделена на две. Фактите за бизнеса знаете вие и ги въвеждате сами, стъпка по стъпка, като на всяка стъпка е обяснено какво се пита, защо се пита и какво следва от отговора. Правната преценка и подаването остават при адвокат — отличителност, обхват на класовете, представителна власт, срокове и отношенията с ведомството.'
-     :'So the service is split in two. You know the facts about your business and you enter them yourself, step by step, with each step explaining what is asked, why it is asked, and what follows from the answer. The legal judgement and the filing stay with a lawyer — distinctiveness, the scope of the classes, authority to represent, deadlines, and the correspondence with the office.'}</p>
-   <p class="copy">${lang==='bg'
-     ?'Целта е достъпност без компромис с качеството: прозрачността и цената на самостоятелното заявяване, съчетани с отговорността, която само представителството носи. Услугата е еднакво приложима за българска национална заявка, за марка на Европейския съюз и за международна регистрация по Мадридската система.'
-     :'The aim is access without a drop in quality: the transparency and price of filing it yourself, combined with the responsibility that only representation carries. The service works the same way for a Bulgarian national filing, an EU trade mark and an international registration under the Madrid System.'}</p>
-   <p class="copy">${lang==='bg'
-     ?'За кого е: за предприемачи и малки дружества, които тепърва пускат име на пазара; за марки, които вече работят години наред без регистрация и рискуват при първия конкурент; и за творци и свободни професии, за които името е част от самата работа.'
-     :'Who it is for: founders and small companies putting a name on the market; brands that have traded for years without registration and are exposed to the first competitor who files; and creators and independent professionals for whom the name is part of the work itself.'}</p>
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Кой стои зад услугата':'Who is behind the service'}</div>
+   <h2>${lang==='bg'?'Създадено от адвокат, специализиран в защитата на търговските марки'
+                    :'Created by a lawyer specialising in trade mark protection'}</h2>
   </div>
+  ${twocol(bio)}
+ </div></section>
+
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво е марката':'What a mark is'}</div>
+   <h2>${lang==='bg'?'Вашата марка е повече от име. Тя е актив.'
+                    :'Your mark is more than a name. It is an asset.'}</h2>
+  </div>
+  ${twocol(asset)}
+  <div class="grid2" style="gap:18px;margin-top:26px">
+   ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+     <h3 style="font-size:17px">${esc(L(t))}</h3>
+     <p class="quiet" style="font-size:14.5px;line-height:1.62">${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>
+
+ <section class="sec"><div class="wrap">
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Къде се решава всичко':'Where it is decided'}</div>
+   <h2>${lang==='bg'?'Най-важните решения се вземат преди подаването'
+                    :'The decisions that matter are taken before filing'}</h2>
+  </div>
+  ${twocol(before)}
+ </div></section>
+
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Как е разделена работата':'How the work is split'}</div>
+   <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
+                    :'You know your business. We take the legal part.'}</h2>
+  </div>
+  ${twocol(split)}
+ </div></section>
+
+ <section class="sec"><div class="wrap">
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Територия на защита':'Territory of protection'}</div>
+   <h2>${lang==='bg'?'Защита там, където развивате бизнеса си'
+                    :'Protection where you actually trade'}</h2>
+   <p class="copy" style="margin-top:14px">${lang==='bg'
+     ?'Една и съща услуга може да бъде приложена към различни режими на защита в зависимост от пазара, на който оперирате или планирате да развивате дейността си. Изборът на правилната територия е част от стратегията за защита на марката и трябва да бъде съобразен с настоящите и бъдещите ви бизнес планове.'
+     :'The same service applies to different protection regimes depending on the market you trade in or plan to enter. Choosing the right territory is part of the protection strategy and has to match your present and future business plans.'}</p>
+  </div>
+  <div class="grid3" style="gap:18px">
+   ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National registration'},
+       {bg:'Когато защитата е необходима само на територията на страната. Заявява се пред Патентното ведомство на Република България.',
+        en:'When protection is needed in Bulgaria alone. Filed with the Bulgarian Patent Office.'}],
+      [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union trade mark'},
+       {bg:'Когато бизнесът ви има или предстои да има присъствие в повече държави членки. Едно заявяване, единна закрила в 27 държави.',
+        en:'When your business has, or will have, a presence in several Member States. One filing, unitary protection across 27 countries.'}],
+      [{bg:'Международно',en:'International'},{bg:'Мадридска система',en:'The Madrid System'},
+       {bg:'За защита на определени международни пазари. Надгражда базова марка и се разширява към избрани територии.',
+        en:'For protection in particular international markets. It builds on a base mark and extends to the territories you designate.'}]]
+     .map(([k,t,d])=>`<div class="card pad stack goldtop" style="gap:7px">
+       <span class="kicker">${esc(L(k))}</span>
+       <h3 style="font-size:17px">${esc(L(t))}</h3>
+       <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
 
  <section class="sec sec-warm"><div class="wrap">
-  <div class="narrow" style="padding:0;margin:0 0 22px">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво дава регистрацията':'What registration gives you'}</div>
-   <h2>${lang==='bg'?'Четири неща, които получавате с регистрацията'
-                    :'Four things registration gives you'}</h2>
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'За кого е':'Who it is for'}</div>
+   <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service for?'}</h2>
   </div>
-  <div class="grid2" style="gap:18px">
-   ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+  <div class="grid3" style="gap:18px">
+   ${who.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
      <h3 style="font-size:17px">${esc(L(t))}</h3>
      <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
-  <p class="quiet" style="max-width:70ch;margin-top:20px">${lang==='bg'
-    ?'Срокът тече от датата на подаване, не от регистрацията — затова ранното подаване купува и време, и предимство пред по-късните заявители.'
-    :'The term runs from the filing date, not from registration — which is why filing early buys both time and priority over later applicants.'}</p>
+ </div></section>
+
+ <section class="sec sec-navy"><div class="wrap stack" style="gap:16px;max-width:760px">
+  <div class="kicker">${lang==='bg'?'Накрая':'Finally'}</div>
+  <h2>${lang==='bg'?'Защитете името, преди да се наложи да го защитавате'
+                   :'Protect the name before you have to defend it'}</h2>
+  <div class="goldrule"></div>
+  <p class="lede">${lang==='bg'
+    ?'Регистрацията на търговска марка не е просто административна процедура. Тя е начин да защитите стойността, която създавате, и да превърнете името, под което развивате своята дейност, в защитено право.'
+    :'Registering a trade mark is not merely an administrative procedure. It is how you protect the value you are building, and how you turn the name you trade under into a protected right.'}</p>
+  <button class="btn btn-gold" data-p="file" style="align-self:start">${lang==='bg'?'Започнете регистрацията на вашата търговска марка →':'Start registering your trade mark →'}</button>
  </div></section>
 
  <section class="sec"><div class="wrap grid2" style="gap:26px;align-items:start">
