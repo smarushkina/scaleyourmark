@@ -669,14 +669,19 @@ async function initAuth(){
    const {data}=await sb.auth.getSession();
    await adoptSession(data?data.session:null);
   }catch(e){ auth=null }
-  sb.auth.onAuthStateChange(async (evt, session)=>{
-   if(evt==='PASSWORD_RECOVERY'){
+  // ВАЖНО: обратното извикване се изпълнява вътре в ключалката на Supabase Auth.
+  // Ако тук се изчака друга заявка към Supabase, се получава взаимно блокиране
+  // и всичко след това увисва. Затова работата се изнася извън ключалката.
+  sb.auth.onAuthStateChange((evt, session)=>{
+   setTimeout(async ()=>{
     await adoptSession(session);
-    authTab='newpass';
-    authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
-    page='acct'; render(); return;
-   }
-   await adoptSession(session); render();
+    if(evt==='PASSWORD_RECOVERY'){
+     authTab='newpass';
+     authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
+     page='acct';
+    }
+    render();
+   }, 0);
   });
  } else {
   auth = loadAuth();
@@ -689,9 +694,9 @@ async function adoptSession(session){
  const u=session.user;
  let prof=null;
  try{
-  const {data}=await sb.from('profiles')
-    .select('full_name,phone,is_lawyer,email').eq('id',u.id).maybeSingle();
-  prof=data;
+  const q = sb.from('profiles').select('full_name,phone,is_lawyer,email').eq('id',u.id).maybeSingle();
+  const r = await Promise.race([q, new Promise(res=>setTimeout(()=>res({data:null}), 8000))]);
+  prof = r && r.data;
  }catch(e){}
  const meta=u.user_metadata||{};
  auth={ id:u.id,
