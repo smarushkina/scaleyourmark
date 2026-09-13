@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScaleYourMark — заявяване на търговска марка</title>
 <meta name="description" content="ScaleYourMark — заявете търговската си марка сами по ясни стъпки. Адвокат преглежда преписката лично и я подава в ведомството. България, ЕС и Мадридската система.">
 <meta property="og:title" content="ScaleYourMark">
 <meta property="og:description" content="Заявете марката си сами. Адвокат я преглежда и я подава.">
@@ -15,8 +16,8 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<title>ScaleYourMark — заявяване на търговска марка</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <style>
 :root{
   /* --- ScaleYourMark brand --- */
@@ -178,6 +179,12 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .railcard{border-top:3px solid var(--gold-bright)}
 .railnote{border-left:3px solid var(--gold-bright); background:var(--warm); border-radius:0 10px 10px 0;
   padding:10px 13px; font-size:13px; line-height:1.55; color:var(--ink-2)}
+.authtabs{display:flex; gap:2px; border-bottom:1px solid var(--line); margin-bottom:4px; flex-wrap:wrap}
+.authtabs button{background:none; border:0; padding:9px 12px; font-size:14px; color:var(--ink-3);
+  cursor:pointer; border-radius:8px 8px 0 0}
+.authtabs button[aria-current="page"]{color:var(--ink); font-weight:700; box-shadow:inset 0 -2px 0 var(--gold-bright)}
+.whobar{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  background:var(--raise); border:1px solid var(--line); border-radius:14px; padding:12px 16px}
 .btn-primary:hover{box-shadow:0 0 0 2px var(--gold-bright), var(--lift)}
 
 /* filing page: form on the left, compact step rail on the right */
@@ -239,7 +246,7 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .opt .op{font-family:"DM Mono",monospace; font-size:14px; color:var(--violet); white-space:nowrap}
 .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px}
 .field label{font-size:14px; font-weight:600}
-input[type=text],input[type=email],select,textarea{width:100%; padding:10px 13px; border:1.5px solid var(--line); border-radius:12px;
+input[type=text],input[type=email],input[type=tel],input[type=password],select,textarea{width:100%; padding:10px 13px; border:1.5px solid var(--line); border-radius:12px;
   background:var(--raise); color:var(--ink); font:inherit; font-size:15.5px}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.opt:focus-visible{outline:2.5px solid var(--violet); outline-offset:2px}
 .hint{font-size:13px; color:var(--ink-3)}
@@ -414,14 +421,14 @@ const STEPS=[
  {n:3,key:'mark',t:{bg:'Как изглежда марката?',en:'What does the mark look like?'},
   i:{bg:'Това, което подадете тук, се фиксира завинаги — изображението не се променя след датата на подаване.',
      en:'What you file here is frozen — the representation cannot be amended after the filing date.'},
-  need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: файл JPEG или PNG до 2 MB','Звукова: MP3 до 2 MB'],
-        en:['Word mark: text only','Figurative or combined: a JPEG or PNG file up to 2 MB','Sound: MP3 up to 2 MB']},
-  man:{bg:['Файлът за фигуративна или комбинирана марка: JPEG или PNG до 2 MB, бял или прозрачен фон, препоръчително поне 945 × 945 px. Без рамки, водни знаци и текст, който описва марката. За звукова марка — MP3; за марка с движение или мултимедийна — MP4.',
+  need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: файл JPEG до 1,5 MB','Звукова: MP3 до 2 MB'],
+        en:['Word mark: text only','Figurative or combined: a JPEG file up to 1.5 MB','Sound: MP3 up to 2 MB']},
+  man:{bg:['Файлът за фигуративна или комбинирана марка: JPEG до 1,5 MB, бял фон, препоръчително поне 945 × 945 px. Без рамки, водни знаци и текст, който описва марката. За звукова марка — MP3; за марка с движение или мултимедийна — MP4.',
            'Словната марка е най-широка — покрива всяко изписване. Изберете нея, ако логото се променя често.',
            'Фигуративната закриля точно това изображение. Черно-бялото вече не покрива автоматично всички цветове.',
            'Описателни думи се отказват на абсолютно основание — чл. 11 ЗМГО и чл. 7 EUTMR.',
            'Придобитата отличителност се доказва трудно и скъпо. По-добре отличителна марка от самото начало.'],
-       en:['The file for a figurative or combined mark: JPEG or PNG up to 2 MB, white or transparent background, at least 945 × 945 px advisable. No frames, watermarks or text describing the mark. A sound mark takes MP3; a motion or multimedia mark takes MP4.',
+       en:['The file for a figurative or combined mark: JPEG up to 1.5 MB, white background, at least 945 × 945 px advisable. No frames, watermarks or text describing the mark. A sound mark takes MP3; a motion or multimedia mark takes MP4.',
            'A word mark is broadest — it covers any styling. Choose it if your logo changes often.',
            'A figurative mark protects that exact image. Black and white no longer covers every colour.',
            'Descriptive wording is refused on absolute grounds — art. 11 BG TMA and art. 7 EUTMR.',
@@ -603,6 +610,294 @@ const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG'
 const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* ---------- профили ----------------------------------------------------
+   Ако библиотеката на Supabase е налична и проектът се вижда от браузъра,
+   автентикацията е истинска: паролите стоят на сървъра, „Панел“ се вижда
+   само от адвокат (app.profiles.is_lawyer), а правилата на ниво ред пазят
+   данните независимо от това какво прави страницата.
+   Ако не е — страницата пада на локален макет само за разглеждане.
+--------------------------------------------------------------------- */
+const SB_URL = 'https://shxfpymoydvvkssnoujq.supabase.co';
+const SB_KEY = 'sb_publishable_iHE6972u_ujtaYc4mRH2hQ_cahf31sM';
+
+const AUTH_KEY='sym_auth_v1', USERS_KEY='sym_users_v1';
+const ADMIN={user:'Admin', pass:'password'};
+
+let sb = null;            // клиентът на Supabase
+let remote = false;       // true = истинска автентикация
+let busy = false;
+
+function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]')}catch(e){return []}}
+function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch(e){}}
+function loadAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
+function saveAuth(a){try{a?localStorage.setItem(AUTH_KEY,JSON.stringify(a)):localStorage.removeItem(AUTH_KEY)}catch(e){}}
+let auth = null;
+let authTab = 'login';          // login | register | reset | newpass
+let authMsg = null;             // {type:'err'|'ok', text}
+
+function isAdmin(){return !!(auth && auth.admin)}
+
+async function initAuth(){
+ if(window.supabase && SB_URL){
+  try{
+   sb = window.supabase.createClient(SB_URL, SB_KEY, {
+     db:{schema:'app'},
+     auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}
+   });
+   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),6000);
+   const r=await fetch(SB_URL+'/auth/v1/health',{headers:{apikey:SB_KEY},signal:ctrl.signal});
+   clearTimeout(t);
+   remote = !!(r && r.ok);
+  }catch(e){ remote=false; }
+ }
+ if(remote){
+  try{
+   const {data}=await sb.auth.getSession();
+   await adoptSession(data?data.session:null);
+  }catch(e){ auth=null }
+  sb.auth.onAuthStateChange(async (evt, session)=>{
+   if(evt==='PASSWORD_RECOVERY'){
+    await adoptSession(session);
+    authTab='newpass';
+    authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
+    page='acct'; render(); return;
+   }
+   await adoptSession(session); render();
+  });
+ } else {
+  auth = loadAuth();
+ }
+ render();
+}
+
+async function adoptSession(session){
+ if(!session || !session.user){ auth=null; return }
+ const u=session.user;
+ let prof=null;
+ try{
+  const {data}=await sb.from('profiles')
+    .select('full_name,phone,is_lawyer,email').eq('id',u.id).maybeSingle();
+  prof=data;
+ }catch(e){}
+ const meta=u.user_metadata||{};
+ auth={ id:u.id,
+        email:(prof&&prof.email)||u.email||'',
+        name:(prof&&prof.full_name)||meta.full_name||u.email||'',
+        phone:(prof&&prof.phone)||meta.phone||'',
+        admin:!!(prof&&prof.is_lawyer) };
+}
+
+function signOut(){
+ if(remote && sb){ sb.auth.signOut().catch(()=>{}) }
+ auth=null; saveAuth(null); authTab='login'; authMsg=null; go('acct');
+}
+
+function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)}
+function validPhone(v){return /^[0-9+()\s-]{6,}$/.test(v)}
+
+function authErr(e){
+ const m=String((e&&e.message)||e||'');
+ if(/Invalid login credentials/i.test(m))
+   return lang==='bg'?'Грешен имейл или парола.':'Wrong email or password.';
+ if(/already registered|already been registered/i.test(m))
+   return lang==='bg'?'Вече има профил с този имейл. Влезте или заявете нова парола.'
+                     :'An account with this email already exists. Sign in or reset the password.';
+ if(/Email not confirmed/i.test(m))
+   return lang==='bg'?'Профилът не е потвърден. Отворете връзката в имейла, който ви изпратихме.'
+                     :'The account is not confirmed. Open the link in the email we sent you.';
+ if(/rate limit|too many/i.test(m))
+   return lang==='bg'?'Твърде много опити. Опитайте отново след няколко минути.'
+                     :'Too many attempts. Try again in a few minutes.';
+ if(/Failed to fetch|NetworkError|aborted/i.test(m))
+   return lang==='bg'?'Няма връзка със сървъра. Проверете интернет и опитайте пак.'
+                     :'No connection to the server. Check your internet and try again.';
+ return m || (lang==='bg'?'Нещо се обърка. Опитайте отново.':'Something went wrong. Try again.');
+}
+
+async function doRegister(f){
+ if(busy) return;
+ const miss=[];
+ if(!f.name || f.name.trim().split(/\s+/).length<2) miss.push(lang==='bg'?'име и фамилия':'first and last name');
+ if(!validEmail(f.email)) miss.push(lang==='bg'?'валиден имейл':'a valid email');
+ if(!validPhone(f.phone)) miss.push(lang==='bg'?'телефон':'a phone number');
+ if(!f.pass || f.pass.length<8) miss.push(lang==='bg'?'парола от поне 8 знака':'a password of at least 8 characters');
+ if(f.pass && f.pass2!==f.pass) miss.push(lang==='bg'?'съвпадащо потвърждение на паролата':'a matching password confirmation');
+ if(miss.length){authMsg={type:'err',text:(lang==='bg'?'Липсва: ':'Missing: ')+miss.join(', ')}; render(); return}
+
+ if(remote){
+  busy=true; authMsg={type:'ok',text:lang==='bg'?'Създаваме профила…':'Creating your account…'}; render();
+  try{
+   const {data,error}=await sb.auth.signUp({
+     email:f.email.trim(), password:f.pass,
+     options:{data:{full_name:f.name.trim(), phone:f.phone.trim(), locale:lang},
+              emailRedirectTo:location.origin+location.pathname}
+   });
+   if(error) throw error;
+   if(data.session){
+    await adoptSession(data.session);
+    authMsg={type:'ok',text:lang==='bg'?'Профилът е създаден. Можете да започнете заявка.'
+                                       :'Your account is created. You can start an application.'};
+   } else {
+    authMsg={type:'ok',text:lang==='bg'
+      ?'Профилът е създаден. Изпратихме имейл за потвърждение — отворете връзката в него и влезте.'
+      :'Your account is created. We sent a confirmation email — open the link in it and sign in.'};
+    authTab='login';
+   }
+  }catch(e){ authMsg={type:'err',text:authErr(e)} }
+  busy=false; render(); return;
+ }
+
+ const users=loadUsers();
+ if(users.some(u=>u.email.toLowerCase()===f.email.toLowerCase())){
+  authMsg={type:'err',text:lang==='bg'?'Вече има профил с този имейл. Влезте или заявете нова парола.'
+                                      :'An account with this email already exists. Sign in or reset the password.'};
+  render(); return;
+ }
+ users.push({name:f.name.trim(), email:f.email.trim(), phone:f.phone.trim(), pass:f.pass, at:new Date().toISOString()});
+ saveUsers(users);
+ auth={name:f.name.trim(), email:f.email.trim(), phone:f.phone.trim(), admin:false};
+ saveAuth(auth);
+ authMsg={type:'ok',text:lang==='bg'?'Профилът е създаден. Можете да започнете заявка.'
+                                    :'Your account is created. You can start an application.'};
+ render();
+}
+
+async function doLogin(f){
+ if(busy) return;
+ if(remote){
+  if(!validEmail(f.email)){authMsg={type:'err',text:lang==='bg'?'Въведете валиден имейл.':'Enter a valid email.'}; render(); return}
+  busy=true; authMsg={type:'ok',text:lang==='bg'?'Влизаме…':'Signing in…'}; render();
+  try{
+   const {data,error}=await sb.auth.signInWithPassword({email:f.email.trim(), password:f.pass});
+   if(error) throw error;
+   await adoptSession(data.session);
+   authMsg=null;
+  }catch(e){ authMsg={type:'err',text:authErr(e)} }
+  busy=false; render(); return;
+ }
+ if(f.email===ADMIN.user && f.pass===ADMIN.pass){
+  auth={name:'Администратор', email:'admin', phone:'', admin:true}; saveAuth(auth);
+  authMsg=null; render(); return;
+ }
+ const u=loadUsers().find(x=>x.email.toLowerCase()===(f.email||'').trim().toLowerCase() && x.pass===f.pass);
+ if(!u){authMsg={type:'err',text:lang==='bg'?'Грешен имейл или парола.':'Wrong email or password.'}; render(); return}
+ auth={name:u.name, email:u.email, phone:u.phone, admin:false}; saveAuth(auth); authMsg=null; render();
+}
+
+async function doReset(f){
+ if(busy) return;
+ if(!validEmail(f.email)){authMsg={type:'err',text:lang==='bg'?'Въведете валиден имейл.':'Enter a valid email.'}; render(); return}
+ if(remote){
+  busy=true; render();
+  try{
+   await sb.auth.resetPasswordForEmail(f.email.trim(),{redirectTo:location.origin+location.pathname});
+  }catch(e){}
+  busy=false;
+ }
+ authMsg={type:'ok',text:lang==='bg'
+   ?'Ако имаме профил с този имейл, изпратихме връзка за нова парола. Връзката е валидна 60 минути.'
+   :'If we hold an account for that email, a reset link has been sent. The link is valid for 60 minutes.'};
+ authTab='login'; render();
+}
+
+async function doNewPass(f){
+ if(busy) return;
+ if(!f.pass || f.pass.length<8){
+  authMsg={type:'err',text:lang==='bg'?'Паролата трябва да е поне 8 знака.':'The password must be at least 8 characters.'};
+  render(); return;
+ }
+ if(f.pass!==f.pass2){
+  authMsg={type:'err',text:lang==='bg'?'Двете полета не съвпадат.':'The two fields do not match.'};
+  render(); return;
+ }
+ if(!remote){ authTab='login'; render(); return }
+ busy=true; render();
+ try{
+  const {error}=await sb.auth.updateUser({password:f.pass});
+  if(error) throw error;
+  authMsg={type:'ok',text:lang==='bg'?'Паролата е сменена.':'The password has been changed.'};
+  authTab='login';
+ }catch(e){ authMsg={type:'err',text:authErr(e)} }
+ busy=false; render();
+}
+
+function authBox(){
+ const tabs=[['login',{bg:'Вход',en:'Sign in'}],
+             ['register',{bg:'Регистрация',en:'Register'}],
+             ['reset',{bg:'Забравена парола',en:'Forgot password'}]];
+ const msg = authMsg?`<div class="${authMsg.type==='err'?'caution':'helpbar'}" style="margin-bottom:14px">
+    <span ${authMsg.type==='err'?'':'class="ht"'}>${esc(authMsg.text)}</span></div>`:'';
+
+ const F=(id,label,type,ph,extra)=>`<div class="field">
+   <label for="${id}">${esc(label)}</label>
+   <input type="${type}" id="${id}" placeholder="${esc(ph||'')}" ${extra||''}>
+  </div>`;
+
+ let body='';
+ if(authTab==='register'){
+  body=`${F('r_name',lang==='bg'?'Име и фамилия':'First and last name','text',lang==='bg'?'Иван Петров':'Ivan Petrov','required')}
+   ${F('r_email',lang==='bg'?'Имейл':'Email','email','ivan@example.com','required')}
+   ${F('r_phone',lang==='bg'?'Телефон':'Phone','tel','+359 88 000 0000','required')}
+   <div class="grid2" style="gap:14px">
+    ${F('r_pass',lang==='bg'?'Парола':'Password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
+    ${F('r_pass2',lang==='bg'?'Потвърдете паролата':'Confirm password','password','','required')}
+   </div>
+   <button class="btn btn-primary" id="do_register" style="align-self:start">${lang==='bg'?'Създайте профил':'Create account'}</button>
+   <p class="quiet" style="margin-top:10px">${lang==='bg'
+     ?'Всички полета са задължителни. Данните се обработват съгласно Политиката за поверителност и се използват само за водене на преписката.'
+     :'All fields are required. The data is processed under the Privacy Policy and used only to run your matter.'}</p>`;
+ } else if(authTab==='reset'){
+  body=`${F('x_email',lang==='bg'?'Имейл на профила':'Account email','email','ivan@example.com','required')}
+   <button class="btn btn-primary" id="do_reset" style="align-self:start">${lang==='bg'?'Изпратете връзка за нова парола':'Send a reset link'}</button>
+   <p class="quiet" style="margin-top:10px">${lang==='bg'
+     ?'За сигурност отговорът е един и същ, независимо дали имейлът съществува в системата.'
+     :'For security the answer is the same whether or not the email exists in the system.'}</p>`;
+ } else if(authTab==='newpass'){
+  body=`<div class="grid2" style="gap:14px">
+    ${F('n_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
+    ${F('n_pass2',lang==='bg'?'Потвърдете паролата':'Confirm password','password','','required')}
+   </div>
+   <button class="btn btn-primary" id="do_newpass" style="align-self:start">${lang==='bg'?'Запазете новата парола':'Save the new password'}</button>
+   <p class="quiet" style="margin-top:10px">${lang==='bg'
+     ?'Връзката от имейла ви е отворила профила. Изберете парола и влезте с нея.'
+     :'The link from your email opened your account. Choose a password and sign in with it.'}</p>`;
+ } else {
+  body=`${F('l_email',lang==='bg'?'Имейл':'Email','text','ivan@example.com','required')}
+   ${F('l_pass',lang==='bg'?'Парола':'Password','password','','required')}
+   <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-primary" id="do_login">${lang==='bg'?'Влезте':'Sign in'}</button>
+    <button class="btn btn-quiet" data-tab="reset">${lang==='bg'?'Забравена парола?':'Forgot password?'}</button>
+   </div>`;
+ }
+
+ const head = authTab==='newpass' ? '' :
+   `<div class="authtabs">${tabs.map(([id,t])=>
+     `<button data-tab="${id}" ${authTab===id?'aria-current="page"':''}>${esc(L(t))}</button>`).join('')}</div>`;
+ const note = remote ? '' :
+   `<p class="quiet" style="margin-top:4px">${lang==='bg'
+     ?'Демонстрация: профилът се пази само в този браузър и изчезва при изчистване на данните. На публикувания сайт влизането минава през сървъра.'
+     :'Demo: the account is kept in this browser only and disappears when site data is cleared. On the published site sign-in goes through the server.'}</p>`;
+ return `<div class="card pad stack" style="gap:14px;max-width:560px">
+   ${head}
+   ${msg}
+   ${body}
+   ${note}
+  </div>`;
+}
+
+function authGate(){
+ return `<section class="sec"><div class="wrap stack" style="gap:18px">
+   <div class="sechead">
+    <span class="kicker">${lang==='bg'?'Нужен е профил':'An account is needed'}</span>
+    <h2>${lang==='bg'?'Първо създайте профил':'Create an account first'}</h2>
+    <p class="copy">${lang==='bg'
+      ?'Заявката се попълва на девет стъпки и черновата се пази след всяка от тях. За да не се загуби работата ви и за да може адвокатът да се свърже с вас, профилът се създава преди началото.'
+      :'The application runs over nine steps and the draft is saved after each one. So that your work is not lost and the lawyer can reach you, the account is created before you begin.'}</p>
+   </div>
+   ${authBox()}
+  </div></section>`;
+}
+
 // Две колони с цели абзаци: делим по обем на текста, не по брой абзаци,
 // за да свършват колоните приблизително на едно ниво.
 function twocol(arr){
@@ -625,7 +920,7 @@ function pageHead(k,t,l,extra){
 
 function chrome(){
  const nav=document.getElementById('nav');
- nav.innerHTML=NAV.map(n=>{
+ nav.innerHTML=NAV.filter(n=>n.id!=='office'||isAdmin()).map(n=>{
    const g=NAVGROUPS.find(x=>x.after===n.id);
    return `<button data-p="${n.id}" ${page===n.id?'aria-current="page"':''}>${esc(L(n))}</button>`
         + (g?`<div class="navgroup">${esc(L(g))}</div>`:'');
@@ -646,8 +941,8 @@ function chrome(){
    <a href="#">${lang==='bg'?'Общи условия':'Terms'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookies'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
-function go(p){page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
-function render(){chrome();app.innerHTML=({home:Home,file:File_,guides:Guides,price:Price,blog:Blog,about:About,contact:Contact,acct:Acct,office:Office}[page]||Home)();wire()}
+function go(p){if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
+function render(){if(page==='office'&&!isAdmin())page='acct';chrome();app.innerHTML=({home:Home,file:File_,guides:Guides,price:Price,blog:Blog,about:About,contact:Contact,acct:Acct,office:Office}[page]||Home)();wire()}
 
 /* ---------- drawer ---------- */
 function openDrawer(n){
@@ -743,6 +1038,11 @@ function Home(){
 function File_(){
  const s=STEPS[state.step-1], pct=Math.round((state.step-1)/9*100);
  const done=Object.keys(state.done).length;
+ if(!auth) return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
+  {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
+  {bg:'Девет стъпки. Черновата се пази след всяка от тях.',
+   en:'Nine steps. The draft is saved after each one.'})}${authGate()}`;
+
  return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
   {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
   {bg:'Девет стъпки. Черновата се пази след всяка от тях.',
@@ -831,8 +1131,8 @@ function uploader(){
     <div style="font-weight:600;font-size:14.5px">${f?esc(f.name)
       :(lang==='bg'?'Плъзнете файла тук или го изберете':'Drag the file here, or choose one')}</div>
     <div class="quiet" style="margin-top:3px">${f?`${kb(f.size)} · ${f.w} × ${f.h} px`
-      :(lang==='bg'?'JPEG или PNG, до 2 MB. Без рамки и водни знаци; бял или прозрачен фон.'
-                   :'JPEG or PNG, up to 2 MB. No frames or watermarks; white or transparent background.')}</div>
+      :(lang==='bg'?'JPEG, до 1,5 MB. Без рамки и водни знаци; бял фон.'
+                   :'JPEG, up to 1.5 MB. No frames or watermarks; white background.')}</div>
     <div class="fileline">
      <button class="btn btn-ghost" id="pickimg" type="button">${f?(lang==='bg'?'Замени файла':'Replace file')
                                                                  :(lang==='bg'?'Изберете файл':'Choose file')}</button>
@@ -843,7 +1143,7 @@ function uploader(){
    <div class="thumb">${f&&f.url?`<img src="${f.url}" alt="${esc(f.name)}">`
      :`<span class="quiet" style="text-align:center;line-height:1.4">${lang==='bg'?'няма<br>файл':'no<br>file'}</span>`}</div>
   </div>
-  <input type="file" id="imgin" accept="image/jpeg,image/png" hidden>
+  <input type="file" id="imgin" accept="image/jpeg" hidden>
   <span class="hint">${lang==='bg'
     ?'Ако не претендирате цвят, качете черно-бяло. Изображението се фиксира на датата на подаване.'
     :'If you are not claiming colour, upload black and white. The representation is frozen on the filing date.'}</span>
@@ -854,10 +1154,10 @@ function handleImg(file){
  const box=app.querySelector('#imgerr');
  const say=t=>{if(box)box.textContent=t};
  if(!file)return;
- if(['image/jpeg','image/png'].indexOf(file.type)<0){
-  say(lang==='bg'?'Приемат се само JPEG и PNG файлове.':'Only JPEG and PNG files are accepted.');return}
- if(file.size>2*1024*1024){
-  say(lang==='bg'?'Файлът е над 2 MB. Намалете размера и качете отново.':'The file is over 2 MB. Reduce it and upload again.');return}
+ if(file.type!=='image/jpeg'){
+  say(lang==='bg'?'Приема се само JPEG файл.':'Only a JPEG file is accepted.');return}
+ if(file.size>1.5*1024*1024){
+  say(lang==='bg'?'Файлът е над 1,5 MB. Намалете размера и качете отново.':'The file is over 1.5 MB. Reduce it and upload again.');return}
  say('');
  const r=new FileReader();
  r.onload=()=>{
@@ -1416,10 +1716,21 @@ function Office(){
 
 function Acct(){
  const f=officialFee();
+ if(!auth) return `${pageHead({bg:'Профил',en:'Account'},
+   {bg:'Вход и регистрация',en:'Sign in and register'},
+   {bg:'Профилът пази черновата ви и е начинът адвокатът да се свърже с вас.',
+    en:'Your account keeps the draft and is how the lawyer reaches you.'})}
+  <section class="sec"><div class="wrap">${authBox()}</div></section>`;
+
  return `${pageHead({bg:'Профил',en:'Account'},{bg:'Моите заявки',en:'My applications'},
   {bg:'Всяка преписка с текущото си състояние, следващия срок и документите по нея.',
    en:'Every matter with its current status, the next deadline and its documents.'})}
  <section class="sec"><div class="wrap stack" style="gap:22px">
+  <div class="whobar">
+   <div><strong>${esc(auth.name)}</strong>${auth.admin?` <span class="tag v">${lang==='bg'?'администратор':'administrator'}</span>`:''}
+    <div class="quiet">${esc(auth.email)}${auth.phone?' · '+esc(auth.phone):''}</div></div>
+   <button class="btn btn-ghost" id="signout" style="padding:8px 15px;font-size:13.5px">${lang==='bg'?'Изход':'Sign out'}</button>
+  </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
     <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Такса':'Fee'}</th></tr></thead>
@@ -1449,6 +1760,22 @@ function Acct(){
 /* ---------- wiring ---------- */
 function wire(){
  app.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
+ app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{authTab=b.dataset.tab;authMsg=null;render()});
+ const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
+ const vl=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
+ const br=app.querySelector('#do_register');
+ if(br) br.onclick=()=>doRegister({name:vl('r_name'),email:vl('r_email'),phone:vl('r_phone'),
+                                   pass:vl('r_pass'),pass2:vl('r_pass2')});
+ const bl=app.querySelector('#do_login');
+ if(bl) bl.onclick=()=>doLogin({email:vl('l_email'),pass:vl('l_pass')});
+ const bx=app.querySelector('#do_reset');
+ if(bx) bx.onclick=()=>doReset({email:vl('x_email')});
+ const bn=app.querySelector('#do_newpass');
+ if(bn) bn.onclick=()=>doNewPass({pass:vl('n_pass'),pass2:vl('n_pass2')});
+ app.querySelectorAll('.card input').forEach(i=>i.onkeydown=e=>{
+   if(e.key!=='Enter')return; e.preventDefault();
+   const t=app.querySelector('#do_login')||app.querySelector('#do_register')||app.querySelector('#do_reset')||app.querySelector('#do_newpass');
+   if(t)t.click();});
  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openDrawer(+b.dataset.open)});
  app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{state.step=+b.dataset.step;save();render()});
  const prev=app.querySelector('#prev'),next=app.querySelector('#next'),sb=app.querySelector('#savebtn'),rs=app.querySelector('#reset');
@@ -1500,7 +1827,7 @@ document.getElementById('lang').querySelectorAll('button').forEach(b=>b.onclick=
  document.documentElement.lang=lang; closeDrawer(); render();
 });
 document.getElementById('burger').onclick=()=>document.getElementById('side').classList.toggle('open');
-render();
+initAuth();
 </script>
 
 </body>
