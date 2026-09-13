@@ -83,9 +83,9 @@ button{font:inherit; color:inherit}
 
 /* --- navy top bar --- */
 header.top{position:sticky; top:0; z-index:45; background:var(--navy); border-bottom:1px solid rgba(255,255,255,.08)}
-.top-in{display:flex; align-items:center; gap:10px; min-height:80px; flex-wrap:nowrap}
+.top-in{display:flex; align-items:center; gap:10px; min-height:62px; flex-wrap:nowrap}
 header.top .brandplate{padding:0}
-header.top .brandlogo{height:40px}
+header.top .brandlogo{height:32px}
 header.top .lang{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.15)}
 header.top .lang button{color:#CFC5B4}
 header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); color:#0A1730}
@@ -95,8 +95,8 @@ header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); colo
 .btn-gold{background:var(--gold-bright); color:#0A1730; box-shadow:var(--lift); font-weight:600}
 .btn-gold:hover{background:#CBA678}
 .goldrule{height:3px; width:52px; border-radius:2px; background:var(--gold-bright)}
-section.sec.pagehead{padding-block:clamp(24px,3.6vw,38px); min-height:314px;
-  display:flex; align-items:center}
+section.sec.pagehead{padding-block:18px; height:152px; display:flex; align-items:center}
+@media (max-width:860px){ section.sec.pagehead{height:auto; min-height:122px} }
 .pagehead .lede{max-width:none}
 .pagehead h1{line-height:1.06}
 @media (max-width:860px){ section.sec.pagehead{min-height:0} }
@@ -124,10 +124,13 @@ nav.main button[aria-current="page"]{background:rgba(190,150,102,.18); color:#ff
 .btn-quiet{background:none; color:var(--ink-2); padding:12px 8px}
 .btn:disabled{opacity:.35; cursor:not-allowed; transform:none}
 .card{background:var(--surface); border:1px solid var(--line); border-radius:18px; box-shadow:var(--lift)}
-.pad{padding:clamp(20px,3.4vw,34px)}
-section.sec{padding-block:clamp(44px,7vw,80px)}
+.pad{padding:clamp(16px,2.2vw,24px)}
+section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .lede{font-size:16.5px; line-height:1.6; color:var(--ink-2); max-width:62ch}
 .copy{font-size:15px; line-height:1.7; color:var(--ink-2); max-width:68ch}
+.twocol{columns:2; column-gap:46px}
+.twocol .copy{max-width:none; margin-bottom:17px; orphans:2; widows:2}
+@media (max-width:820px){ .twocol{columns:1} }
 .quiet{font-size:13px; color:var(--ink-3); line-height:1.58}
 
 /* hero */
@@ -162,7 +165,19 @@ section.sec{padding-block:clamp(44px,7vw,80px)}
 
 /* filing page: form on the left, compact step rail on the right */
 .filegrid{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:26px; align-items:start}
-.rail{position:sticky; top:88px; display:flex; flex-direction:column; gap:12px}
+@media (min-width:1001px){
+  /* Рамката на стъпката стои на екрана: заглавие, напредък и бутоните
+     „Назад / Напред" не изчезват. Само въпросът се движи, когато не се побира. */
+  .filegrid{height:calc(100vh - 246px); min-height:410px}
+  .stepcol{height:100%; min-height:0}
+  .stepcard{flex:1 1 auto; min-height:0; overflow:hidden}
+  .stepbody{flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+    padding-right:6px; margin-right:-6px}
+  .stepbody::-webkit-scrollbar{width:8px}
+  .stepbody::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px}
+  .rail{max-height:calc(100vh - 246px); overflow-y:auto}
+}
+.rail{position:sticky; top:72px; display:flex; flex-direction:column; gap:12px}
 .railcard{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--lift)}
 .railsteps{display:flex; flex-direction:column; gap:1px; margin-top:8px}
 .railstep{display:grid; grid-template-columns:22px minmax(0,1fr) 24px; gap:9px; align-items:center;
@@ -185,27 +200,36 @@ section.sec{padding-block:clamp(44px,7vw,80px)}
 
 /* wizard */
 .q-head{display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px}
-.opts{display:grid; gap:12px}
+.opts{display:grid; gap:6px}
+@media (min-width:1001px){ .opts.two{grid-template-columns:1fr 1fr; gap:8px}
+  .markgrid{display:grid; grid-template-columns:minmax(0,0.85fr) minmax(0,1.4fr); gap:14px; align-items:start}
+  .markgrid .drop{grid-template-columns:minmax(0,1fr) 80px}
+  .markgrid .thumb{width:80px; height:80px}
+  .signgrid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start}
+  .signgrid input[type=text]{padding:9px 12px}
+  .signrow{display:flex; gap:8px; align-items:center}
+  .signrow input[type=text]{padding:9px 12px; flex:1 1 220px; min-width:0}
+  .paygrid{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,0.95fr); gap:14px; align-items:start} }
 .opt{display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:start; text-align:left;
-  background:var(--raise); border:1.5px solid var(--line); border-radius:14px; padding:17px 18px; cursor:pointer; width:100%}
+  background:var(--raise); border:1.5px solid var(--line); border-radius:12px; padding:8px 12px; cursor:pointer; width:100%}
 .opt:hover{border-color:var(--violet)}
 .opt[data-on="1"]{border-color:var(--violet); background:var(--violet-soft)}
-.tick{width:19px; height:19px; border-radius:50%; border:1.5px solid var(--ink-3); margin-top:3px; flex:none}
-.opt[data-on="1"] .tick{border:6px solid var(--violet)}
+.tick{width:17px; height:17px; border-radius:50%; border:1.5px solid var(--ink-3); margin-top:2px; flex:none}
+.opt[data-on="1"] .tick{border:5px solid var(--violet)}
 .opt .ot,.opt .os{display:block}
-.opt .ot{font-weight:600; font-size:16px}
-.opt .os{font-size:14px; color:var(--ink-2); margin-top:4px; line-height:1.5}
+.opt .ot{font-weight:600; font-size:14.5px}
+.opt .os{font-size:13px; color:var(--ink-2); margin-top:1px; line-height:1.4}
 .opt .op{font-family:"DM Mono",monospace; font-size:14px; color:var(--violet); white-space:nowrap}
-.field{display:flex; flex-direction:column; gap:7px; margin-bottom:18px}
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px}
 .field label{font-size:14px; font-weight:600}
-input[type=text],input[type=email],select,textarea{width:100%; padding:13px 15px; border:1.5px solid var(--line); border-radius:12px;
+input[type=text],input[type=email],select,textarea{width:100%; padding:10px 13px; border:1.5px solid var(--line); border-radius:12px;
   background:var(--raise); color:var(--ink); font:inherit; font-size:15.5px}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.opt:focus-visible{outline:2.5px solid var(--violet); outline-offset:2px}
 .hint{font-size:13px; color:var(--ink-3)}
 
 /* help drawer */
-.helpbar{display:flex; gap:10px; align-items:center; justify-content:space-between; background:var(--violet-soft); border-radius:14px; padding:13px 16px; margin-top:8px}
-.helpbar .ht{font-size:14.5px; font-weight:600; color:var(--violet-deep)}
+.helpbar{display:flex; gap:10px; align-items:center; justify-content:space-between; background:var(--violet-soft); border-radius:10px; padding:6px 12px; margin-top:0}
+.helpbar .ht{font-size:13.5px; font-weight:600; color:var(--violet-deep)}
 .drawer{position:fixed; inset:0 0 0 auto; width:min(430px,100%); background:var(--surface); border-left:1px solid var(--line);
   box-shadow:var(--lift-lg); z-index:60; transform:translateX(102%); transition:transform .28s cubic-bezier(.4,0,.2,1); overflow:auto; padding:26px 24px 60px}
 .drawer.open{transform:none}
@@ -227,19 +251,24 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .badge.hdb{background:var(--teal-soft); color:var(--teal)}
 .badge.free{background:var(--amber-soft); color:var(--amber)}
 .sum{background:var(--raise); border:1.5px dashed var(--line); border-radius:14px; padding:18px}
-.drop{border:1.5px dashed var(--line); background:var(--raise); border-radius:14px; padding:18px;
-  display:grid; grid-template-columns:minmax(0,1fr) 124px; gap:16px; align-items:center; cursor:pointer;
+.drop{border:1.5px dashed var(--line); background:var(--raise); border-radius:13px; padding:13px;
+  display:grid; grid-template-columns:minmax(0,1fr) 104px; gap:16px; align-items:center; cursor:pointer;
   transition:border-color .15s ease, background .15s ease}
 .drop:hover{border-color:var(--gold-bright)}
 .drop.over{border-color:var(--gold-bright); background:var(--gold-soft)}
-.drop ul{margin:8px 0 0; padding-left:16px; display:flex; flex-direction:column; gap:3px}
-.thumb{width:124px; height:124px; border-radius:12px; border:1px solid var(--line); background:#fff;
+.drop ul{margin:6px 0 0; padding-left:16px; display:flex; flex-direction:column; gap:2px; font-size:12.5px}
+.thumb{width:104px; height:104px; border-radius:12px; border:1px solid var(--line); background:#fff;
   display:flex; align-items:center; justify-content:center; overflow:hidden; padding:6px}
 .thumb img{max-width:100%; max-height:100%; display:block}
 .fileline{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px}
 .fileline .btn{padding:8px 15px; font-size:13.5px}
 .imgerr{color:#9B2C1E; font-size:13px; margin-top:8px}
+.poaline{display:flex; align-items:center; gap:10px; background:var(--violet-soft); border:1px solid var(--line);
+  border-radius:11px; padding:9px 13px; font-size:14.5px}
+.poatick{width:19px; height:19px; flex:none; border-radius:5px; background:var(--violet); color:#fff;
+  display:grid; place-items:center; font-size:12px; line-height:1}
 @media (max-width:700px){ .drop{grid-template-columns:1fr} .thumb{width:100%; height:150px} }
+@media (max-width:1000px){ .signrow{flex-wrap:wrap} .signrow input[type=text]{flex:1 1 100%} }
 
 /* generic bits */
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px}
@@ -255,9 +284,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .chipstep{flex:none; display:flex; gap:8px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:8px 14px; font-size:13.5px; color:var(--ink-2); cursor:pointer; white-space:nowrap}
 .chipstep[aria-current="step"]{background:var(--violet); border-color:var(--violet); color:#fff}
 .chipstep .n{font-family:"DM Mono",monospace; font-size:12px; opacity:.7}
-.tbl{width:100%; border-collapse:collapse; font-size:15px}
-.tbl th{text-align:left; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:600; padding:10px 12px; border-bottom:1.5px solid var(--line)}
-.tbl td{padding:14px 12px; border-bottom:1px solid var(--line-2); vertical-align:top}
+.tbl{width:100%; border-collapse:collapse; font-size:14.5px}
+.tbl th{text-align:left; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:600; padding:8px 12px; border-bottom:1.5px solid var(--line)}
+.tbl td{padding:9px 12px; border-bottom:1px solid var(--line-2); vertical-align:top}
+.stepcard .tbl td{padding:7px 11px}
+.stepcard .tbl{font-size:14px}
 .tbl td.r{text-align:right; font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
 .tblwrap{overflow-x:auto}
 footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-top:0; border-top:3px solid var(--gold-bright)}
@@ -347,30 +378,34 @@ const STEPS=[
   err:{bg:'Честа грешка: заявяване само в България, когато продажбите вече са в целия ЕС. Приоритетът по Парижката конвенция е само 6 месеца.',
        en:'Common mistake: filing only in Bulgaria while already selling EU-wide. The Paris priority window is only 6 months.'}},
  {n:2,key:'search',t:{bg:'Свободна ли е марката?',en:'Is the mark available?'},
-  i:{bg:'Ведомствата в ЕС не отказват служебно заради чужди по-ранни марки. Ако не проверите вие, ще разберете при опозиция — след като сте платили.',
-     en:'EU offices do not refuse of their own motion over earlier third-party rights. If you do not check, you find out at opposition — after you have paid.'},
-  need:{bg:['Точното изписване','Класовете, които ви интересуват','Имената на конкурентите ви'],
-        en:['The exact wording','The classes you care about','Your competitors’ names']},
-  man:{bg:['Търсим едновременно в BPO, EUIPO eSearch и Madrid Monitor.',
-           'Рискът не е само идентичност — сходство до степен на объркване за сходни стоки също блокира.',
-           'Проверете и фирмени наименования, домейни и нерегистрирани марки в реално ползване.',
-           '„Чисто“ е оценка на риск, не становище за регистрируемост.'],
-       en:['We query BPO, EUIPO eSearch and Madrid Monitor at once.',
-           'Identity is not the only risk — similarity with a likelihood of confusion for similar goods also blocks.',
-           'Check company names, domains and unregistered marks in genuine use too.',
-           '"Clear" is a risk assessment, not an opinion on registrability.']},
+  i:{bg:'Ведомствата в ЕС не отказват служебно заради чужди по-ранни марки. Тук решавате дали да се направи проучване, преди да платите държавната такса.',
+     en:'EU offices do not refuse of their own motion over earlier third-party rights. Here you decide whether a search is done before the official fee is paid.'},
+  need:{bg:['Решение дали възлагате проучване','Класовете, които ви интересуват','Имената на конкурентите ви, ако ги знаете'],
+        en:['A decision on whether to engage a search','The classes you care about','Your competitors’ names, if you know them']},
+  man:{bg:['Проучването обхваща БПВ, EUIPO и Мадридската система — идентични и сходни знаци във вашите класове и в съседните.',
+           'Рискът не е само идентичност — сходство до степен на объркване за сходни стоки също блокира марката.',
+           'Преценява се фонетично, визуално и смислово сходство; това е правна преценка, не съвпадение на текст.',
+           'Становището е оценка на риск, не гаранция за регистрация. Проверяват се и фирмени наименования, домейни и нерегистрирани марки в реално ползване.',
+           'Ако продължите без проучване, изборът се записва по преписката с датата си.'],
+       en:['The search covers the BPO, EUIPO and the Madrid System — identical and similar signs in your classes and neighbouring ones.',
+           'Identity is not the only risk — similarity with a likelihood of confusion for similar goods also blocks the mark.',
+           'Phonetic, visual and conceptual similarity are assessed; this is a legal judgement, not a text match.',
+           'The opinion is a risk assessment, not a guarantee of registration. Company names, domains and unregistered marks in genuine use are checked too.',
+           'If you continue without a search, that choice is recorded on the matter with its date.']},
   err:{bg:'Честа грешка: търсене само на точното изписване. Тествайте фонетични и визуални варианти.',
        en:'Common mistake: searching only the exact spelling. Test phonetic and visual variants.'}},
  {n:3,key:'mark',t:{bg:'Как изглежда марката?',en:'What does the mark look like?'},
-  i:{bg:'Това, което подадете тук, се фиксира завинаги. Изображението на марката не може да се променя след датата на подаване.',
-     en:'What you file here is frozen. The representation cannot be amended after the filing date.'},
+  i:{bg:'Това, което подадете тук, се фиксира завинаги — изображението не се променя след датата на подаване.',
+     en:'What you file here is frozen — the representation cannot be amended after the filing date.'},
   need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: файл JPEG или PNG до 2 MB','Звукова: MP3 до 2 MB'],
         en:['Word mark: text only','Figurative or combined: a JPEG or PNG file up to 2 MB','Sound: MP3 up to 2 MB']},
-  man:{bg:['Словната марка е най-широка — покрива всяко изписване. Изберете нея, ако логото се променя често.',
+  man:{bg:['Файлът за фигуративна или комбинирана марка: JPEG или PNG до 2 MB, бял или прозрачен фон, препоръчително поне 945 × 945 px. Без рамки, водни знаци и текст, който описва марката. За звукова марка — MP3; за марка с движение или мултимедийна — MP4.',
+           'Словната марка е най-широка — покрива всяко изписване. Изберете нея, ако логото се променя често.',
            'Фигуративната закриля точно това изображение. Черно-бялото вече не покрива автоматично всички цветове.',
            'Описателни думи се отказват на абсолютно основание — чл. 11 ЗМГО и чл. 7 EUTMR.',
            'Придобитата отличителност се доказва трудно и скъпо. По-добре отличителна марка от самото начало.'],
-       en:['A word mark is broadest — it covers any styling. Choose it if your logo changes often.',
+       en:['The file for a figurative or combined mark: JPEG or PNG up to 2 MB, white or transparent background, at least 945 × 945 px advisable. No frames, watermarks or text describing the mark. A sound mark takes MP3; a motion or multimedia mark takes MP4.',
+           'A word mark is broadest — it covers any styling. Choose it if your logo changes often.',
            'A figurative mark protects that exact image. Black and white no longer covers every colour.',
            'Descriptive wording is refused on absolute grounds — art. 11 BG TMA and art. 7 EUTMR.',
            'Acquired distinctiveness is hard and costly to prove. Better a distinctive mark from the start.']},
@@ -422,23 +457,25 @@ const STEPS=[
   err:{bg:'Честа грешка: пропуснат 6-месечен срок. Приоритетът не се възстановява.',
        en:'Common mistake: missing the six-month window. Priority cannot be restored.'}},
  {n:7,key:'engage',t:{bg:'Кой възлага и кой подписва?',en:'Who engages, and who signs?'},
-  i:{bg:'От тук нататък преписката се води от адвокат. Договорът за правна помощ определя обхвата на поръчката, а пълномощното е това, което позволява подаването пред ведомството от ваше име.',
-     en:'From here the matter is handled by a lawyer. The engagement letter fixes the scope; the power of attorney is what allows the filing to be made on your behalf.'},
-  need:{bg:['Данни за подписващото лице и представителната власт','Квалифициран електронен подпис или сканирано подписано пълномощно','Потвърден обхват на поръчката'],
-        en:['The signatory and their authority to represent','A qualified electronic signature or a scanned signed power of attorney','Confirmed scope of the engagement']},
+  i:{bg:'Пълномощното позволява подаването пред ведомството от ваше име.',
+     en:'The power of attorney allows the filing to be made on your behalf.'},
+  need:{bg:['Данни за подписващото лице и представителната власт','Електронен подпис или сканирано подписано пълномощно','Декларация, че подписът е на заявителя'],
+        en:['The signatory and their authority to represent','An electronic signature or a scanned signed power of attorney','A declaration that the signature is the applicant’s']},
   man:{bg:['Пълномощното се генерира предварително попълнено с данните от стъпка 5 — не го преписвайте на ръка.',
-           'Подписва се с квалифициран електронен подпис (Evrotrust, B-Trust) или се сваля, подписва и се качва сканирано.',
+           'Подписва се електронно или се сваля, подписва и се качва сканирано. Квалифициран електронен подпис не се изисква.',
+           'Декларацията, че подписът е на заявителя, се отбелязва тук и се пази по преписката заедно с датата и часа.',
            'За дружество подписва лицето с представителна власт по търговския регистър. При съвместно представителство подписват всички.',
-           'Договорът казва какво влиза в цената: изготвяне и подаване влизат; отговор на опозиция или на отказ се възлага отделно.'],
+           'Заявители без седалище или реално предприятие в ЕИП задължително се представляват пред EUIPO (чл. 119–120 EUTMR). При този модел това не е пречка — представителството е част от услугата.'],
        en:['The power of attorney is generated pre-filled from step 5 — do not retype it by hand.',
-           'Sign it with a qualified electronic signature (Evrotrust, B-Trust) or download, sign and upload the scan.',
+           'Sign it electronically, or download, sign and upload the scan. A qualified electronic signature is not required.',
+           'The declaration that the signature is the applicant’s is ticked here and kept on the matter with its date and time.',
            'For a company, the person with authority under the commercial register signs. Where representation is joint, all of them sign.',
-           'The engagement letter states what the price covers: drafting and filing are included; opposition or refusal work is engaged separately.']},
+           'Applicants with no seat or real establishment in the EEA must be represented before EUIPO (arts. 119–120 EUTMR). On this model that is no obstacle — representation is part of the service.']},
   err:{bg:'Честа грешка: пълномощно, подписано от лице без представителна власт. Ведомството го връща като нередовност и се губи време.',
        en:'Common mistake: a power of attorney signed by someone without authority to represent. The office returns it as a deficiency and time is lost.'}},
  {n:8,key:'pay',t:{bg:'Плащане',en:'Payment'},
-  i:{bg:'Плащате адвокатско възнаграждение и държавна такса. Възнаграждението е за услугата и е с ДДС; държавната такса е чужд разход, който плащам на ведомството от ваше име при подаването.',
-     en:'You pay a legal fee and an official fee. The legal fee is for the service and carries VAT; the official fee is a disbursement I pay to the office on your behalf at filing.'},
+  i:{bg:'Възнаграждението е услуга и е с ДДС. Държавната такса е чужд разход и се плаща на ведомството при подаването.',
+     en:'The legal fee is a service and carries VAT. The official fee is a disbursement, paid to the office at filing.'},
   need:{bg:['Карта или банков превод','Данни за фактура (ЕИК, ДДС номер)','Потвърдено съдържание на заявката'],
         en:['Card or bank transfer','Invoicing details (company and VAT number)','Confirmed contents of the application']},
   man:{bg:['Плащането минава през myPOS Checkout — хоствана страница, 3-D Secure 2, SCA по PSD2.',
@@ -492,6 +529,7 @@ const CHECKLIST=[
  {ok:1,bg:'Всички термини са от Хармонизираната база данни',en:'All terms come from the Harmonised Database'},
  {ok:0,bg:'Наименованието на заявителя съвпада с търговския регистър',en:'Applicant name matches the commercial register'},
  {ok:1,bg:'Пълномощно — подписано от лице с представителна власт',en:'Power of attorney — signed by a person with authority'},
+ {ok:1,bg:'Декларация, че подписът е на заявителя — налична по преписката',en:'Declaration that the signature is the applicant’s — on file'},
  {ok:1,bg:'Проверка за конфликт на интереси — извършена',en:'Conflict of interest check — completed'},
  {ok:1,bg:'Приоритет — в 6-месечния срок или непретендиран',en:'Priority — within the six-month window or not claimed'},
  {ok:1,bg:'Плащането е потвърдено и осчетоводено',en:'Payment confirmed and reconciled'}
@@ -531,7 +569,7 @@ const POSTS=[
 
 /* state */
 const KEY='sym_atelier_v1';
-let state = load() || {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,terms:[],done:{},status:'draft'};
+let state = load() || {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,signatory:'',declared:false,terms:[],done:{},status:'draft'};
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 let page='home';
@@ -542,6 +580,7 @@ function officialFee(){const n=classCount(),r=ROUTES[state.route];
  if(state.route==='eutm')return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
  return{cur:'CHF',v:(state.colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass}}
 const SERVICE={bg_nat:149,eutm:249,madrid:349};
+const SEARCH_FEE=80;   // задълбочено проучване за сходство, по избор
 const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 
 const app=document.getElementById('app');
@@ -549,11 +588,11 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 function pageHead(k,t,l,extra){
  return `<section class="sec sec-navy pagehead">
-  <div class="wrap stack" style="gap:9px;max-width:880px;width:100%">
+  <div class="wrap stack" style="gap:5px;max-width:900px;width:100%">
    ${k?`<div class="kicker">${esc(L(k))}</div>`:''}
-   <h1 style="font-size:clamp(25px,3.5vw,37px)">${esc(L(t))}</h1>
+   <h1 style="font-size:clamp(20px,2.1vw,26px)">${esc(L(t))}</h1>
    <div class="goldrule"></div>
-   ${l?`<p class="lede" style="font-size:16px">${esc(L(l))}</p>`:''}
+   ${l?`<p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(l))}</p>`:''}
    ${extra||''}
   </div></section>`;
 }
@@ -631,13 +670,15 @@ function Home(){
  ];
  return `${pageHead(
   {bg:'Заявяване на марка без излишни консултации',en:'Trade mark filing without the unnecessary consultation'},
-  {bg:'Заявете марката си сами. Адвокат я преглежда и я подава.',en:'File your own trade mark. A lawyer reviews it and files it.'},
+  {bg:'Заявете марката си сами',en:'File your own trade mark'},
   {bg:'Всичко, нужно за завършена заявка, е на този сайт — не в платена консултация. Накрая адвокат преглежда преписката лично и я подава във ведомството.',
-   en:'Everything you need for a finished application is on this site — not in a paid consultation. At the end a lawyer checks the matter personally and files it.'},
-  `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-    <button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете →':'Begin →'}</button>
-    <button class="btn btn-quiet" data-p="file">${lang==='bg'?'Вижте деветте стъпки':'See the nine steps'}</button>
-   </div>`)}
+   en:'Everything you need for a finished application is on this site — not in a paid consultation. At the end a lawyer checks the matter personally and files it.'})}
+
+ <section class="sec sec-warm" style="padding-block:20px"><div class="wrap"
+   style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+   <button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете →':'Begin →'}</button>
+   <button class="btn btn-ghost" data-p="guides">${lang==='bg'?'Вижте деветте стъпки':'See the nine steps'}</button>
+  </div></section>
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="narrow" style="padding:0;margin:0 0 26px">
@@ -678,37 +719,37 @@ function File_(){
  const done=Object.keys(state.done).length;
  return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
   {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
-  {bg:'Шест стъпки събират фактите за бизнеса ви, седмата възлага работата, осмата я плаща, а деветата предава преписката на адвоката. Черновата се пази след всяка стъпка.',
-   en:'Six steps gather the facts about your business, the seventh engages the work, the eighth pays for it, and the ninth hands the matter to the lawyer. The draft is saved after every step.'})}
+  {bg:'Девет стъпки. Черновата се пази след всяка от тях.',
+   en:'Nine steps. The draft is saved after each one.'})}
 
- <section class="sec"><div class="wrap stack" style="gap:22px">
+ <section class="sec" style="padding-block:16px"><div class="wrap stack" style="gap:12px">
   <div class="filegrid">
 
-   <div class="stack" style="gap:18px">
-    <div class="stack" style="gap:7px">
+   <div class="stack stepcol" style="gap:10px">
+    <div class="stack" style="gap:5px">
      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2)">
       <span>${lang==='bg'?'Стъпка':'Step'} ${s.n} ${lang==='bg'?'от':'of'} 9 · ${esc(L(s.t))}</span>
       <span class="num">${pct}%</span></div>
      <div class="meter"><i style="width:${pct}%"></i></div>
     </div>
 
-    <div class="card pad stack" style="gap:20px">
+    <div class="card pad stack stepcard" style="gap:9px;padding:15px">
      <div class="q-head">
       <div><div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${s.n} / 9</div>
-       <h2 style="font-size:clamp(24px,3.4vw,32px);margin-top:8px">${esc(L(s.t))}</h2></div>
+       <h2 style="font-size:clamp(19px,2.2vw,23px);margin-top:3px">${esc(L(s.t))}</h2></div>
       <span class="tag v">${lang==='bg'?'пази се автоматично':'saved automatically'}</span>
      </div>
-     <p class="lede" style="font-size:16.5px">${esc(L(s.i))}</p>
-     ${body(s.key)}
+     <p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(s.i))}</p>
+     <div class="stepbody">${body(s.key)}</div>
      <div class="helpbar">
       <span class="ht">${lang==='bg'?'Не сте сигурни? Отворете ръководството.':'Not sure? Open the manual.'}</span>
-      <button class="btn btn-ghost" data-open="${s.n}" style="padding:8px 16px;font-size:14px">${lang==='bg'?'Помощ':'Help'}</button>
+      <button class="btn btn-ghost" data-open="${s.n}" style="padding:6px 13px;font-size:13px">${lang==='bg'?'Помощ':'Help'}</button>
      </div>
-     <div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line-2);padding-top:20px;flex-wrap:wrap">
-      <button class="btn btn-ghost" id="prev" ${state.step===1?'disabled':''}>← ${lang==='bg'?'Назад':'Back'}</button>
+     <div style="display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line-2);padding-top:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="prev" style="padding:9px 17px" ${state.step===1?'disabled':''}>← ${lang==='bg'?'Назад':'Back'}</button>
       <div style="display:flex;gap:10px">
-       <button class="btn btn-quiet" id="savebtn">${lang==='bg'?'Запази и излез':'Save and exit'}</button>
-       <button class="btn btn-primary" id="next">${state.step===9?(lang==='bg'?'Предай на адвоката':'Hand over'):(lang==='bg'?'Напред':'Continue')} →</button>
+       <button class="btn btn-quiet" id="savebtn" style="padding:9px 8px">${lang==='bg'?'Запази и излез':'Save and exit'}</button>
+       <button class="btn btn-primary" id="next" style="padding:9px 17px">${state.step===9?(lang==='bg'?'Предай на адвоката':'Hand over'):(lang==='bg'?'Напред':'Continue')} →</button>
       </div>
      </div>
     </div>
@@ -754,23 +795,15 @@ function File_(){
 function uploader(){
  const f=state.img;
  const kb=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':Math.round(n/1024)+' KB';
- const rules = lang==='bg'
-  ? ['JPEG или PNG, до 2 MB. Звукова марка: MP3. Марка с движение или мултимедийна: MP4.',
-     'Качете точно знака, който искате да защитите — без рамки, водни знаци и текст, който описва марката.',
-     'Ако не претендирате цвят, качете черно-бяло изображение. Цветното изображение защитава само тези цветове.',
-     'Бял или прозрачен фон. Препоръчително поне 945 × 945 px, за да не изглежда размито при публикацията.']
-  : ['JPEG or PNG, up to 2 MB. Sound mark: MP3. Motion or multimedia mark: MP4.',
-     'Upload exactly the sign you want protected — no frames, watermarks or text describing the mark.',
-     'If you are not claiming colour, upload a black-and-white image. A colour image protects only those colours.',
-     'White or transparent background. At least 945 × 945 px is advisable so it is not blurred on publication.'];
- return `<div class="field" style="margin-top:20px">
+ return `<div class="field" style="margin-top:14px;margin-bottom:0">
   <label>${lang==='bg'?'Изображение на марката':'Representation of the mark'}</label>
   <div class="drop" id="drop">
    <div>
-    <div style="font-weight:600;font-size:15px">${f?esc(f.name)
+    <div style="font-weight:600;font-size:14.5px">${f?esc(f.name)
       :(lang==='bg'?'Плъзнете файла тук или го изберете':'Drag the file here, or choose one')}</div>
-    ${f?`<div class="quiet" style="margin-top:4px">${kb(f.size)} · ${f.w} × ${f.h} px</div>`:''}
-    <ul class="quiet">${rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>
+    <div class="quiet" style="margin-top:3px">${f?`${kb(f.size)} · ${f.w} × ${f.h} px`
+      :(lang==='bg'?'JPEG или PNG, до 2 MB. Без рамки и водни знаци; бял или прозрачен фон.'
+                   :'JPEG or PNG, up to 2 MB. No frames or watermarks; white or transparent background.')}</div>
     <div class="fileline">
      <button class="btn btn-ghost" id="pickimg" type="button">${f?(lang==='bg'?'Замени файла':'Replace file')
                                                                  :(lang==='bg'?'Изберете файл':'Choose file')}</button>
@@ -783,8 +816,8 @@ function uploader(){
   </div>
   <input type="file" id="imgin" accept="image/jpeg,image/png" hidden>
   <span class="hint">${lang==='bg'
-    ?'Файлът се пази с черновата и се предава на адвоката заедно с преписката. Изображението се фиксира на датата на подаване и след това не може да се коригира.'
-    :'The file is kept with your draft and handed to the lawyer with the matter. The representation is frozen on the filing date and cannot be corrected afterwards.'}</span>
+    ?'Ако не претендирате цвят, качете черно-бяло. Изображението се фиксира на датата на подаване.'
+    :'If you are not claiming colour, upload black and white. The representation is frozen on the filing date.'}</span>
  </div>`;
 }
 
@@ -830,30 +863,63 @@ function body(k){
      <span class="op">WO</span></button>`:''}</div>`;
 
  if(k==='search')return `
-  <div class="field"><label for="q_mark">${lang==='bg'?'Марка за проверка':'Mark to search'}</label>
-   <input type="text" id="q_mark" value="${esc(state.mark||'')}" placeholder="ORBITA">
-   <span class="hint">${lang==='bg'?'Проверяваме BPO, EUIPO eSearch и Madrid Monitor едновременно.':'We query BPO, EUIPO eSearch and Madrid Monitor at once.'}</span></div>
-  <div class="tblwrap"><table class="tbl"><thead><tr>
-   <th>${lang==='bg'?'Регистър':'Register'}</th><th>${lang==='bg'?'Намерено':'Hit'}</th><th>${lang==='bg'?'Класове':'Classes'}</th><th>${lang==='bg'?'Риск':'Risk'}</th></tr></thead>
-   <tbody>
-    <tr><td class="num">EUIPO</td><td>ORBITA MEDIA</td><td class="num">35, 41</td><td><span class="tag a">${lang==='bg'?'висок':'high'}</span></td></tr>
-    <tr><td class="num">BPO</td><td>ORBIT</td><td class="num">9, 42</td><td><span class="tag v">${lang==='bg'?'среден':'medium'}</span></td></tr>
-    <tr><td class="num">WIPO</td><td>ORBITTA</td><td class="num">25</td><td><span class="tag t">${lang==='bg'?'нисък':'low'}</span></td></tr>
-   </tbody></table></div>
-  <p class="quiet">${lang==='bg'?'Примерни данни. В производство резултатите идват на живо от EUIPO Trademark Search API и от националния регистър.'
-                                :'Illustrative data. In production these come live from the EUIPO Trademark Search API and the national register.'}</p>`;
+  <div class="opts two" style="margin-top:16px">
+   <button class="opt" data-search="full" data-on="${state.search==='full'?1:0}">
+    <span class="tick"></span>
+    <span><span class="ot">${lang==='bg'?'Проучване за сходни и идентични марки':'Search for identical and similar marks'}</span>
+     <span class="os">${lang==='bg'
+       ?'БПВ, EUIPO и Мадридската система. Писмено становище с оценка на риска в 3 работни дни, преди държавната такса.'
+       :'BPO, EUIPO and the Madrid System. A written opinion with a risk assessment in 3 working days, before the official fee.'}</span></span>
+    <span class="op">+&#8364;80,00</span></button>
+
+   <button class="opt" data-search="none" data-on="${state.search==='none'?1:0}">
+    <span class="tick"></span>
+    <span><span class="ot">${lang==='bg'?'Продължавам без проучване':'Continue without a search'}</span>
+     <span class="os">${lang==='bg'
+       ?'Приемам риска от опозиция в тримесечния срок след публикацията. Държавната такса не се възстановява.'
+       :'I accept the risk of an opposition in the three months after publication. The official fee is not refunded.'}</span></span>
+    <span></span></button>
+  </div>
+
+  <div class="sum">
+   <div class="kicker" style="margin-bottom:8px">${lang==='bg'?'Защо това е отделна стъпка':'Why this is a step of its own'}</div>
+   <p style="font-size:14.5px;color:var(--ink-2);line-height:1.6;margin:0">${lang==='bg'
+     ?'Опозиция се печели и срещу различно изписан знак, ако звучи или изглежда подобно за сходни стоки. При успешна опозиция държавната такса не се връща.'
+     :'An opposition succeeds against a differently spelled sign too, if it sounds or looks alike for similar goods. On a successful opposition the official fee is not refunded.'}</p>
+  </div>
+
+  ${state.search==='full'
+   ?`<div class="helpbar" style="margin-top:14px"><span class="ht">${lang==='bg'
+       ?'Проучването влиза в сметката на стъпка 8.':'The search is added to the invoice at step 8.'}</span>
+      <span class="num">+&#8364;80,00</span></div>`
+   :state.search==='none'
+   ?`<div class="caution" style="margin-top:14px">${lang==='bg'
+       ?'Изборът да се продължи без проучване се записва по преписката заедно с датата — така и за двете страни остава ясно какво е било известно към момента на подаването.'
+       :'The choice to proceed without a search is recorded on the matter with its date, so it stays clear to both sides what was known at the time of filing.'}</div>`
+   :`<p class="quiet" style="margin-top:12px">${lang==='bg'
+       ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}`;
 
  if(k==='mark'){
   const kinds=[{id:'word',bg:'Словна марка',en:'Word mark',sb:{bg:'Само текст. Най-широка закрила.',en:'Text only. Broadest protection.'}},
                {id:'fig',bg:'Фигуративна',en:'Figurative',sb:{bg:'Лого или стилизирано изписване.',en:'A logo or stylised wording.'}},
                {id:'comb',bg:'Комбинирана',en:'Combined',sb:{bg:'Текст и изображение заедно.',en:'Text and image together.'}},
                {id:'other',bg:'Друга (3D, звук, движение)',en:'Other (3D, sound, motion)',sb:{bg:'Изисква специфичен формат на файла.',en:'Requires a specific file format.'}}];
-  return `<div class="field"><label for="mk">${lang==='bg'?'Изписване на марката':'Wording of the mark'}</label>
-   <input type="text" id="mk" value="${esc(state.mark||'')}" placeholder="ORBITA">
-   <span class="hint">${lang==='bg'?'Точно както ще се използва. Не добавяйте ®.':'Exactly as it will be used. Do not add ®.'}</span></div>
-   <div class="opts">${kinds.map(x=>`<button class="opt" data-kind="${x.id}" data-on="${state.kind===x.id?1:0}">
+  const needsText = state.kind==='word' || state.kind==='comb';
+  const needsFile = state.kind==='fig' || state.kind==='comb' || state.kind==='other';
+  return `<div class="opts two">${kinds.map(x=>`<button class="opt" data-kind="${x.id}" data-on="${state.kind===x.id?1:0}">
      <span class="tick"></span><span><span class="ot">${esc(L(x))}</span><span class="os">${esc(L(x.sb))}</span></span><span></span></button>`).join('')}</div>
-   ${(state.kind==='fig'||state.kind==='comb'||state.kind==='other')?uploader():''}`;
+   ${(needsText&&needsFile)?'<div class="markgrid">':''}
+   ${needsText?`<div class="field" style="margin-top:14px;margin-bottom:0">
+     <label for="mk">${lang==='bg'?'Изписване на марката':'Wording of the mark'}</label>
+     <input type="text" id="mk" value="${esc(state.mark||'')}" placeholder="ORBITA">
+     <span class="hint">${lang==='bg'
+       ?(state.kind==='comb'?'Текстовата част от знака, точно както е в изображението. Без ®.'
+                            :'Точно както ще се използва, без ®.')
+       :(state.kind==='comb'?'The word element of the sign, exactly as it appears in the image. No ®.'
+                            :'Exactly as it will be used, without ®.')}</span></div>`:''}
+   ${needsFile?uploader():''}
+   ${(needsText&&needsFile)?'</div>':''}
+   ${!state.kind?`<p class="quiet" style="margin-top:12px">${lang==='bg'?'Изберете вид, за да продължите.':'Choose a kind to continue.'}</p>`:''}`;
  }
 
  if(k==='goods'){
@@ -896,44 +962,54 @@ function body(k){
   <div class="field" style="margin-top:18px"><label for="pn">${lang==='bg'?'Номер на по-ранната заявка':'Earlier application number'}</label>
    <input type="text" id="pn" placeholder="BG 2026/0142857"></div>`;
 
- if(k==='engage')return `<div class="opts">
-   <button class="opt" data-on="1"><span class="tick" style="border-radius:6px"></span>
-    <span><span class="ot">${lang==='bg'?'Договор за правна помощ и съдействие':'Engagement letter for legal services'}</span>
-     <span class="os">${lang==='bg'?'Обхват: изготвяне на заявката, класификация, подаване и проследяване до регистрация. Опозиция и обжалване се възлагат отделно.'
-                                   :'Scope: drafting, classification, filing and docketing through to registration. Opposition and appeal are engaged separately.'}</span></span><span></span></button>
-   <button class="opt" data-on="1"><span class="tick" style="border-radius:6px"></span>
-    <span><span class="ot">${lang==='bg'?'Адвокатско пълномощно':'Power of attorney'}</span>
-     <span class="os">${lang==='bg'?'Генерирано предварително попълнено с данните от стъпка 5. Дава право за подаване и представителство пред ведомството.'
-                                   :'Generated pre-filled from step 5. Authorises filing and representation before the office.'}</span></span><span></span></button></div>
-  <div class="grid2" style="margin-top:18px;gap:16px">
-   <div class="card pad stack" style="gap:10px"><div class="kicker">${lang==='bg'?'Подписване':'Signing'}</div>
-    <button class="btn btn-primary" style="justify-content:center">${lang==='bg'?'Подпиши с КЕП (Evrotrust / B-Trust)':'Sign with a qualified e-signature'}</button>
-    <button class="btn btn-ghost" style="justify-content:center">${lang==='bg'?'Свали PDF, подпиши и качи':'Download PDF, sign and upload'}</button></div>
-   <div class="card pad stack" style="gap:8px"><div class="kicker">${lang==='bg'?'Подписващо лице':'Signatory'}</div>
-    <div class="field" style="margin:0"><label for="sg">${lang==='bg'?'Име и качество':'Name and capacity'}</label>
-     <input type="text" id="sg" placeholder="${lang==='bg'?'Иван Петров, управител':'Ivan Petrov, manager'}"></div>
-    <p class="quiet">${lang==='bg'?'Представителната власт се проверява срещу търговския регистър преди подаване.'
-                                  :'Authority to represent is verified against the commercial register before filing.'}</p></div></div>
-  <div class="caution" style="margin-top:16px">${lang==='bg'
-    ?'Заявители без седалище или реално предприятие в ЕИП задължително се представляват пред EUIPO (чл. 119–120 EUTMR). При този модел това не е пречка — представителството е част от услугата.'
-    :'Applicants with no seat or real establishment in the EEA must be represented before EUIPO (arts. 119–120 EUTMR). On this model that is no obstacle — representation is part of the service.'}</div>`;
+ if(k==='engage')return `
+  <div class="poaline">
+   <span class="poatick">✓</span>
+   <span><strong>${lang==='bg'?'Адвокатско пълномощно':'Power of attorney'}</strong>
+    <span class="quiet"> · ${lang==='bg'?'предварително попълнено с данните от стъпка 5'
+                                        :'pre-filled from step 5'}</span></span>
+  </div>
+
+  <div class="stack" style="gap:6px;margin-top:10px">
+   <div class="signrow">
+    <input type="text" id="sg" value="${esc(state.signatory||'')}"
+      aria-label="${lang==='bg'?'Име и качество на подписващото лице':'Name and capacity of the signatory'}"
+      placeholder="${lang==='bg'?'Име и качество — Иван Петров, управител':'Name and capacity — Ivan Petrov, manager'}">
+    <button class="btn btn-primary" style="padding:9px 14px;white-space:nowrap">${lang==='bg'?'Подпиши електронно':'Sign electronically'}</button>
+    <button class="btn btn-ghost" style="padding:9px 14px;white-space:nowrap">${lang==='bg'?'Свали и качи PDF':'Download PDF'}</button>
+   </div>
+  </div>
+  <p class="quiet" style="margin:7px 0 0">${lang==='bg'
+    ?'КЕП не се изисква. Представителната власт се проверява срещу търговския регистър.'
+    :'No qualified e-signature required. Authority is verified against the commercial register.'}</p>
+
+  <button class="opt" data-declare="1" data-on="${state.declared?1:0}" style="margin-top:8px">
+   <span class="tick" style="border-radius:6px"></span>
+   <span><span class="ot">${lang==='bg'?'Декларация за подписа':'Declaration as to the signature'}</span>
+    <span class="os">${lang==='bg'
+      ?'Декларирам, че подписът е на заявителя или на упълномощено от него лице, положен с негово съгласие.'
+      :'I declare the signature is the applicant’s, or that of a person they authorised, affixed with their consent.'}</span></span><span></span></button>`;
 
  if(k==='pay'){const f=officialFee(),sv=SERVICE[state.route];
-  return `<div class="tblwrap"><table class="tbl"><thead><tr>
+  const net=sv+(state.search==='full'?SEARCH_FEE:0);   // облагаемо с ДДС
+  return `<div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
-   <tr><td>${lang==='bg'?'Адвокатско възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, с ДДС':'service, VAT applies'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
-   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">—</td><td class="r">€${(sv*.2).toFixed(2)}</td></tr>
-   <tr><td>${lang==='bg'?'Държавна такса, ':'Official fee, '}${classCount()} ${lang==='bg'?'клас(а)':'class(es)'}</td>
-       <td class="quiet">${lang==='bg'?'чужд разход — ':'disbursement — '}${esc(L(ROUTES[state.route].office))}</td><td class="r">${money(f.v,f.cur)}</td></tr>
-   <tr><td style="font-weight:600">${lang==='bg'?'Общо':'Total'}</td><td></td><td class="r" style="font-weight:600">${f.cur==='CHF'?`CHF ${f.v.toFixed(2)} + €${(sv*1.2).toFixed(2)}`:money(f.v+sv*1.2,'EUR')}</td></tr>
+   <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга':'service'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
+   ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване':'Search'}</td>
+     <td class="quiet">${lang==='bg'?'услуга':'service'}</td><td class="r">€${SEARCH_FEE.toFixed(2)}</td></tr>`:''}
+   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r">€${(net*.2).toFixed(2)}</td></tr>
+   <tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
+       <td class="quiet">${lang==='bg'?'чужд разход':'disbursement'}</td><td class="r">${money(f.v,f.cur)}</td></tr>
+   <tr><td style="font-weight:600">${lang==='bg'?'Общо':'Total'}</td><td></td><td class="r" style="font-weight:600">${f.cur==='CHF'?`CHF ${f.v.toFixed(2)} + €${(net*1.2).toFixed(2)}`:money(f.v+net*1.2,'EUR')}</td></tr>
    </tbody></table></div>
-  <div class="opts" style="margin-top:20px">
+  <div class="opts" style="margin-top:0">
    <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">myPOS Checkout</span>
-    <span class="os">${lang==='bg'?'Карта, Apple Pay, Google Pay. 3-D Secure 2. Плащането се извършва на хоствана страница на myPOS — картовите данни не преминават през нашия сървър.'
-                                  :'Card, Apple Pay, Google Pay. 3-D Secure 2. Payment happens on a myPOS-hosted page — card data never touches our server.'}</span></span><span></span></button>
+    <span class="os">${lang==='bg'?'Карта, Apple Pay, Google Pay. Картовите данни не минават през нашия сървър.'
+                                  :'Card, Apple Pay, Google Pay. Card data never touches our server.'}</span></span><span></span></button>
    <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банков превод (SEPA)':'Bank transfer (SEPA)'}</span>
-    <span class="os">${lang==='bg'?'Преписката влиза в опашката за преглед след потвърдено постъпване — обичайно един работен ден.':'The matter enters the review queue once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
-  <div class="caution" style="margin-top:16px">${lang==='bg'
+    <span class="os">${lang==='bg'?'Преглед след потвърдено постъпване — обичайно един работен ден.':'Review starts once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
+  </div>
+  <div class="caution" style="margin-top:14px">${lang==='bg'
     ?'Държавната такса не се превежда на ведомството в момента на плащането — тя се плаща при подаването. Ако при прегледа реша, че марката не следва да се подава, таксата се възстановява изцяло.'
     :'The official fee is not remitted when you pay — it is paid at filing. If on review I conclude the mark should not be filed, that fee is refunded in full.'}</div>`;
  }
@@ -973,8 +1049,8 @@ function Price(){
              ['eutm',249,{bg:'27 държави членки с едно заявяване.',en:'27 Member States with one filing.'}],
              ['madrid',349,{bg:'Разширяване към 130+ територии.',en:'Extension to 130+ territories.'}]];
  return `${pageHead({bg:'Цени',en:'Pricing'},{bg:'Цени без изненади',en:'Pricing with nothing hidden'},
-  {bg:'Адвокатското възнаграждение е с фиксирана цена. Държавните такси отиват на ведомството, показват се отделно във фактурата и са възстановими до момента на подаването.',
-   en:'The legal fee is fixed. Official fees go to the office, appear separately on the invoice, and are refundable until I file.'})}
+  {bg:'Фиксирано възнаграждение. Държавната такса се показва отделно и е възстановима до подаването.',
+   en:'A fixed fee. The official fee is shown separately and is refundable until filing.'})}
  <section class="sec"><div class="wrap stack" style="gap:24px">
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
     <thead><tr><th style="padding-left:22px">${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Обхват':'Scope'}</th>
@@ -982,7 +1058,14 @@ function Price(){
     <tbody>${rows.map(([k,sv,d])=>{const r=ROUTES[k];return `<tr>
      <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
      <td class="quiet">${esc(L(d))}</td><td class="r">${r.cur==='CHF'?'CHF '+r.base.toFixed(2):'€'+r.base.toFixed(2)}</td>
-     <td class="r" style="padding-right:22px">€${sv.toFixed(2)}</td></tr>`}).join('')}</tbody></table></div></div>
+     <td class="r" style="padding-right:22px">€${sv.toFixed(2)}</td></tr>`}).join('')}
+     <tr><td style="padding-left:22px"><strong>${lang==='bg'?'Проучване за сходни и идентични марки':'Search for identical and similar marks'}</strong>
+       <div class="quiet">${lang==='bg'?'по избор, на стъпка 2':'optional, at step 2'}</div></td>
+      <td class="quiet">${lang==='bg'
+        ?'БПВ, EUIPO и Мадридската система; писмено становище с оценка на риска в 3 работни дни.'
+        :'BPO, EUIPO and the Madrid System; a written opinion with a risk assessment in 3 working days.'}</td>
+      <td class="r quiet">—</td><td class="r" style="padding-right:22px">€${SEARCH_FEE.toFixed(2)}</td></tr>
+    </tbody></table></div></div>
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
     <thead><tr><th style="padding-left:22px">${lang==='bg'?'Как расте държавната такса':'How the official fee scales'}</th>
      <th>${lang==='bg'?'Първи клас':'First class'}</th><th>${lang==='bg'?'Втори клас':'Second class'}</th>
@@ -1013,8 +1096,8 @@ function Blog(){
  const [f,...rest]=POSTS;
  return `${pageHead({bg:'Новини и практика',en:'News and practice'},
   {bg:'Какво се променя в марковото право',en:'What is changing in trade mark law'},
-  {bg:'Решения на съдилищата, промени в тарифите и практика на ведомствата — обобщени така, че да се четат за пет минути.',
-   en:'Court rulings, fee changes and office practice — summarised to be read in five minutes.'})}
+  {bg:'Решения на съдилищата, промени в тарифите и практика на ведомствата, за пет минути четене.',
+   en:'Court rulings, fee changes and office practice, in five minutes of reading.'})}
  <section class="sec"><div class="wrap stack" style="gap:28px">
   <article class="card pad grid2" style="align-items:center;gap:30px">
    <div class="stack" style="gap:12px">
@@ -1051,10 +1134,11 @@ function About(){
     en:'The first thing an investor checks is whether the name is actually yours. The same applies in a domain dispute.'}]
  ];
  return `${pageHead({bg:'За марките и за тази услуга',en:'About trade marks and this service'},
-  {bg:'Името е това, с което ви помнят. Регистрацията е това, с което го задържате.',
-   en:'The name is what people remember you by. Registration is what lets you keep it.'})}
- <section class="sec"><div class="wrap grid2" style="gap:46px">
-  <div class="stack" style="gap:18px">
+  {bg:'Името е това, с което ви помнят',en:'The name is what people remember you by'},
+  {bg:'Регистрацията е това, с което го задържате: правото да спрете трето лице да ползва същия знак.',
+   en:'Registration is what lets you keep it: the right to stop a third party using the same sign.'})}
+ <section class="sec"><div class="wrap">
+  <div class="twocol">
    <p class="copy">${lang==='bg'
      ?'Търговската марка е знакът, по който клиентът разпознава вас, а не някой друг — име, лого или съчетание от двете. Регистрацията превръща това разпознаване в изключително право: правото да забраните на трето лице да използва същия или сходен знак за същите или сходни стоки и услуги. Без регистрация имате име, което ползвате. С регистрация имате актив, който притежавате.'
      :'A trade mark is the sign by which a customer recognises you rather than someone else — a name, a logo, or the two together. Registration turns that recognition into an exclusive right: the right to stop a third party using the same or a similar sign for the same or similar goods and services. Without registration you have a name you use. With registration you have an asset you own.'}</p>
@@ -1071,34 +1155,43 @@ function About(){
      ?'За кого е: за предприемачи и малки дружества, които тепърва пускат име на пазара; за марки, които вече работят години наред без регистрация и рискуват при първия конкурент; и за творци и свободни професии, за които името е част от самата работа.'
      :'Who it is for: founders and small companies putting a name on the market; brands that have traded for years without registration and are exposed to the first competitor who files; and creators and independent professionals for whom the name is part of the work itself.'}</p>
   </div>
+  </div>
+ </div></section>
 
-  <div class="stack" style="gap:16px">
-   <div class="card pad stack" style="gap:14px">
-    <div class="kicker">${lang==='bg'?'Какво дава регистрацията':'What registration gives you'}</div>
-    ${gives.map(([t,d])=>`<div style="border-bottom:1px solid var(--line-2);padding-bottom:12px">
-      <div style="font-weight:700;font-size:15.5px">${esc(L(t))}</div>
-      <div class="quiet" style="margin-top:4px">${esc(L(d))}</div></div>`).join('')}
-    <p class="quiet" style="margin:0">${lang==='bg'
-      ?'Срокът тече от датата на подаване, не от регистрацията — затова ранното подаване купува и време, и предимство пред по-късните заявители.'
-      :'The term runs from the filing date, not from registration — which is why filing early buys both time and priority over later applicants.'}</p>
-   </div>
-   <div class="card pad stack" style="gap:10px">
-    <div class="kicker">${lang==='bg'?'Често задаван въпрос':'A frequent question'}</div>
-    <div style="font-weight:700;font-size:15.5px">${lang==='bg'?'Регистрирах фирма — това пази ли името ми?':'I registered a company — does that protect my name?'}</div>
-    <p class="quiet">${lang==='bg'
-      ?'Не. Вписването в търговския регистър ви дава право да ползвате наименованието като фирма, но не и изключително право върху знака за стоки и услуги. Двата регистъра са различни и се проверяват поотделно.'
-      :'No. Registration in the commercial register lets you use the name as a company name; it does not give an exclusive right over the sign for goods and services. The two registers are separate and are checked separately.'}</p>
-   </div>
-   <div class="caution">${lang==='bg'
-     ?'Правен съвет по конкретна преписка се дава след сключване на договор за правна помощ. Материалите в блога и ръководствата са с информационен характер и не създават адвокатско правоотношение.'
-     :'Advice on a specific matter is given once an engagement letter is in place. The blog and the manuals are informational and do not create a lawyer–client relationship.'}</div>
-  </div></div></section>`;
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="narrow" style="padding:0;margin:0 0 22px">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво дава регистрацията':'What registration gives you'}</div>
+   <h2>${lang==='bg'?'Четири неща, които получавате с регистрацията'
+                    :'Four things registration gives you'}</h2>
+  </div>
+  <div class="grid2" style="gap:18px">
+   ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+     <h3 style="font-size:17px">${esc(L(t))}</h3>
+     <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
+  </div>
+  <p class="quiet" style="max-width:70ch;margin-top:20px">${lang==='bg'
+    ?'Срокът тече от датата на подаване, не от регистрацията — затова ранното подаване купува и време, и предимство пред по-късните заявители.'
+    :'The term runs from the filing date, not from registration — which is why filing early buys both time and priority over later applicants.'}</p>
+ </div></section>
+
+ <section class="sec"><div class="wrap grid2" style="gap:26px;align-items:start">
+  <div class="card pad stack" style="gap:10px">
+   <div class="kicker">${lang==='bg'?'Често задаван въпрос':'A frequent question'}</div>
+   <div style="font-weight:700;font-size:15.5px">${lang==='bg'?'Регистрирах фирма — това пази ли името ми?':'I registered a company — does that protect my name?'}</div>
+   <p class="quiet">${lang==='bg'
+     ?'Не. Вписването в търговския регистър ви дава право да ползвате наименованието като фирма, но не и изключително право върху знака за стоки и услуги. Двата регистъра са различни и се проверяват поотделно.'
+     :'No. Registration in the commercial register lets you use the name as a company name; it does not give an exclusive right over the sign for goods and services. The two registers are separate and are checked separately.'}</p>
+  </div>
+  <div class="caution">${lang==='bg'
+    ?'Правен съвет по конкретна преписка се дава след сключване на договор за правна помощ. Материалите в блога и ръководствата са с информационен характер и не създават адвокатско правоотношение.'
+    :'Advice on a specific matter is given once an engagement letter is in place. The blog and the manuals are informational and do not create a lawyer–client relationship.'}</div>
+ </div></section>`;
 }
 
 function Contact(){
  return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'},
-  {bg:'Отговаряме в рамките на един работен ден. За текущи заявки използвайте съобщенията в профила си — така всичко остава по преписката.',
-   en:'We reply within one working day. For live applications use the messages in your account so everything stays on file.'})}
+  {bg:'Отговаряме в рамките на един работен ден. За текущи заявки пишете от профила си.',
+   en:'We reply within one working day. For live applications write from your account.'})}
  <section class="sec"><div class="wrap grid2" style="gap:44px">
   <div class="stack" style="gap:18px">
    <div class="card pad"><div class="rows">
@@ -1126,8 +1219,8 @@ function Contact(){
 function Office(){
  return `${pageHead({bg:'Вътрешен изглед · само за адвоката',en:'Internal view · lawyer only'},
   {bg:'Опашка от преписки',en:'Matter queue'},
-  {bg:'Преписките, подредени по срок, с контролния лист преди подаване и действията по всяка.',
-   en:'Matters ordered by deadline, with the pre-filing checklist and the actions on each.'})}
+  {bg:'Преписките по срок, с контролния лист преди подаване.',
+   en:'Matters by deadline, with the pre-filing checklist.'})}
  <section class="sec"><div class="wrap stack" style="gap:22px">
   <div class="grid3">
    ${[[{bg:'За преглед днес',en:'To review today'},'2','v'],
@@ -1164,7 +1257,7 @@ function Office(){
      ${[[{bg:'Плащане на държавната такса',en:'Pay the official fee'},{bg:'От текуща сметка в EUIPO; равнява се през Me API.',en:'From the EUIPO current account; reconciled through the Me API.'}],
         [{bg:'Вписване на входящ номер и дата',en:'Record file number and date'},{bg:'Оттам тръгват всички срокове и уведомления.',en:'Every deadline and alert runs from there.'}],
         [{bg:'Срок за такса — България',en:'Fee deadline — Bulgaria'},{bg:'14 дни от подаването, иначе двоен размер. Следи се автоматично.',en:'14 days from filing, otherwise it doubles. Tracked automatically.'}],
-        [{bg:'Архивиране на преписката',en:'Archive the matter'},{bg:'Заявка, пълномощно, договор, фактура и одитна следа в едно досие.',en:'Application, power of attorney, engagement letter, invoice and audit trail in one file.'}]]
+        [{bg:'Архивиране на преписката',en:'Archive the matter'},{bg:'Заявка, пълномощно, декларация, фактура и одитна следа в едно досие.',en:'Application, power of attorney, declaration, invoice and audit trail in one file.'}]]
        .map(([a,b])=>`<div class="row" style="align-items:start"><span style="font-weight:600;font-size:14.5px;max-width:16ch">${esc(L(a))}</span>
          <span class="quiet" style="flex:1;text-align:right">${esc(L(b))}</span></div>`).join('')}</div>
     <p class="quiet">${lang==='bg'?'Изгледът не е достъпен за клиенти. В производството достъпът е с роли и всяко действие се записва в одитната следа.'
@@ -1178,8 +1271,7 @@ function Acct(){
  const f=officialFee();
  return `${pageHead({bg:'Профил',en:'Account'},{bg:'Моите заявки',en:'My applications'},
   {bg:'Всяка преписка с текущото си състояние, следващия срок и документите по нея.',
-   en:'Every matter with its current status, the next deadline and its documents.'},
-  `<button class="btn btn-gold" data-p="file" style="align-self:start;margin-top:4px">${lang==='bg'?'Нова заявка':'New application'}</button>`)}
+   en:'Every matter with its current status, the next deadline and its documents.'})}
  <section class="sec"><div class="wrap stack" style="gap:22px">
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
@@ -1216,11 +1308,14 @@ function wire(){
  if(prev)prev.onclick=()=>{state.step=Math.max(1,state.step-1);save();render()};
  if(next)next.onclick=()=>{state.done[state.step]=true;if(state.step<9){state.step++;save();render()}else{state.status='received';save();go('acct')}};
  if(sb)sb.onclick=()=>{save();go('acct')};
- if(rs)rs.onclick=()=>{state={route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,terms:[],done:{},status:'draft'};save();render()};
+ if(rs)rs.onclick=()=>{state={route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,signatory:'',declared:false,terms:[],done:{},status:'draft'};save();render()};
  app.querySelectorAll('[data-setstatus]').forEach(b=>b.onclick=()=>{state.status=b.dataset.setstatus;if(state.status==='returned'){state.step=5}save();render()});
  app.querySelectorAll('[data-route]').forEach(el=>el.onclick=()=>{state.route=el.dataset.route;save();render()});
  const ct=app.querySelector('#colourtoggle');if(ct)ct.onclick=()=>{state.colour=!state.colour;save();render()};
  app.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{state.kind=el.dataset.kind;save();render()});
+ app.querySelectorAll('[data-search]').forEach(el=>el.onclick=()=>{state.search=el.dataset.search;save();render()});
+ app.querySelectorAll('[data-declare]').forEach(el=>el.onclick=()=>{state.declared=!state.declared;save();render()});
+ const sg=app.querySelector('#sg');if(sg)sg.oninput=e=>{state.signatory=e.target.value;save()};
  const din=app.querySelector('#imgin'), dz=app.querySelector('#drop');
  if(din){
   const pk=app.querySelector('#pickimg'); if(pk)pk.onclick=e=>{e.stopPropagation();din.click()};
@@ -1235,7 +1330,6 @@ function wire(){
   }
  }
  const mk=app.querySelector('#mk');if(mk)mk.oninput=e=>{state.mark=e.target.value;save()};
- const qm=app.querySelector('#q_mark');if(qm)qm.oninput=e=>{state.mark=e.target.value;save()};
  const tq=app.querySelector('#tq');if(tq){renderTerms('');tq.oninput=e=>renderTerms(e.target.value)}
 }
 function renderTerms(q){
