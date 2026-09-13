@@ -1274,11 +1274,14 @@ function About(){
    <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Територия на защита':'Territory of protection'}</div>
    <h2>${lang==='bg'?'Защита там, където развивате бизнеса си'
                     :'Protection where you actually trade'}</h2>
-   <p class="copy" style="margin-top:14px">${lang==='bg'
-     ?'Една и съща услуга може да бъде приложена към различни режими на защита в зависимост от пазара, на който оперирате или планирате да развивате дейността си. Изборът на правилната територия е част от стратегията за защита на марката и трябва да бъде съобразен с настоящите и бъдещите ви бизнес планове.'
-     :'The same service applies to different protection regimes depending on the market you trade in or plan to enter. Choosing the right territory is part of the protection strategy and has to match your present and future business plans.'}</p>
   </div>
-  <div class="grid3" style="gap:18px">
+  ${twocol([
+   {bg:'Една и съща услуга може да бъде приложена към различни режими на защита в зависимост от пазара, на който оперирате или планирате да развивате дейността си.',
+    en:'The same service applies to different protection regimes, depending on the market you trade in or plan to enter.'},
+   {bg:'Изборът на правилната територия е част от стратегията за защита на марката и трябва да бъде съобразен с настоящите и бъдещите ви бизнес планове.',
+    en:'Choosing the right territory is part of the protection strategy and has to match your present and future business plans.'}
+  ])}
+  <div class="grid3" style="gap:18px;margin-top:26px">
    ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National registration'},
        {bg:'Когато защитата е необходима само на територията на страната. Заявява се пред Патентното ведомство на Република България.',
         en:'When protection is needed in Bulgaria alone. Filed with the Bulgarian Patent Office.'}],
