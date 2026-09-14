@@ -3,8 +3,11 @@
 //
 // Извиква се от сайта с жетона на влезлия клиент:
 //   POST /functions/v1/hdb-suggest   { q, lang, niceClass, limit }
-// Диагностика (само с CRON_KEY в заглавката x-cron-key):
+// Диагностика (пак само за влязъл клиент):
 //   POST /functions/v1/hdb-suggest   { probe: true }
+//
+// Всяка заявка носи Authorization: Bearer <жетона на сесията>. Функцията
+// го проверява срещу Supabase Auth — без валиден потребител няма отговор.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -159,17 +162,46 @@ async function suggest(q: string, lang: string, niceClass: string, limit: number
   return rows;
 }
 
+// ---------- кой пита ----------
+// Жетонът на сесията се проверява срещу Supabase Auth. Анонимна заявка не
+// минава — квотата към EUIPO е на кантората и не бива да е отворена за всеки.
+async function requireUser(req: Request): Promise<string | null> {
+  const authz = req.headers.get('Authorization') || '';
+  if (!/^Bearer\s+.+/i.test(authz)) return null;
+
+  const url = Deno.env.get('SUPABASE_URL');
+  if (!url) return null;
+
+  let apikey = '';
+  try {
+    const keys = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') || '{}');
+    apikey = keys.default || Object.values(keys)[0] as string || '';
+  } catch { /* по-долу пада на празно */ }
+  if (!apikey) apikey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+
+  try {
+    const r = await fetch(url + '/auth/v1/user', {
+      headers: { Authorization: authz, apikey },
+    });
+    if (!r.ok) return null;
+    const u = await r.json();
+    return u && u.id ? String(u.id) : null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
+
+  const userId = await requireUser(req);
+  if (!userId) return json({ error: 'unauthorized' }, 401);
 
   let b: any = {};
   try { b = await req.json(); } catch { /* празно тяло */ }
 
   if (b.probe) {
-    const given = req.headers.get('x-cron-key') || '';
-    const want = Deno.env.get('CRON_KEY') || '';
-    if (!want || given !== want) return json({ error: 'forbidden' }, 403);
     try { return json(await probe()); }
     catch (e) { return json({ error: String(e) }, 500); }
   }
