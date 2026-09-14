@@ -101,16 +101,9 @@ async function probe() {
     out.hostsFromDocs = ['scrape error: ' + String(e)];
   }
 
-  // 3. пробваме вероятните адреси за GET /terms
+  // 3. проверяваме самото API
   const t = await token();
-  const bases = [
-    'https://api-sandbox.euipo.europa.eu/goods-and-services/v1',
-    'https://api-sandbox.euipo.europa.eu/goods-and-services/v1.2',
-    'https://api-sandbox.euipo.europa.eu/goods-and-services',
-    'https://api-sandbox.euipo.europa.eu/gs/v1',
-    'https://api-sandbox.euipo.europa.eu/api/goods-and-services/v1',
-    'https://api-sandbox.euipo.europa.eu/euipo/goods-and-services/v1',
-  ];
+  const bases = [BASE];
   out.tried = [];
   for (const b of bases) {
     const url = b + '/terms?text=coffee&language=en&size=5';
@@ -127,9 +120,11 @@ async function probe() {
 }
 
 // ---------- истинското търсене ----------
+// Адресът е установен с диагностика на 15 септември 2026: шлюзът разпознава
+// /goods-and-services и отговаря на /terms. Версията не е част от пътя.
 const BASE = SANDBOX
-  ? (Deno.env.get('EUIPO_GS_BASE') || 'https://api-sandbox.euipo.europa.eu/goods-and-services/v1')
-  : (Deno.env.get('EUIPO_GS_BASE') || 'https://api.euipo.europa.eu/goods-and-services/v1');
+  ? (Deno.env.get('EUIPO_GS_BASE') || 'https://api-sandbox.euipo.europa.eu/goods-and-services')
+  : (Deno.env.get('EUIPO_GS_BASE') || 'https://api.euipo.europa.eu/goods-and-services');
 
 const cache = new Map<string, { at: number; rows: unknown[] }>();
 
