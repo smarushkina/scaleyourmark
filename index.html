@@ -601,6 +601,7 @@ const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,sea
 let state = Object.assign({}, BLANK, load()||{});
 state.applicant = Object.assign({}, BLANK.applicant, state.applicant||{});
 state.priority  = Object.assign({}, BLANK.priority,  state.priority ||{});
+normaliseTerms();
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function save(){saveLocal(); queueDraft();}
@@ -612,7 +613,17 @@ function feeOf(route,n,colour){
  if(route==='eutm')  return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
  return{cur:'CHF',v:(colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass};
 }
-function classCount(){return new Set(state.terms.map(i=>TERMS[i].c)).size||1}
+/* Избраните термини вече са обекти {id, c, t, src}, а не индекси в таблица
+   вътре в страницата. Старите чернови се привеждат към новата форма.        */
+function normaliseTerms(){
+ if(!Array.isArray(state.terms)) {state.terms=[]; return}
+ state.terms = state.terms.map(x=>{
+   if(x && typeof x==='object') return x;
+   const t=TERMS[x]; if(!t) return null;
+   return {id:'sample:'+x, c:t.c, t:t.bg, src:'sample'};
+ }).filter(Boolean);
+}
+function classCount(){return new Set(state.terms.map(t=>t.c)).size||1}
 function officialFee(){const n=classCount(),r=ROUTES[state.route];
  if(state.route==='bg_nat')return{cur:'EUR',v:r.base+Math.max(0,n-3)*r.extra+r.cert};
  if(state.route==='eutm')return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
@@ -1038,10 +1049,12 @@ async function handover(){
   await pushDraft();
 
   await sb.from('matter_terms').delete().eq('matter_id', id);
-  const rows = state.terms.map((i,k)=>({
-    matter_id:id, nice_class:TERMS[i].c, term_text:TERMS[i].bg,
-    source: TERMS[i].hdb ? 'hdb' : 'free',
-    hdb_id: TERMS[i].hdb ? ('sample:'+i) : null,
+  // само термин от истинската Хармонизирана база се записва като 'hdb';
+  // извадката за разработка и свободният текст отиват като 'free'
+  const rows = state.terms.map((t,k)=>({
+    matter_id:id, nice_class:t.c, term_text:t.t,
+    source: t.src==='hdb' ? 'hdb' : 'free',
+    hdb_id:  t.src==='hdb' ? t.id : null,
     language:'bg', position:k
   }));
   if(rows.length){ const r=await sb.from('matter_terms').insert(rows); if(r.error) throw r.error }
@@ -1466,11 +1479,22 @@ function body(k){
  }
 
  if(k==='goods'){
-  const g={};state.terms.forEach(i=>{const t=TERMS[i];(g[t.c]=g[t.c]||[]).push(t)});
-  return `<div class="field"><label for="tq">${lang==='bg'?'Търсете в Хармонизираната база':'Search the Harmonised Database'}</label>
+  const g={};state.terms.forEach(t=>{(g[t.c]=g[t.c]||[]).push(t)});
+  const anyHdb = state.terms.some(t=>t.src==='hdb');
+  return `<div class="field"><label for="tq">${lang==='bg'?'Търсете в списъка с термини':'Search the term list'}</label>
     <input type="text" id="tq" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"></div>
    <div class="tlist" id="termlist"></div>
-   <p class="quiet" style="margin-top:10px">${lang==='bg'?'HDB = приема се автоматично. FREE = свободен текст, отива на експертиза.':'HDB = accepted automatically. FREE = free text, goes to examination.'}</p>
+   <div class="signrow" style="margin-top:8px">
+    <input type="text" id="ft" placeholder="${lang==='bg'?'или опишете стоката/услугата със свои думи':'or describe the goods/services in your own words'}">
+    <select id="fc" aria-label="${lang==='bg'?'Клас':'Class'}" style="max-width:110px">${
+      Array.from({length:45},(_,n)=>n+1).map(n=>`<option value="${n}">${lang==='bg'?'Клас':'Class'} ${n}</option>`).join('')}</select>
+    <button class="btn btn-ghost" id="addfree" style="padding:9px 14px;white-space:nowrap">${lang==='bg'?'Добави':'Add'}</button>
+   </div>
+   <p class="quiet" style="margin-top:10px">${lang==='bg'
+     ? (anyHdb?'HDB = приема се автоматично. Свободният текст отива на експертиза.'
+             :'Списъкът е местна извадка за разработка, не Хармонизираната база. Затова всеки избран термин се записва като свободен текст и минава през експертиза. Когато вземем достъп до базата на EUIPO, тук ще се появи и етикет HDB.')
+     : (anyHdb?'HDB = accepted automatically. Free text goes to examination.'
+             :'This list is a local development sample, not the Harmonised Database. Every term you pick is therefore recorded as free text and goes to examination. Once we have access to the EUIPO database, an HDB badge will appear here.')}</p>
    <div class="sum" style="margin-top:16px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px">
      <span class="kicker">${lang==='bg'?'Вашата спецификация':'Your specification'}</span>
@@ -1478,7 +1502,7 @@ function body(k){
     </div>
     ${Object.keys(g).length?Object.entries(g).sort((a,b)=>a[0]-b[0]).map(([c,ts])=>`
       <div style="margin-bottom:10px"><span class="chip">${lang==='bg'?'Клас':'Class'} ${c}</span>
-      <div style="font-size:14.5px;color:var(--ink-2);margin-top:5px">${ts.map(t=>esc(L(t))).join('; ')}</div></div>`).join('')
+      <div style="font-size:14.5px;color:var(--ink-2);margin-top:5px">${ts.map(t=>esc(t.t)).join('; ')}</div></div>`).join('')
       :`<p class="quiet">${lang==='bg'?'Още нищо не е избрано. Изберете поне един термин, за да продължите.':'Nothing selected yet. Pick at least one term to continue.'}</p>`}
    </div>`;
  }
@@ -1969,7 +1993,7 @@ function Acct(){
   rows=`<tr>${cell(esc(state.mark||'—'),
         (lang==='bg'?'чернова, стъпка ':'draft, step ')+state.step+'/9')}
     <td class="num">${ROUTES[state.route].code}</td>
-    <td class="num">${[...new Set(state.terms.map(i=>TERMS[i].c))].sort((a,b)=>a-b).join(', ')||'—'}</td>
+    <td class="num">${[...new Set(state.terms.map(t=>t.c))].sort((a,b)=>a-b).join(', ')||'—'}</td>
     <td><span class="tag ${STATUS[state.status||'draft'].cls}">${esc(L(STATUS[state.status||'draft']))}</span></td>
     <td class="r" style="padding-right:22px">${money(f.v,f.cur)}</td></tr>`;
  } else if(matters===null){
@@ -2086,22 +2110,67 @@ function wire(){
   }
  }
  const mk=app.querySelector('#mk');if(mk)mk.oninput=e=>{state.mark=e.target.value;save()};
- const tq=app.querySelector('#tq');if(tq){renderTerms('');tq.oninput=e=>renderTerms(e.target.value)}
+ const tq=app.querySelector('#tq');
+ if(tq){searchTerms('');tq.oninput=e=>{const v=e.target.value;
+   if(termTimer)clearTimeout(termTimer);
+   termTimer=setTimeout(()=>{termTimer=null;searchTerms(v)},250)}}
+ const addf=app.querySelector('#addfree');
+ if(addf)addf.onclick=()=>{
+   const el=app.querySelector('#ft'), cl=app.querySelector('#fc');
+   const txt=(el&&el.value||'').trim(); if(!txt)return;
+   state.terms.push({id:'free:'+Date.now(), c:+(cl&&cl.value||1), t:txt, src:'free'});
+   save(); render();
+ };
 }
-function renderTerms(q){
- const box=app.querySelector('#termlist');if(!box)return;
- const s=q.trim().toLowerCase();
- const rows=TERMS.map((t,i)=>({t,i})).filter(({t})=>!s||L(t).toLowerCase().includes(s)||String(t.c)===s);
- box.innerHTML=rows.length?rows.map(({t,i})=>`<div class="trow" data-i="${i}" data-on="${state.terms.includes(i)?1:0}">
-   <span class="chip">${lang==='bg'?'Кл.':'Cl.'} ${t.c}</span><span>${esc(L(t))}</span>
-   <span class="badge ${t.hdb?'hdb':'free'}">${t.hdb?'HDB':'FREE'}</span></div>`).join('')
-  :`<div class="trow" style="cursor:default"><span></span><span class="quiet">${lang==='bg'?'Няма съвпадения. Свободният текст ще бъде проверен от експерт.':'No matches. Free text will be reviewed by an examiner.'}</span><span></span></div>`;
- box.querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>{
-  const i=+el.dataset.i,k=state.terms.indexOf(i);
-  k>=0?state.terms.splice(k,1):state.terms.push(i);
-  save();const keep=(app.querySelector('#tq')||{}).value||'';render();
-  const f=app.querySelector('#tq');if(f){f.value=keep;renderTerms(keep);f.focus()}});
+let termTimer=null, termRows=[], termBusy=false;
+
+async function searchTerms(q){
+ const box=app.querySelector('#termlist'); if(!box) return;
+ const s=(q||'').trim();
+ if(remote && sb){
+  box.innerHTML=`<div class="trow" style="cursor:default"><span></span><span class="quiet">${
+    lang==='bg'?'Търсим…':'Searching…'}</span><span></span></div>`;
+  try{
+   const {data,error}=await sb.rpc('search_terms',{p_q:s,p_lang:lang,p_class:null,p_limit:40});
+   if(error) throw error;
+   termRows=(data||[]).map(r=>({id:r.hdb_id, c:r.nice_class, t:r.term_text, src:r.source}));
+  }catch(e){
+   box.innerHTML=`<div class="trow" style="cursor:default"><span></span><span class="quiet">${
+     esc((lang==='bg'?'Списъкът не се зареди: ':'The list did not load: ')+((e&&e.message)||e))}</span><span></span></div>`;
+   return;
+  }
+ } else {
+  const ls=s.toLowerCase();
+  termRows=TERMS.map((t,i)=>({id:'sample:'+i, c:t.c, t:L(t), src:'sample'}))
+    .filter(r=>!ls || r.t.toLowerCase().includes(ls) || String(r.c)===ls);
+ }
+ paintTerms();
 }
+
+function paintTerms(){
+ const box=app.querySelector('#termlist'); if(!box) return;
+ const chosen=new Set(state.terms.map(t=>t.id));
+ const badge=src=>src==='hdb'
+   ? '<span class="badge hdb">HDB</span>'
+   : `<span class="badge free">${lang==='bg'?'ПРОБА':'SAMPLE'}</span>`;
+ box.innerHTML = termRows.length
+  ? termRows.map(r=>`<div class="trow" data-id="${esc(r.id)}" data-on="${chosen.has(r.id)?1:0}">
+      <span class="chip">${lang==='bg'?'Кл.':'Cl.'} ${r.c}</span><span>${esc(r.t)}</span>
+      ${badge(r.src)}</div>`).join('')
+  : `<div class="trow" style="cursor:default"><span></span><span class="quiet">${lang==='bg'
+      ?'Няма съвпадения. Опишете стоката със свои думи в полето отдолу — ще мине през експертиза.'
+      :'No matches. Describe the goods in your own words below — it will go to examination.'}</span><span></span></div>`;
+ box.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>{
+  const id=el.dataset.id, k=state.terms.findIndex(t=>t.id===id);
+  if(k>=0) state.terms.splice(k,1);
+  else { const r=termRows.find(x=>x.id===id); if(r) state.terms.push(r) }
+  save();
+  const keep=(app.querySelector('#tq')||{}).value||'';
+  render();
+  const f=app.querySelector('#tq'); if(f){f.value=keep; paintTerms(); f.focus()}
+ });
+}
+
 
 document.getElementById('lang').querySelectorAll('button').forEach(b=>b.onclick=()=>{
  lang=b.dataset.l;
