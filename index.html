@@ -604,7 +604,7 @@ const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,sea
   signatory:'',declared:false,terms:[],done:{},status:'draft',
   matter_id:null, ref:null, signed_at:null,
   applicant:{kind:'legal',name:'',id:'',addr:'',country:'BG'},
-  priority:{claim:'none',number:''}};
+  priority:{claim:'none',number:''}, activity:null};
 let state = Object.assign({}, BLANK, load()||{});
 state.applicant = Object.assign({}, BLANK.applicant, state.applicant||{});
 state.priority  = Object.assign({}, BLANK.priority,  state.priority ||{});
@@ -1121,7 +1121,7 @@ async function resetDraft(){
           signatory:'',declared:false,terms:[],done:{},status:'draft',
           matter_id:null, ref:null, signed_at:null,
           applicant:{kind:'legal',name:'',id:'',addr:'',country:'BG'},
-          priority:{claim:'none',number:''}};
+          priority:{claim:'none',number:''}, activity:null};
  saveLocal();
  if(remote && sb && old){
   await sb.from('matters').delete().eq('id', old).is('locked_at', null);
@@ -1488,9 +1488,25 @@ function body(k){
  if(k==='goods'){
   const g={}; state.terms.forEach(t=>{(g[t.c]=g[t.c]||[]).push(t)});
   const madrid = state.route==='madrid';
-  return `<p class="quiet" style="margin:0 0 10px">${lang==='bg'
+  const act = ACTIVITIES.find(a=>a.id===state.activity);
+  return `<p class="quiet" style="margin:0 0 8px">${lang==='bg'
     ? 'Търсенето отваря самата база — на български, само върху хармонизираните термини. Каквото намерите там, се приема без възражение.'
     : 'The search opens the database itself — in your language, harmonised terms only. Whatever you find there is accepted without objection.'}</p>
+
+   <div class="kicker" style="margin:0 0 6px">${lang==='bg'?'С какво се занимавате?':'What do you do?'}</div>
+   <div style="margin-bottom:${act?'8px':'12px'}">${ACTIVITIES.map(a=>
+     `<span class="pill" data-act="${a.id}" ${state.activity===a.id?'style="border-color:var(--gold);color:var(--ink)"':''}>${esc(L(a.t))}</span>`).join('')}</div>
+   ${act?`<div class="sum" style="margin:0 0 12px;padding:12px 14px">
+     <p class="quiet" style="margin:0 0 8px">${lang==='bg'
+       ? 'При тази дейност обикновено се ползват тези класове. Това е ориентир, не правило — потвърждава се от намереното в базата и от адвоката при прегледа.'
+       : 'This activity usually uses these classes. A pointer, not a rule — confirmed by what you find in the database and by the lawyer on review.'}</p>
+     ${act.cls.map(x=>`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:7px">
+        <span class="chip">${lang==='bg'?'Клас':'Class'} ${x.c}</span>
+        <span style="font-size:14.5px;color:var(--ink-2);flex:1 1 200px">${esc(L(x.d))}</span>
+        <button class="btn btn-quiet" data-actcls="${x.c}" data-actq="${esc(L(x.q))}"
+          style="padding:6px 12px;font-size:13px;white-space:nowrap">${lang==='bg'?'Отворете базата ↗':'Open the database ↗'}</button>
+      </div>`).join('')}
+   </div>`:''}
 
    <div class="signrow">
     <input type="text" id="tq" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"
@@ -2144,6 +2160,13 @@ function wire(){
   }
  }
  const mk=app.querySelector('#mk');if(mk)mk.oninput=e=>{state.mark=e.target.value;save()};
+ app.querySelectorAll('[data-act]').forEach(el=>el.onclick=()=>{
+   state.activity = (state.activity===el.dataset.act) ? null : el.dataset.act;
+   save(); render();
+ });
+ app.querySelectorAll('[data-actcls]').forEach(el=>el.onclick=()=>{
+   window.open(hdbUrl(el.dataset.actq, el.dataset.actcls), '_blank', 'noopener');
+ });
  const hg=app.querySelector('#hdbgo');
  const goHdb=()=>{
    const q=(app.querySelector('#tq')||{}).value||'';
@@ -2166,6 +2189,41 @@ function wire(){
    if(k>=0){state.terms.splice(k,1); save(); render()}
  });
 }
+/* Ориентир по дейност. Класовете са обективни — те идват от структурата на
+   Класификацията от Ница. Думите отдясно са само предложение за търсене;
+   текстът на самия термин продължава да идва единствено от базата.        */
+const ACTIVITIES = [
+ {id:'clothing', t:{bg:'Дрехи и мода',en:'Clothing and fashion'}, cls:[
+   {c:25, d:{bg:'самите дрехи, обувки, шапки',en:'the clothing, footwear, headgear itself'}, q:{bg:'облекло',en:'clothing'}},
+   {c:35, d:{bg:'търговия на дребно с дрехи',en:'retail of clothing'}, q:{bg:'търговия на дребно с облекло',en:'retail services clothing'}}]},
+ {id:'software', t:{bg:'Софтуер и приложения',en:'Software and apps'}, cls:[
+   {c:9,  d:{bg:'записан или изтегляем софтуер',en:'recorded or downloadable software'}, q:{bg:'софтуер',en:'software'}},
+   {c:42, d:{bg:'разработване, SaaS, поддръжка',en:'development, SaaS, maintenance'}, q:{bg:'софтуер като услуга',en:'software as a service'}}]},
+ {id:'food', t:{bg:'Заведение, кафене, ресторант',en:'Café, restaurant, bar'}, cls:[
+   {c:43, d:{bg:'сервиране на храна и напитки',en:'providing food and drink'}, q:{bg:'ресторант',en:'restaurant services'}},
+   {c:30, d:{bg:'ако продавате и пакетирани кафе, чай, хляб',en:'if you also sell packaged coffee, tea, bakery'}, q:{bg:'кафе',en:'coffee'}}]},
+ {id:'cosmetics', t:{bg:'Козметика и грижа',en:'Cosmetics and care'}, cls:[
+   {c:3,  d:{bg:'козметика, сапуни, парфюмерия',en:'cosmetics, soaps, perfumery'}, q:{bg:'козметика',en:'cosmetics'}},
+   {c:44, d:{bg:'салон и процедури',en:'salon and treatments'}, q:{bg:'козметичен салон',en:'beauty salon'}}]},
+ {id:'shop', t:{bg:'Онлайн магазин',en:'Online shop'}, cls:[
+   {c:35, d:{bg:'търговия на дребно — уточнете какви стоки',en:'retail — say which goods'}, q:{bg:'търговия на дребно',en:'retail services'}}]},
+ {id:'edu', t:{bg:'Обучения и събития',en:'Training and events'}, cls:[
+   {c:41, d:{bg:'обучение, семинари, публикации',en:'education, seminars, publications'}, q:{bg:'обучение',en:'education'}}]},
+ {id:'build', t:{bg:'Строителство и ремонт',en:'Construction and repair'}, cls:[
+   {c:37, d:{bg:'строителство, монтаж, поддръжка',en:'construction, installation, maintenance'}, q:{bg:'строителство',en:'construction'}}]},
+ {id:'transport', t:{bg:'Транспорт и доставка',en:'Transport and delivery'}, cls:[
+   {c:39, d:{bg:'превоз, опаковане, съхранение',en:'transport, packaging, storage'}, q:{bg:'транспорт',en:'transport'}}]},
+ {id:'finance', t:{bg:'Финанси и застраховане',en:'Finance and insurance'}, cls:[
+   {c:36, d:{bg:'финансови и застрахователни услуги',en:'financial and insurance services'}, q:{bg:'застрахователни услуги',en:'insurance services'}}]},
+ {id:'health', t:{bg:'Здраве',en:'Health'}, cls:[
+   {c:44, d:{bg:'медицински и здравни услуги',en:'medical and health services'}, q:{bg:'медицински услуги',en:'medical services'}}]},
+ {id:'drinks', t:{bg:'Напитки',en:'Drinks'}, cls:[
+   {c:32, d:{bg:'безалкохолни напитки и бира',en:'soft drinks and beer'}, q:{bg:'бира',en:'beer'}},
+   {c:33, d:{bg:'вино и спиртни напитки',en:'wine and spirits'}, q:{bg:'вина',en:'wines'}}]},
+ {id:'jewel', t:{bg:'Бижута и часовници',en:'Jewellery and watches'}, cls:[
+   {c:14, d:{bg:'бижута, часовници, благородни метали',en:'jewellery, watches, precious metals'}, q:{bg:'бижута',en:'jewellery'}}]}
+];
+
 /* Търсенето не се прави тук. То отваря Хармонизираната база данни на EUIPO
    с думата на клиента, на неговия език и само върху хармонизираните термини —
    там е истината за това кой термин се приема без възражение.               */
