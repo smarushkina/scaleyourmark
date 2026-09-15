@@ -106,7 +106,7 @@ async function probe() {
   const bases = [BASE];
   out.tried = [];
   for (const b of bases) {
-    const url = b + '/terms?text=coffee&language=en&size=5';
+    const url = b + '/terms?termText=coffee&language=en&size=10';
     try {
       const r = await fetch(url, { headers: apiHeaders(t) });
       const body = (await r.text()).slice(0, 220);
@@ -126,16 +126,29 @@ const BASE = SANDBOX
   ? (Deno.env.get('EUIPO_GS_BASE') || 'https://api-sandbox.euipo.europa.eu/goods-and-services')
   : (Deno.env.get('EUIPO_GS_BASE') || 'https://api.euipo.europa.eu/goods-and-services');
 
-const cache = new Map<string, { at: number; rows: unknown[] }>();
+// Имената на параметрите и формата на отговора са установени с проби срещу
+// самото API на 15 септември 2026 — не са преписани от документация:
+//   termText   — думата за търсене (не text, не term, не query)
+//   classNumber— класът по Ница (не niceClass)
+//   language   — bg | en
+//   size       — минимум 10, иначе 400
+// Отговор: { terms: [{ text, classNumber, conceptId, taxonomyParentId }],
+//            totalElements, totalPages, size, page }
+const cache = new Map<string, { at: number; out: unknown }>();
 
 async function suggest(q: string, lang: string, niceClass: string, limit: number) {
   const key = [q, lang, niceClass, limit].join('|');
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < 5 * 60_000) return hit.rows;
+  if (hit && Date.now() - hit.at < 5 * 60_000) return hit.out;
 
   const t = await token();
-  const p = new URLSearchParams({ text: q, language: lang, size: String(limit) });
-  if (niceClass) p.set('niceClass', niceClass);
+  const p = new URLSearchParams({
+    termText: q,
+    language: lang,
+    size: String(Math.max(10, limit)),
+    page: '0',
+  });
+  if (niceClass) p.set('classNumber', niceClass);
 
   const r = await fetch(BASE + '/terms?' + p.toString(), { headers: apiHeaders(t) });
   const text = await r.text();
@@ -144,17 +157,16 @@ async function suggest(q: string, lang: string, niceClass: string, limit: number
   let d: any;
   try { d = JSON.parse(text); } catch { throw new Error('terms: отговорът не е JSON'); }
 
-  const list = Array.isArray(d) ? d : (d.terms || d.content || d.items || d.results || []);
-  const rows = list.map((x: any) => ({
-    id: String(x.id ?? x.termId ?? x.conceptId ?? ''),
-    c: Number(x.niceClass ?? x.classNumber ?? x.nclass ?? 0),
-    t: String(x.term ?? x.text ?? x.description ?? x.value ?? ''),
-    hdb: x.harmonised ?? x.isHarmonised ?? true,
-  })).filter((x: any) => x.t && x.c >= 1 && x.c <= 45);
+  const rows = (d.terms || []).map((x: any) => ({
+    id: String(x.conceptId || ''),
+    c: Number(x.classNumber || 0),
+    t: String(x.text || ''),
+  })).filter((x: any) => x.id && x.t && x.c >= 1 && x.c <= 45);
 
+  const out = { rows, total: Number(d.totalElements || rows.length) };
   if (cache.size > 300) cache.clear();
-  cache.set(key, { at: Date.now(), rows });
-  return rows;
+  cache.set(key, { at: Date.now(), out });
+  return out;
 }
 
 // ---------- кой пита ----------
@@ -201,31 +213,15 @@ Deno.serve(async (req) => {
     catch (e) { return json({ error: String(e) }, 500); }
   }
 
-  // Диагностичен режим: позволява да се установят имената на параметрите,
-  // вместо да се гадаят. Пътят е ограничен до самото Goods & Services API.
-  if (b.raw) {
-    const allowed = ['/terms', '/taxonomy', '/classHeadings'];
-    const path = String(b.path || '/terms');
-    if (!allowed.includes(path)) return json({ error: 'path not allowed', allowed }, 400);
-    try {
-      const t = await token();
-      const p = new URLSearchParams(b.params || {});
-      const r = await fetch(BASE + path + '?' + p.toString(), { headers: apiHeaders(t) });
-      const text = await r.text();
-      return json({ status: r.status, url: path + '?' + p.toString(), body: text.slice(0, 2500) });
-    } catch (e) {
-      return json({ error: String(e) }, 502);
-    }
-  }
 
   const q = String(b.q || '').trim();
-  if (q.length < 2) return json({ rows: [] });
+  if (q.length < 2) return json({ rows: [], total: 0 });
   const lang = ['bg', 'en'].includes(String(b.lang)) ? String(b.lang) : 'bg';
   const niceClass = /^([1-9]|[1-3][0-9]|4[0-5])$/.test(String(b.niceClass || '')) ? String(b.niceClass) : '';
-  const limit = Math.min(Math.max(Number(b.limit) || 20, 1), 50);
+  const limit = Math.min(Math.max(Number(b.limit) || 25, 10), 50);
 
   try {
-    return json({ rows: await suggest(q, lang, niceClass, limit) });
+    return json(await suggest(q, lang, niceClass, limit));
   } catch (e) {
     return json({ error: String(e) }, 502);
   }
