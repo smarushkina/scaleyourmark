@@ -201,6 +201,23 @@ Deno.serve(async (req) => {
     catch (e) { return json({ error: String(e) }, 500); }
   }
 
+  // Диагностичен режим: позволява да се установят имената на параметрите,
+  // вместо да се гадаят. Пътят е ограничен до самото Goods & Services API.
+  if (b.raw) {
+    const allowed = ['/terms', '/taxonomy', '/classHeadings'];
+    const path = String(b.path || '/terms');
+    if (!allowed.includes(path)) return json({ error: 'path not allowed', allowed }, 400);
+    try {
+      const t = await token();
+      const p = new URLSearchParams(b.params || {});
+      const r = await fetch(BASE + path + '?' + p.toString(), { headers: apiHeaders(t) });
+      const text = await r.text();
+      return json({ status: r.status, url: path + '?' + p.toString(), body: text.slice(0, 2500) });
+    } catch (e) {
+      return json({ error: String(e) }, 502);
+    }
+  }
+
   const q = String(b.q || '').trim();
   if (q.length < 2) return json({ rows: [] });
   const lang = ['bg', 'en'].includes(String(b.lang)) ? String(b.lang) : 'bg';
