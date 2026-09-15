@@ -1061,7 +1061,7 @@ async function handover(){
   const rows = state.terms.map((t,k)=>({
     matter_id:id, nice_class:t.c, term_text:t.t,
     source: t.src==='hdb' ? 'hdb' : 'free',
-    hdb_id:  t.src==='hdb' ? t.id : null,
+    hdb_id:  t.src==='hdb' ? String(t.id).replace(/^hdb:/,'') : null,
     language:'bg', position:k
   }));
   if(rows.length){ const r=await sb.from('matter_terms').insert(rows); if(r.error) throw r.error }
@@ -1489,28 +1489,27 @@ function body(k){
   const g={}; state.terms.forEach(t=>{(g[t.c]=g[t.c]||[]).push(t)});
   const madrid = state.route==='madrid';
   return `<p class="quiet" style="margin:0 0 10px">${lang==='bg'
-    ? 'Търсенето отваря самата база — на български, само върху хармонизираните термини. Каквото намерите там, се приема без възражение.'
-    : 'The search opens the database itself — in your language, harmonised terms only. Whatever you find there is accepted without objection.'}</p>
+    ? 'Пишете дума и предложенията идват директно от Хармонизираната база данни на EUIPO — същата, която ползват Патентното ведомство и всички европейски служби. Термин оттам се приема без възражение.'
+    : 'Type a word and the suggestions come straight from the EUIPO Harmonised Database — the same one the Bulgarian office and every EU office use. A term from there is accepted without objection.'}</p>
 
    <div class="signrow">
-    <input type="text" id="tq" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"
+    <input type="text" id="tq" autocomplete="off" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"
       aria-label="${lang==='bg'?'Дума за търсене в Хармонизираната база':'Word to search in the Harmonised Database'}">
     <select id="tc" aria-label="${lang==='bg'?'Клас':'Class'}" style="max-width:165px">
      <option value="">${lang==='bg'?'всички класове':'all classes'}</option>
      ${Array.from({length:45},(_,n)=>n+1).map(n=>`<option value="${n}">${lang==='bg'?'Клас':'Class'} ${n}</option>`).join('')}
     </select>
-    <button class="btn btn-primary" id="hdbgo" style="padding:9px 14px;white-space:nowrap">${
-      lang==='bg'?'Търсете в базата ↗':'Search the database ↗'}</button>
    </div>
+   <div class="tlist" id="sugg" style="margin-top:10px"></div>
    <p class="quiet" style="margin:7px 0 0">${lang==='bg'
-     ? 'Отваря се в нов раздел. Копирайте намерения термин и го добавете отдолу — точно както е изписан.'
-     : 'Opens in a new tab. Copy the term you find and add it below — exactly as written.'}
+     ? 'Щракнете върху ред, за да го добавите. Ако предпочитате да разгледате базата сама, <a href="#" id="hdbgo" style="color:var(--gold)">отворете я в нов раздел ↗</a>.'
+     : 'Click a row to add it. If you would rather browse the database yourself, <a href="#" id="hdbgo" style="color:var(--gold)">open it in a new tab ↗</a>.'}
      ${madrid?(lang==='bg'
         ? ' За международна регистрация проверете и в <a href="https://webaccess.wipo.int/mgs/?lang=bg" target="_blank" rel="noopener" style="color:var(--gold)">Мадридския указател на СОИС</a>.'
         : ' For an international registration also check the <a href="https://webaccess.wipo.int/mgs/?lang=en" target="_blank" rel="noopener" style="color:var(--gold)">WIPO Madrid Goods &amp; Services Manager</a>.'):''}</p>
 
    <div class="field" style="margin-top:14px">
-    <label for="ft">${lang==='bg'?'Вашият списък':'Your list'}</label>
+    <label for="ft">${lang==='bg'?'Или опишете със свои думи':'Or describe it in your own words'}</label>
     <textarea id="ft" rows="3" placeholder="${lang==='bg'
       ? 'Един ред = една стока или услуга. Може с номер на класа отпред:\n25 облекло\n42 разработване на софтуер по поръчка'
       : 'One line = one item. You may prefix the class number:\n25 clothing\n42 bespoke software development'}"></textarea>
@@ -1523,8 +1522,8 @@ function body(k){
       lang==='bg'?'Добавете към спецификацията':'Add to the specification'}</button>
    </div>
    <p class="quiet" style="margin:7px 0 0">${lang==='bg'
-     ? 'Класът отляво важи за редовете без номер. Всичко, което напишете тук, минава през преглед от адвоката, преди да влезе в заявката.'
-     : 'The class on the left applies to lines without a number. Everything you write here is reviewed by the lawyer before it goes into the application.'}</p>
+     ? 'Класът отляво важи за редовете без номер. Собственият текст не е хармонизиран — минава през преглед от адвоката и подлежи на експертиза във ведомството. Затова, когато има подходящ термин в базата, той е по-сигурният избор.'
+     : 'The class on the left applies to lines without a number. Your own wording is not harmonised — it is reviewed by the lawyer and examined by the office. So where the database has a suitable term, that is the safer choice.'}</p>
 
    <div class="sum" style="margin-top:16px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px">
@@ -1534,7 +1533,9 @@ function body(k){
     ${Object.keys(g).length?Object.entries(g).sort((a,b)=>a[0]-b[0]).map(([c,ts])=>`
       <div style="margin-bottom:10px"><span class="chip">${lang==='bg'?'Клас':'Class'} ${c}</span>
       <div style="margin-top:5px">${ts.map(t=>`<span class="pill" data-del="${esc(t.id)}"
-        title="${lang==='bg'?'Премахнете':'Remove'}">${esc(t.t)} <b>×</b></span>`).join('')}</div></div>`).join('')
+        title="${t.src==='hdb'?(lang==='bg'?'От Хармонизираната база. Щракнете, за да премахнете.':'From the Harmonised Database. Click to remove.')
+                              :(lang==='bg'?'Ваш текст — подлежи на експертиза. Щракнете, за да премахнете.':'Your own wording — subject to examination. Click to remove.')}"
+        >${t.src==='hdb'?'<b style="color:var(--teal)">✓</b> ':''}${esc(t.t)} <b>×</b></span>`).join('')}</div></div>`).join('')
       :`<p class="quiet">${lang==='bg'
          ?'Още нищо не е добавено. Трябва поне една стока или услуга, за да продължите.'
          :'Nothing added yet. At least one item is needed to continue.'}</p>`}
@@ -2145,14 +2146,34 @@ function wire(){
  }
  const mk=app.querySelector('#mk');if(mk)mk.oninput=e=>{state.mark=e.target.value;save()};
  const hg=app.querySelector('#hdbgo');
- const goHdb=()=>{
+ const goHdb=(e)=>{
+   if(e)e.preventDefault();
    const q=(app.querySelector('#tq')||{}).value||'';
    const cl=(app.querySelector('#tc')||{}).value||'';
    window.open(hdbUrl(q, cl), '_blank', 'noopener');
  };
  if(hg)hg.onclick=goHdb;
  const tq=app.querySelector('#tq');
- if(tq)tq.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();goHdb()}};
+ const tc=app.querySelector('#tc');
+ if(tq){
+   tq.value = suggQ;
+   paintSugg();
+   tq.oninput = e=>{
+     suggQ = e.target.value;
+     if(suggTimer) clearTimeout(suggTimer);
+     suggTimer = setTimeout(()=>{suggTimer=null; runSugg()}, 300);
+   };
+   tq.onkeydown = e=>{
+     if(e.key==='Enter'){ e.preventDefault();
+       if(suggTimer){clearTimeout(suggTimer); suggTimer=null}
+       runSugg();
+     }
+   };
+ }
+ if(tc){
+   tc.value = suggCls;
+   tc.onchange = e=>{ suggCls = e.target.value; runSugg() };
+ }
  const addf=app.querySelector('#addfree');
  if(addf)addf.onclick=()=>{
    const el=app.querySelector('#ft'), cl=app.querySelector('#fc');
@@ -2166,6 +2187,85 @@ function wire(){
    if(k>=0){state.terms.splice(k,1); save(); render()}
  });
 }
+/* Автодопълване от Хармонизираната база данни на EUIPO.
+   Заявката не отива директно към EUIPO — минава през Edge Function-а
+   `hdb-suggest`, където стои ключът на кантората. Браузърът на клиента не
+   вижда нито ключ, нито жетон.                                            */
+let suggQ='', suggCls='', suggTimer=null, suggRows=[], suggTotal=0, suggState='idle';
+
+async function runSugg(){
+ const q=(suggQ||'').trim();
+ if(q.length<2){ suggRows=[]; suggTotal=0; suggState='idle'; paintSugg(); return }
+ if(!remote || !sb){ suggState='offline'; paintSugg(); return }
+ suggState='busy'; paintSugg();
+ const asked=q+'|'+suggCls;
+ try{
+  const {data,error}=await sb.functions.invoke('hdb-suggest',
+    {body:{q:q, lang:lang, niceClass:suggCls||null, limit:25}});
+  if((suggQ||'').trim()+'|'+suggCls !== asked) return;   // клиентът е дописал
+  if(error) throw error;
+  if(data && data.error) throw new Error(data.error);
+  suggRows=(data&&data.rows)||[]; suggTotal=(data&&data.total)||suggRows.length;
+  suggState='ok';
+ }catch(e){
+  suggRows=[]; suggTotal=0; suggState='err'; suggErr=(e&&e.message)||String(e);
+ }
+ paintSugg();
+}
+let suggErr='';
+
+function paintSugg(){
+ const box=app.querySelector('#sugg'); if(!box) return;
+ const note=t=>`<div class="trow" style="cursor:default"><span></span><span class="quiet">${t}</span><span></span></div>`;
+
+ if(suggState==='idle'){
+  box.innerHTML = note(lang==='bg'
+    ? 'Напишете поне две букви. Предложенията идват от самата база.'
+    : 'Type at least two letters. The suggestions come from the database itself.');
+  return;
+ }
+ if(suggState==='busy'){ box.innerHTML = note(lang==='bg'?'Търсим в базата…':'Searching the database…'); return }
+ if(suggState==='offline'){
+  box.innerHTML = note(lang==='bg'
+    ? 'Тази страница не вижда сървъра. Отворете базата в нов раздел с връзката отдолу.'
+    : 'This page cannot see the server. Open the database in a new tab with the link below.');
+  return;
+ }
+ if(suggState==='err'){
+  box.innerHTML = note(esc((lang==='bg'?'Базата не отговори: ':'The database did not answer: ')+suggErr)
+    + (lang==='bg'?' — можете да опишете стоката със свои думи отдолу.':' — you can describe the goods in your own words below.'));
+  return;
+ }
+ if(!suggRows.length){
+  box.innerHTML = note(lang==='bg'
+    ? 'Няма хармонизиран термин с тази дума. Опишете стоката със свои думи отдолу — минава през експертиза.'
+    : 'No harmonised term matches. Describe the goods in your own words below — it goes to examination.');
+  return;
+ }
+
+ const chosen=new Set(state.terms.map(t=>String(t.id)));
+ box.innerHTML = suggRows.map(r=>{
+   const id='hdb:'+r.id, on=chosen.has(id);
+   return `<div class="trow" data-add="${esc(id)}" data-c="${r.c}" data-t="${esc(r.t)}" data-on="${on?1:0}">
+     <span class="chip">${lang==='bg'?'Кл.':'Cl.'} ${r.c}</span>
+     <span>${esc(r.t)}</span>
+     <span class="badge hdb">${on?(lang==='bg'?'ДОБАВЕН':'ADDED'):'HDB'}</span>
+   </div>`;
+ }).join('') + (suggTotal>suggRows.length
+   ? note(lang==='bg'
+       ? `Показани са първите ${suggRows.length} от ${suggTotal}. Стеснете думата или изберете клас.`
+       : `Showing the first ${suggRows.length} of ${suggTotal}. Narrow the word or pick a class.`)
+   : '');
+
+ box.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{
+  const id=el.dataset.add, k=state.terms.findIndex(t=>String(t.id)===id);
+  if(k>=0) state.terms.splice(k,1);
+  else state.terms.push({id:id, c:+el.dataset.c, t:el.dataset.t, src:'hdb'});
+  save();
+  render();
+ });
+}
+
 /* Търсенето не се прави тук. То отваря Хармонизираната база данни на EUIPO
    с думата на клиента, на неговия език и само върху хармонизираните термини —
    там е истината за това кой термин се приема без възражение.               */
