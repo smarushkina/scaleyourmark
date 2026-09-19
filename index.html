@@ -160,6 +160,16 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .sec-navy .tag.v{background:rgba(190,150,102,.2); color:var(--gold-bright)}
 .sec-warm{background:var(--warm); border-block:1px solid var(--line-2)}
 .goldtop{border-top:3px solid var(--gold-bright)}
+/* Дългите ръководства. Една колона, мярка за четене, спокоен ритъм. */
+.guidebody{max-width:68ch}
+.guidebody p{font-size:16px; line-height:1.68; color:var(--ink-2); margin:0 0 15px}
+.guidebody h3{font-size:19px; margin:30px 0 11px; color:var(--ink)}
+.guidebody h3:first-child{margin-top:0}
+.guidebody ul{margin:0 0 16px; padding-left:20px; display:flex; flex-direction:column; gap:8px}
+.guidebody li{font-size:15.5px; line-height:1.6; color:var(--ink-2)}
+.gq{border-left:3px solid var(--gold-bright); padding:2px 0 2px 16px; margin:22px 0}
+.gq .kicker{display:block; margin-bottom:6px}
+.gq p{font-size:18px; line-height:1.5; color:var(--ink); margin:0; font-family:"Fraunces","Iowan Old Style",Georgia,serif}
 /* еднакъв блок заглавие във всяка секция */
 .sechead{max-width:760px; margin:0 0 22px}
 .sechead .kicker{display:block; margin-bottom:10px}
@@ -664,6 +674,7 @@ function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catc
 function loadAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
 function saveAuth(a){try{a?localStorage.setItem(AUTH_KEY,JSON.stringify(a)):localStorage.removeItem(AUTH_KEY)}catch(e){}}
 let auth = null;
+let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръководство
 let authTab = 'login';          // login | register | reset | newpass
 let authMsg = null;             // {type:'err'|'ok', text}
 
@@ -1171,7 +1182,7 @@ function chrome(){
    <a href="#">${lang==='bg'?'Общи условия':'Terms'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookies'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
-function go(p){if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
+function go(p){ if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
 function render(){if(page==='office'&&!isAdmin())page='acct';
  if(page==='acct'&&remote&&auth&&!mattersAsked){loadMatters()}
  chrome();app.innerHTML=({home:Home,file:File_,guides:Guides,price:Price,blog:Blog,about:About,contact:Contact,acct:Acct,office:Office}[page]||Home)();wire()}
@@ -1194,74 +1205,408 @@ function openDrawer(n){
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('scrim').classList.remove('on')}
 document.getElementById('scrim').onclick=closeDrawer;
 
+/* ============================================================
+   Дългите ръководства. Българският текст е авторски — предаден е
+   дословно. Английският е превод и се редактира от адвоката.
+   Блокове: p параграф · h подзаглавие · q въпросът · ul списък
+            warn каре „Важно“ · btn действие
+   ============================================================ */
+const GUIDE = {
+1:{b:[
+ ['p',{bg:'Преди да заявите търговската си марка, трябва да определите къде искате тя да бъде защитена. Закрилата на търговската марка е териториална. Това означава, че регистрацията Ви дава права в определена територия, в зависимост от вида на заявката, която изберете.',
+      en:'Before you file your trade mark you need to decide where you want it protected. Trade mark protection is territorial. That means registration gives you rights in a particular territory, depending on the type of application you choose.'}],
+ ['q',{bg:'На кои пазари използвате или планирате да използвате своята марка?',
+      en:'In which markets do you use, or plan to use, your mark?'}],
+ ['p',{bg:'Помислете не само за настоящата си дейност, но и за развитието на бизнеса Ви в близко бъдеще.',
+      en:'Think not only about what you do today, but about how your business will develop in the near future.'}],
+ ['h',{bg:'Основните възможности',en:'The main options'}],
+ ['p',{bg:'България — ако предлагате продуктите или услугите си основно на българския пазар и не планирате непосредствено разширяване в други държави, можете да заявите национална търговска марка в България. Това е подходящият вариант, когато търсите закрила на марката си на територията на България.',
+      en:'Bulgaria — if you offer your products or services mainly on the Bulgarian market and have no immediate plans to expand into other countries, you can file a national trade mark in Bulgaria. This is the right option when you are seeking protection on Bulgarian territory.'}],
+ ['p',{bg:'Европейски съюз — ако развивате или планирате да развивате бизнеса си в повече от една държава от Европейския съюз, можете да обмислите заявяване на марка на Европейския съюз. Една заявка предоставя закрила във всички държави членки на ЕС. Това може да бъде подходящ вариант, когато бизнесът Ви е насочен към европейския пазар или планирате разширяване извън България.',
+      en:'European Union — if you operate, or plan to operate, in more than one EU Member State, you may want to consider a European Union trade mark. A single application gives protection in every EU Member State. This can be the right option when your business is aimed at the European market or you are planning to expand beyond Bulgaria.'}],
+ ['p',{bg:'Други държави — ако използвате или планирате да използвате марката си извън Европейския съюз, може да е необходимо да потърсите закрила в съответните държави. В зависимост от държавите и конкретната Ви ситуация съществуват различни възможности за международна регистрация.',
+      en:'Other countries — if you use, or plan to use, your mark outside the European Union, you may need to seek protection in the countries concerned. Depending on those countries and on your particular situation, there are different routes to international registration.'}],
+ ['h',{bg:'Как да изберете?',en:'How to choose'}],
+ ['p',{bg:'При избора на териториален обхват вземете предвид:',en:'When choosing the territorial scope, consider:'}],
+ ['ul',{bg:['къде извършвате дейност в момента',
+            'къде продавате продуктите или предлагате услугите си',
+            'къде използвате марката',
+            'в кои държави планирате да разширите бизнеса си',
+            'дали имате намерение да навлизате на нови пазари в близко бъдеще'],
+        en:['where you operate today',
+            'where you sell your products or provide your services',
+            'where you use the mark',
+            'which countries you plan to expand into',
+            'whether you intend to enter new markets in the near future']}],
+ ['p',{bg:'Не е необходимо да заявявате марката във всички държави, в които някога бихте могли да развивате бизнеса си. Важно е да изберете територия, която съответства на реалните Ви бизнес планове и нуждата Ви от закрила.',
+      en:'You do not need to file in every country where you might one day do business. What matters is choosing a territory that matches your actual business plans and your real need for protection.'}]
+]},
+
+2:{b:[
+ ['p',{bg:'Преди да заявите търговската си марка, е важно да проверите дали вече не съществува по-ранна марка, която е идентична или сходна с Вашата.',
+      en:'Before you file your trade mark it is important to check whether an earlier mark already exists that is identical or similar to yours.'}],
+ ['p',{bg:'Тази проверка е една от най-важните стъпки преди подаване на заявката. Тя може да Ви помогне да установите потенциални пречки за регистрацията и да избегнете разходи за заявяване на марка, която може да бъде оспорена или да не получи закрила.',
+      en:'This check is one of the most important steps before filing. It can help you identify potential obstacles to registration and avoid spending money on a mark that may be opposed or may not obtain protection.'}],
+ ['q',{bg:'Съществува ли вече регистрирана или заявена марка, която може да бъде пречка за Вашата?',
+      en:'Does a registered or pending mark already exist that could stand in the way of yours?'}],
+ ['p',{bg:'Не е достатъчно да потърсите само марка със същото име. Необходимо е да проверите и за сходни марки, когато се отнасят до идентични или сходни стоки или услуги.',
+      en:'Searching for the same name is not enough. You also need to look for similar marks, where they cover identical or similar goods or services.'}],
+ ['h',{bg:'Какво трябва да проверите?',en:'What to check'}],
+ ['p',{bg:'1. Идентични марки. Първо проверете дали същото име или обозначение вече е регистрирано или заявено като търговска марка за съответните стоки или услуги. Например, ако искате да регистрирате марката „ABC“, проверете дали вече съществува марка „ABC“ в съответната територия и за релевантни стоки или услуги.',
+      en:'1. Identical marks. First check whether the same name or sign is already registered or applied for as a trade mark for the goods or services concerned. For example, if you want to register the mark ABC, check whether a mark ABC already exists in the relevant territory and for relevant goods or services.'}],
+ ['p',{bg:'2. Сходни марки. Липсата на идентична марка не означава автоматично, че Вашата марка е свободна. Проверете и за марки, които са сходни визуално, фонетично или като смисъл и са регистрирани или заявени за сходни стоки или услуги. Например различията в изписването на две марки не винаги са достатъчни, за да се избегне сходство между тях.',
+      en:'2. Similar marks. The absence of an identical mark does not automatically mean yours is free. Look also for marks that are similar visually, phonetically or in meaning and that are registered or applied for in respect of similar goods or services. Differences in spelling, for instance, are not always enough to avoid similarity.'}],
+ ['p',{bg:'3. Стоките и услугите. При проверката трябва да вземете предвид за какво ще използвате марката. Една и съща или сходна марка може да съществува за различни стоки и услуги, без това непременно да означава, че двете марки са несъвместими. Затова проверката на името трябва да бъде направена заедно с преглед на стоките и услугите, за които искате да получите закрила.',
+      en:'3. The goods and services. Your search has to take account of what you will use the mark for. The same or a similar mark may exist for different goods and services without the two necessarily being incompatible. The name check therefore has to be done together with a review of the goods and services you want protected.'}],
+ ['h',{bg:'Къде да търсите?',en:'Where to search'}],
+ ['p',{bg:'Проверката трябва да обхване съответните регистри според територията, в която искате закрила. В зависимост от избрания от Вас обхват може да е необходимо да проверите:',
+      en:'The search has to cover the registers that correspond to the territory where you want protection. Depending on the scope you choose, you may need to check:'}],
+ ['ul',{bg:['регистъра на търговските марки в България;',
+            'регистрите на марките на Европейския съюз;',
+            'международни регистрации;',
+            'други национални регистри, когато са релевантни.'],
+        en:['the Bulgarian trade mark register;',
+            'the European Union trade mark registers;',
+            'international registrations;',
+            'other national registers, where relevant.']}],
+ ['p',{bg:'Освен официалните регистри може да съществуват и други права или обстоятелства, които е важно да бъдат взети предвид.',
+      en:'Beyond the official registers, other rights or circumstances may exist that are important to take into account.'}],
+ ['h',{bg:'Как да прецените резултатите?',en:'How to assess the results'}],
+ ['p',{bg:'Когато откриете идентична или сходна марка, не приемайте автоматично, че не можете да регистрирате своята. Преценката зависи от няколко фактора, включително:',
+      en:'If you find an identical or similar mark, do not assume automatically that you cannot register yours. The assessment depends on several factors, including:'}],
+ ['ul',{bg:['степента на сходство между марките;',
+            'сходството между стоките и услугите;',
+            'територията, за която е предоставена или търсена закрила;',
+            'датата на по-ранната заявка или регистрация;',
+            'конкретните обстоятелства на съответните марки.'],
+        en:['the degree of similarity between the marks;',
+            'the similarity between the goods and services;',
+            'the territory for which protection is granted or sought;',
+            'the date of the earlier application or registration;',
+            'the particular circumstances of the marks concerned.']}],
+ ['p',{bg:'Важно е да разграничавате наличието на сходна марка от наличието на правна пречка за Вашата регистрация.',
+      en:'It is important to distinguish the existence of a similar mark from the existence of a legal obstacle to your registration.'}],
+ ['h',{bg:'Не проверявайте само името',en:'Do not check the name alone'}],
+ ['p',{bg:'Преди да подадете заявката, проверката на марката е добре да бъде част от по-широк анализ. Потърсете не само идентични наименования, но и:',
+      en:'Before you file, the clearance check is best treated as part of a wider analysis. Look not only for identical names, but also for:'}],
+ ['ul',{bg:['сходни думи и изписвания;',
+            'сходно звучащи наименования;',
+            'сходни визуални елементи, когато марката съдържа графика или лого;',
+            'марки за сходни стоки и услуги;',
+            'по-ранни заявки и регистрации в избраната от Вас територия.'],
+        en:['similar words and spellings;',
+            'names that sound alike;',
+            'similar visual elements, where the mark contains graphics or a logo;',
+            'marks covering similar goods and services;',
+            'earlier applications and registrations in the territory you have chosen.']}],
+ ['warn',{bg:'Резултатът от търсенето в регистрите не е гаранция, че марката ще бъде регистрирана. Дори когато не откриете идентична марка, е възможно да съществува сходна по-ранна марка или друго правно основание, което да има значение за регистрацията.',
+        en:'The result of a register search is no guarantee that the mark will be registered. Even where you find no identical mark, an earlier similar mark or another legal ground may exist that bears on registration.'}],
+ ['p',{bg:'Ако откриете потенциално сходна или конфликтна марка и не сте сигурни как да прецените риска, професионалната консултация може да Ви помогне да направите по-информирана оценка преди подаването.',
+      en:'If you find a potentially similar or conflicting mark and are unsure how to assess the risk, professional advice can help you form a better-informed view before filing.'}],
+ ['btn','search',{bg:'Поискайте проучване',en:'Request a search'}]
+]},
+3:{b:[
+ ['p',{bg:'След като определихте къде искате закрила и проверихте дали марката е свободна, следва да определите какво точно представлява марката, която искате да регистрирате.',
+      en:'Once you have decided where you want protection and checked whether the mark is free, the next step is to settle what exactly the mark you want to register is.'}],
+ ['p',{bg:'Начинът, по който изглежда марката, определя какво точно ще бъде предмет на закрила. Затова е важно да изберете правилния вид още при подаването на заявката.',
+      en:'The way the mark looks determines what exactly will be protected. That is why it matters to choose the right type at the moment of filing.'}],
+ ['q',{bg:'Как искате потребителите да разпознават Вашия бранд?',
+      en:'How do you want consumers to recognise your brand?'}],
+ ['p',{bg:'Марката може да бъде само наименование, само графично изображение или комбинация от текст и визуални елементи.',
+      en:'A mark may be a name alone, a graphic alone, or a combination of text and visual elements.'}],
+ ['h',{bg:'Основните възможности',en:'The main options'}],
+ ['p',{bg:'1. Само име или дума. При този вариант регистрирате самото наименование като търговска марка, без конкретен шрифт, цвят или графично оформление. Например: SCALEYOURMARK. Този вид марка защитава словния елемент и обикновено е подходящ, когато основната отличителна част на бранда е неговото име. Ако в бъдеще промените шрифта, цветовете или визуалното оформление, регистрацията на словната марка може да продължи да защитава самото наименование.',
+      en:'1. A name or word alone. Here you register the name itself as a trade mark, without any particular typeface, colour or styling. For example: SCALEYOURMARK. This type protects the word element and is usually right where the distinctive core of the brand is its name. If you later change the typeface, the colours or the styling, a word mark registration can continue to protect the name itself.'}],
+ ['p',{bg:'2. Лого или графичен елемент. Ако основният отличителен елемент на бранда е изображение, символ или конкретно графично оформление, можете да заявите марката във вида, в който тя е представена. Тук защитата е свързана с конкретното визуално представяне на марката. Този вариант може да бъде подходящ, когато логото само по себе си има отличителен характер и е важен елемент от идентичността на бизнеса.',
+      en:'2. A logo or graphic element. If the distinctive core of the brand is an image, a symbol or a particular styling, you can file the mark in the form in which it is presented. Protection here attaches to that specific visual representation. This can be right where the logo is distinctive in itself and is an important part of the identity of the business.'}],
+ ['p',{bg:'3. Име и лого заедно. Ако използвате наименование и графичен елемент като едно общо визуално обозначение, можете да заявите комбинирана марка. Например: SCALEYOURMARK + лого. При този вариант заявявате конкретната комбинация от словни и графични елементи.',
+      en:'3. Name and logo together. If you use a name and a graphic element as a single visual sign, you can file a combined mark. For example: SCALEYOURMARK plus the logo. Here you are filing that particular combination of word and figurative elements.'}],
+ ['h',{bg:'Какво трябва да изберете?',en:'Which should you choose?'}],
+ ['p',{bg:'Преди подаването си задайте въпроса: кой елемент на моя бранд е най-важно да защитя?',
+      en:'Before filing, ask yourself: which element of my brand is it most important to protect?'}],
+ ['ul',{bg:['Ако основната стойност е в името — помислете за словна марка.',
+            'Ако основната отличителна част е конкретно графично изображение — може да е подходяща фигуративна марка.',
+            'Ако името и логото се използват като едно цяло — може да разгледате възможността за комбинирана марка.'],
+        en:['If the value sits in the name, consider a word mark.',
+            'If the distinctive part is a particular graphic, a figurative mark may suit.',
+            'If the name and the logo are used as one, consider a combined mark.']}],
+ ['p',{bg:'Изборът зависи от начина, по който използвате бранда и от това каква закрила искате да получите.',
+      en:'The choice depends on how you use the brand and on the protection you want to obtain.'}],
+ ['h',{bg:'Името или логото?',en:'The name or the logo?'}],
+ ['p',{bg:'Важно е да имате предвид, че регистрацията на лого не е равнозначна на регистрация на името като самостоятелна словна марка. Когато наименованието е важно за бизнеса Ви, трябва внимателно да прецените дали защитата на конкретното графично представяне е достатъчна за Вашите цели. В някои случаи може да има смисъл от отделна защита на различни елементи на бранда.',
+      en:'Registering a logo is not the same as registering the name as a word mark in its own right. Where the name matters to your business, consider carefully whether protecting one particular graphic representation is enough for your purposes. In some cases it makes sense to protect different elements of the brand separately.'}],
+ ['h',{bg:'А ако променя логото си?',en:'And if I change my logo?'}],
+ ['p',{bg:'При регистрация на марка се защитава обозначението във вида, в който е заявено. Ако впоследствие промените съществено логото или визуалното представяне, новото обозначение може да не бъде идентично с вече регистрираната марка. Затова е добре да прецените дали визуалната идентичност, която заявявате, е тази, която възнамерявате да използвате и занапред.',
+      en:'Registration protects the sign in the form in which it was filed. If you later change the logo or the visual presentation substantially, the new sign may not be identical to the mark already registered. So it is worth asking whether the visual identity you are filing is the one you intend to keep using.'}],
+ ['h',{bg:'Какво да имате предвид преди заявяване?',en:'What to weigh before filing'}],
+ ['ul',{bg:['кое е най-разпознаваемото за Вашия бранд;',
+            'използвате ли основно име, лого или комбинация от двете;',
+            'планирате ли промяна на визуалната идентичност;',
+            'искате ли да защитите конкретното графично оформление;',
+            'достатъчна ли е избраната форма на марката за Вашите бизнес цели.'],
+        en:['what is most recognisable about your brand;',
+            'whether you mainly use a name, a logo, or both together;',
+            'whether you are planning a change of visual identity;',
+            'whether you want the particular styling protected;',
+            'whether the form of mark you have chosen is enough for your business aims.']}],
+ ['p',{bg:'Правилният избор още в началото може да Ви помогне да получите закрила, която съответства по-добре на начина, по който използвате своя бранд.',
+      en:'Getting this right at the outset helps you obtain protection that fits the way you actually use your brand.'}],
+ ['warn',{bg:'Изборът на вида на марката определя какво точно ще заявите за регистрация. След подаването не можете просто да промените марката с ново или съществено различно обозначение — при необходимост от защита на новото обозначение може да се наложи подаване на нова заявка. Ако се колебаете между няколко варианта, преценете кой от тях има най-голямо значение за бизнеса Ви и как искате да използвате марката в бъдеще.',
+        en:'The type of mark you choose determines what exactly you are filing. After filing you cannot simply swap in a new or substantially different sign — protecting a new sign may require a fresh application. If you are torn between options, weigh which matters most to your business and how you intend to use the mark in future.'}]
+]},
+
+4:{b:[
+ ['p',{bg:'Търговската марка не се регистрира абстрактно. При заявяването трябва да посочите за кои стоки и услуги искате да получите закрила. Това определя обхвата на правата Ви и е една от най-важните стъпки при подготовката на заявката.',
+      en:'A trade mark is not registered in the abstract. When you file you have to state which goods and services you want protected. This defines the scope of your rights and is one of the most important steps in preparing the application.'}],
+ ['q',{bg:'За какви стоки или услуги използвате или ще използвате своята марка?',
+      en:'For which goods or services do you use, or will you use, your mark?'}],
+ ['p',{bg:'Помислете не само какво предлагате днес, но и как планирате да развивате бизнеса си.',
+      en:'Think not only about what you offer today, but about how you plan to develop the business.'}],
+ ['h',{bg:'Стоките и услугите се определят в конкретни класове',en:'Goods and services fall into specific classes'}],
+ ['p',{bg:'За целите на регистрацията стоките и услугите са разделени в 45 класа по Ницската класификация. Класовете 1–34 обхващат стоки, а класовете 35–45 — услуги. Конкретният клас и формулировката на стоките или услугите трябва да бъдат определени според реалната Ви дейност.',
+      en:'For registration purposes, goods and services are divided into 45 classes under the Nice Classification. Classes 1 to 34 cover goods and classes 35 to 45 cover services. The class and the wording of the goods or services have to be settled according to what you actually do.'}],
+ ['h',{bg:'Не избирайте клас само по името на бизнеса си',en:'Do not pick a class from the name of your business'}],
+ ['p',{bg:'Името на компанията или дейността Ви невинаги показва точно какви стоки и услуги трябва да бъдат включени в заявката. Например, ако имате онлайн магазин, не е достатъчно да посочите само „онлайн магазин“. Трябва да се прецени какви стоки предлагате и какви услуги извършвате. Класът се определя от това, което реално предлагате под марката, а не само от начина, по който описвате бизнеса си.',
+      en:'The name of your company or of your activity does not always show which goods and services belong in the application. If you run an online shop, for instance, stating online shop is not enough. What has to be assessed is which goods you offer and which services you perform. The class follows from what you actually supply under the mark, not merely from how you describe the business.'}],
+ ['h',{bg:'Как да определите какво да включите?',en:'How to decide what to include'}],
+ ['p',{bg:'Направете списък на:',en:'Draw up a list of:'}],
+ ['ul',{bg:['продуктите, които продавате;',
+            'услугите, които предоставяте;',
+            'продуктите или услугите, които планирате да предлагате в близко бъдеще;',
+            'начина, по който използвате марката в бизнеса си.'],
+        en:['the products you sell;',
+            'the services you provide;',
+            'the products or services you plan to offer in the near future;',
+            'the way you use the mark in your business.']}],
+ ['p',{bg:'След това определете кои от тях трябва да бъдат включени в заявката. Важно е формулировките да бъдат достатъчно конкретни и да отразяват действителната Ви дейност.',
+      en:'Then decide which of these belong in the application. The wording needs to be specific enough and to reflect what you actually do.'}],
+ ['h',{bg:'Повече класове не означава автоматично по-добра защита',en:'More classes does not automatically mean better protection'}],
+ ['p',{bg:'Може да изглежда логично да включите възможно най-много стоки и услуги, за да получите „по-широка“ защита. На практика обаче е важно заявката да бъде съобразена с реалните Ви бизнес нужди. По-широкият списък може да означава по-високи разходи, а включването на стоки и услуги, които нямат отношение към дейността Ви, не прави автоматично регистрацията по-полезна. Целта е да защитите това, което реално е важно за бизнеса Ви.',
+      en:'It can seem logical to include as many goods and services as possible in order to obtain broader protection. In practice the application should match your real business needs. A wider list can mean higher costs, and including goods and services unrelated to what you do does not automatically make the registration more useful. The aim is to protect what genuinely matters to your business.'}],
+ ['h',{bg:'Помислете и за бъдещето',en:'Think about the future too'}],
+ ['p',{bg:'При избора на стоки и услуги вземете предвид и развитието на бизнеса си. Ако в близко бъдеще планирате да добавите нов продукт или услуга под същата марка, преценете дали е необходимо да го включите още сега. Важно е обаче да не включвате стоки или услуги единствено с цел да резервирате марката за неопределено бъдещо използване. Закрилата на марката е свързана с посочените стоки и услуги и с реалното използване на марката.',
+      en:'When choosing goods and services, take the development of your business into account. If you plan to add a new product or service under the same mark in the near future, consider whether to include it now. Do not, however, include goods or services solely to reserve the mark for some indefinite future use. Protection is tied to the goods and services stated and to genuine use of the mark.'}],
+ ['warn',{bg:'След подаване на заявката списъкът със стоки и услуги не може свободно да бъде разширяван. Затова е важно да определите правилно обхвата преди подаването. От друга страна, прекалено широк или неточно формулиран списък може да доведе до ненужни разходи или да не отразява правилно реалната Ви дейност. При избора търсете баланс между необходимата защита, реалната Ви дейност и бъдещите Ви планове.',
+        en:'Once the application is filed, the list of goods and services cannot be freely extended. Getting the scope right before filing therefore matters. At the same time, a list that is too broad or loosely worded can lead to unnecessary cost or fail to reflect what you really do. Look for the balance between the protection you need, your actual activity and your plans.'}]
+]},
+5:{b:[
+ ['p',{bg:'При заявяването на търговската марка трябва да посочите лицето, което ще бъде неин притежател. Това е важно решение, защото именно притежателят придобива правата върху регистрираната марка и може да ги упражнява, прехвърля или предоставя за използване на други лица.',
+      en:'When you file, you have to name the person who will own the mark. This is an important decision, because it is the proprietor who acquires the rights in the registered mark and who can exercise them, transfer them, or license them to others.'}],
+ ['q',{bg:'На чие име трябва да бъде регистрирана марката?',
+      en:'In whose name should the mark be registered?'}],
+ ['p',{bg:'Притежател на марката може да бъде физическо или юридическо лице.',
+      en:'The proprietor may be a natural person or a legal entity.'}],
+ ['h',{bg:'Ако сте физическо лице',en:'If you are an individual'}],
+ ['p',{bg:'Ако развивате дейността си лично и искате марката да бъде Ваша собственост, можете да я заявите на свое име. В този случай Вие сте притежателят на марката, независимо дали я използвате във връзка с определена стопанска дейност или чрез собствен бизнес. Това може да бъде подходящ вариант, когато марката е свързана лично с Вас или когато все още не сте учредили дружество.',
+      en:'If you carry on your activity personally and want to own the mark yourself, you can file it in your own name. You are then the proprietor, whether or not you use it in connection with a particular trade or through your own business. This can suit where the mark is personally associated with you, or where you have not yet incorporated a company.'}],
+ ['h',{bg:'Ако имате дружество',en:'If you have a company'}],
+ ['p',{bg:'Ако марката е част от бизнеса Ви, можете да я регистрирате на името на дружеството. В този случай именно дружеството ще бъде притежател на марката, а не физическото лице, което го управлява или притежава. Това може да бъде практично решение, когато марката е създадена и използвана като актив на конкретния бизнес.',
+      en:'If the mark forms part of your business, you can register it in the company name. The company is then the proprietor, not the individual who manages or owns it. This can be the practical answer where the mark was created and is used as an asset of that particular business.'}],
+ ['h',{bg:'Кой е правилният избор?',en:'Which is the right choice?'}],
+ ['p',{bg:'Помислете кой трябва да притежава марката като актив в дългосрочен план. Задайте си следните въпроси:',
+      en:'Think about who should own the mark as an asset over the long term. Ask yourself:'}],
+ ['ul',{bg:['Кой реално ще използва марката?',
+            'Кой развива бизнеса под тази марка?',
+            'Има ли вече дружество, свързано с бизнеса?',
+            'Планирате ли в бъдеще да прехвърлите бизнеса?',
+            'Ще има ли повече от едно лице, което ще използва марката?',
+            'Искате ли марката да бъде личен актив или актив на дружеството?'],
+        en:['Who will actually use the mark?',
+            'Who is building the business under this mark?',
+            'Is there already a company connected with the business?',
+            'Do you plan to transfer the business in future?',
+            'Will more than one person be using the mark?',
+            'Do you want the mark to be a personal asset or a company asset?']}],
+ ['p',{bg:'Тези въпроси могат да помогнат да определите кой е най-подходящият притежател.',
+      en:'These questions help identify the most appropriate proprietor.'}],
+ ['h',{bg:'Притежателят не е задължително да е лицето, което използва марката',en:'The proprietor need not be the person who uses the mark'}],
+ ['p',{bg:'Важно е да разграничавате собствеността върху марката от нейното използване. Притежателят може да предостави право на друго лице да използва марката, например чрез лиценз. Затова не е задължително лицето, което ежедневно използва марката, да бъде нейният притежател.',
+      en:'Ownership of the mark and use of the mark are different things. The proprietor may grant another person the right to use it, for example under a licence. The person using the mark day to day therefore need not be its owner.'}],
+ ['h',{bg:'Помислете за бъдещето на бизнеса',en:'Think about the future of the business'}],
+ ['p',{bg:'Изборът на притежател може да има значение при бъдещи промени в бизнеса. Марката може да бъде:',
+      en:'The choice of proprietor can matter when the business changes. A mark may be:'}],
+ ['ul',{bg:['прехвърлена на друго лице или дружество;',
+            'предоставена за използване чрез лиценз;',
+            'използвана от свързани дружества при подходяща правна структура;',
+            'част от активите на бизнеса при продажба или преструктуриране.'],
+        en:['assigned to another person or company;',
+            'licensed for use by someone else;',
+            'used by related companies under a suitable legal structure;',
+            'part of the assets of the business on a sale or restructuring.']}],
+ ['p',{bg:'Затова е добре още при първоначалното заявяване да помислите кой трябва да притежава марката в дългосрочен план.',
+      en:'It is worth thinking at the outset about who should own the mark in the long run.'}],
+ ['h',{bg:'Ако бизнесът Ви се променя',en:'If your business is changing'}],
+ ['p',{bg:'Ако планирате скоро да учредите дружество, да прехвърлите дейността си или да включите съдружници, изборът на притежател заслужава допълнително внимание. В определени случаи може да е възможно марката впоследствие да бъде прехвърлена, но това е отделна процедура. По-добре е собствеността върху марката да бъде обмислена преди подаването, отколкото да се налага промяна след регистрацията.',
+      en:'If you are about to incorporate, transfer your activity, or take on partners, the choice of proprietor deserves extra attention. In some cases the mark can be assigned later, but that is a separate procedure. It is better to settle ownership before filing than to have to change it after registration.'}],
+ ['warn',{bg:'Посочете коректно данните на притежателя при подаване на заявката. Изборът на притежател не е формалност — той определя кой ще придобие правата върху марката. Ако се колебаете дали марката трябва да бъде регистрирана на физическо лице или на дружество, особено когато има няколко собственици, съдружници или планирана промяна в структурата на бизнеса, индивидуалната правна консултация може да бъде полезна.',
+        en:'State the proprietor details correctly when filing. The choice of proprietor is not a formality — it decides who acquires the rights in the mark. If you are unsure whether the mark should be registered to an individual or to a company, particularly where there are several owners or partners or a planned change in structure, individual legal advice can help.'}],
+ ['btn','contact',{bg:'Заявете консултация',en:'Request a consultation'}]
+]},
+
+6:{b:[
+ ['p',{bg:'При регистрацията на търговска марка датата на подаване на заявката е важна. Тя може да определи приоритета Ви спрямо по-късно подадени заявки за идентични или сходни марки. В някои случаи обаче може да разполагате с по-ранна дата на приоритет, която можете да използвате при нова заявка.',
+      en:'In trade mark registration the filing date matters. It can determine your priority against later applications for identical or similar marks. In some cases, however, you may hold an earlier priority date that you can use for a new application.'}],
+ ['q',{bg:'Подавали ли сте вече заявка за същата марка в България или друга държава и разполагате ли с право на приоритет от тази заявка?',
+      en:'Have you already filed for the same mark in Bulgaria or elsewhere, and do you hold a right of priority from that application?'}],
+ ['p',{bg:'Ако не сте подавали по-ранна заявка, в повечето случаи можете да продължите с настоящата заявка и не е необходимо да посочвате по-ранен приоритет.',
+      en:'If you have not filed earlier, in most cases you can simply proceed with this application and need claim no earlier priority.'}],
+ ['h',{bg:'Какво представлява приоритетът?',en:'What priority means'}],
+ ['p',{bg:'Приоритетът определя датата, спрямо която се преценява предимството на Вашата заявка спрямо определени по-късни заявки. Например, ако сте подали заявка за марката си на 1 март, а друго лице подаде заявка за идентична или сходна марка на 15 март, Вашата по-ранна дата може да има значение при определянето на предимството между двете заявки.',
+      en:'Priority sets the date against which your application is ranked relative to certain later applications. If you filed on 1 March and someone else files for an identical or similar mark on 15 March, your earlier date may matter in determining which application takes precedence.'}],
+ ['p',{bg:'Това не означава автоматично, че всяка по-ранна заявка ще бъде регистрирана или че всяка последваща заявка ще бъде отказана. Преценката зависи от конкретните обстоятелства и приложимите правила.',
+      en:'That does not automatically mean every earlier application is registered or every later one refused. The assessment turns on the particular circumstances and the applicable rules.'}],
+ ['h',{bg:'Кога може да имате право на по-ранен приоритет?',en:'When an earlier priority may arise'}],
+ ['p',{bg:'Право на приоритет може да възникне например, когато вече сте подали заявка за същата марка и същите стоки и услуги в държава, която предоставя право на приоритет съгласно приложимите международни правила. При определени условия можете да използвате датата на първата заявка като дата на приоритет при последваща заявка. Това право е свързано със срокове и конкретни изисквания, затова трябва да бъде проверено внимателно.',
+      en:'A right of priority may arise, for instance, where you have already filed for the same mark and the same goods and services in a country that grants priority under the applicable international rules. On certain conditions you can use the date of that first application as the priority date for a later one. The right is subject to time limits and specific requirements, so it has to be checked carefully.'}],
+ ['h',{bg:'Ако вече сте подавали заявка',en:'If you have filed before'}],
+ ['p',{bg:'Ако вече сте заявявали същата марка, подгответе информацията за предходната заявка, включително:',
+      en:'If you have already applied for the same mark, gather the details of that earlier application, including:'}],
+ ['ul',{bg:['държавата или ведомството, пред което е подадена;',
+            'датата на подаване;',
+            'номера на заявката;',
+            'данните на заявителя;',
+            'информацията за марката и обхвата на заявката.'],
+        en:['the country or office where it was filed;',
+            'the filing date;',
+            'the application number;',
+            'the applicant details;',
+            'the mark itself and the scope of the application.']}],
+ ['p',{bg:'Тези данни могат да бъдат необходими, за да се прецени дали можете да претендирате за приоритет.',
+      en:'These details may be needed to assess whether you can claim priority.'}],
+ ['h',{bg:'Важно е да спазите срока',en:'The time limit matters'}],
+ ['p',{bg:'Правото на приоритет не може да се използва неограничено във времето. При международните правила за търговските марки обичайният срок за претендиране на приоритет е шест месеца от датата на първата заявка, при наличие на останалите законови условия. Затова, ако сте подали по-ранна заявка и искате да използвате нейния приоритет, проверете срока преди подаването на новата заявка.',
+      en:'The right of priority is not open-ended. Under the international rules on trade marks the usual window for claiming priority is six months from the date of the first application, provided the other legal conditions are met. So if you have an earlier application and want to use its priority, check the deadline before you file the new one.'}],
+ ['h',{bg:'А ако не сте подавали по-рано?',en:'And if you have not filed before?'}],
+ ['p',{bg:'Ако това е първата Ви заявка за марката, просто продължете към следващата стъпка. Не е необходимо да имате по-ранна дата, за да регистрирате търговска марка. Датата на настоящата заявка ще бъде датата, от която ще се определи нейният приоритет, при условие че заявката отговаря на приложимите изисквания.',
+      en:'If this is your first application for the mark, simply move on to the next step. You do not need an earlier date in order to register a trade mark. The date of this application will be the date from which its priority runs, provided the application meets the applicable requirements.'}]
+]},
+7:{b:[
+ ['p',{bg:'Преди да преминете към подаване на заявката, трябва да определите кой възлага услугата и кой има право да подписва необходимите документи.',
+      en:'Before you move to filing, you need to settle who engages the service and who is entitled to sign the necessary documents.'}],
+ ['p',{bg:'Тази стъпка е особено важна, когато марката ще бъде притежание на дружество, когато има повече от един собственик или когато действате чрез упълномощено лице.',
+      en:'This step matters particularly where the mark will belong to a company, where there is more than one owner, or where you are acting through a representative.'}],
+ ['h',{bg:'Въпросите, на които трябва да отговорите',en:'The questions to answer'}],
+ ['ul',{bg:['Кой е притежателят на марката?',
+            'Кой възлага услугата по подготовката и подаването?',
+            'Кой има право да подписва от името на притежателя?'],
+        en:['Who is the proprietor of the mark?',
+            'Who engages the service of preparing and filing it?',
+            'Who is entitled to sign on the proprietor\'s behalf?']}],
+ ['p',{bg:'В много случаи това може да бъде едно и също лице, но не винаги.',
+      en:'In many cases this is one and the same person, but not always.'}],
+ ['h',{bg:'Ако марката е Ваша като физическо лице',en:'If the mark is yours as an individual'}],
+ ['p',{bg:'Когато Вие сте притежателят на марката и действате лично, обикновено Вие сте и лицето, което възлага услугата и подписва пълномощно, с което се упълномощава адвокат да подаде заявката в съответното патентно ведомство.',
+      en:'Where you are the proprietor and act personally, you are usually also the person who engages the service and signs the power of attorney authorising a lawyer to file the application with the relevant office.'}],
+ ['h',{bg:'Ако притежателят е дружество',en:'If the proprietor is a company'}],
+ ['p',{bg:'Когато марката ще бъде собственост на дружество, услугата се възлага от името на дружеството чрез законния му представител. Пълномощното, с което се упълномощава адвокат, следва да бъде подписано от лице, което има право да представлява дружеството съгласно приложимите правила. Това е управителят или изпълнителният директор на дружеството. Ако дружеството се представлява съвместно от две или повече лица, трябва да се съобразите с начина на представителство.',
+      en:'Where the mark will belong to a company, the service is engaged in the company name through its legal representative. The power of attorney authorising the lawyer must be signed by a person entitled to represent the company under the applicable rules — the managing director or the executive director. If the company is represented jointly by two or more people, the manner of representation has to be observed.'}]
+]},
+
+8:{b:[
+ ['p',{bg:'След като сте определили всички параметри на заявката, последната стъпка преди подаването е плащането.',
+      en:'Once all the parameters of the application are settled, the final step before filing is payment.'}],
+ ['p',{bg:'ScaleYourMark Ви предоставя ясна и предварително определена цена за услугата, така че да знаете какъв разход да очаквате още преди да започнете процедурата.',
+      en:'ScaleYourMark gives you a clear, pre-agreed price for the service, so that you know what to expect before you begin.'}],
+ ['h',{bg:'Какво плащате?',en:'What you are paying for'}],
+ ['p',{bg:'При регистрацията на търговска марка обичайно има два вида разходи:',
+      en:'Registering a trade mark usually involves two kinds of cost:'}],
+ ['ul',{bg:['такса за услугата на ScaleYourMark — за подготовката и професионалното съдействие при подаването;',
+            'официални такси за заявяване на търговската марка — дължими към съответното ведомство според избраната територия и обхвата на заявката.'],
+        en:['the ScaleYourMark service fee, for preparation and professional assistance with filing;',
+            'the official filing fees, payable to the relevant office according to the territory chosen and the scope of the application.']}],
+ ['p',{bg:'Тези разходи са различни и е важно да знаете какво включва крайната сума, която заплащате.',
+      en:'These are different costs, and it is important to know what the final amount covers.'}],
+ ['h',{bg:'Какво включва услугата?',en:'What the service covers'}],
+ ['p',{bg:'Цената на ScaleYourMark покрива договорената професионална услуга по подготовката и подаването на заявката съгласно избрания от Вас пакет. Преди плащането ще можете да прегледате какво е включено в услугата и какви са съответните разходи. Няма скрити консултантски такси.',
+      en:'The ScaleYourMark price covers the agreed professional service of preparing and filing the application under the package you have chosen. Before paying you will be able to review what the service includes and what the costs are. There are no hidden consultancy fees.'}],
+ ['h',{bg:'От какво зависи размерът на официалните такси?',en:'What the official fees depend on'}],
+ ['p',{bg:'Официалните такси могат да зависят от избраната територия на закрила и от броя на класовете стоки и услуги, за които заявявате марката. Затова крайната сума може да бъде различна при различните заявки. Например заявка за национална марка в България и заявка за марка на Европейския съюз са различни процедури и се подчиняват на различни такси.',
+      en:'Official fees can depend on the territory of protection chosen and on the number of classes of goods and services applied for. The final amount therefore differs from one application to another. A national Bulgarian application and a European Union application, for instance, are different procedures with different fees.'}],
+ ['h',{bg:'Преди да платите',en:'Before you pay'}],
+ ['p',{bg:'Преди извършване на плащането ще имате възможност да прегледате основните параметри на заявката:',
+      en:'Before payment you will have the chance to review the main parameters of the application:'}],
+ ['ul',{bg:['притежател;','вид на марката;','територия на закрила;','стоки и услуги;','брой класове;',
+            'наличие или липса на претенция за приоритет;','стойността на услугата;','приложимите официални такси.'],
+        en:['the proprietor;','the type of mark;','the territory of protection;','the goods and services;','the number of classes;',
+            'whether or not priority is claimed;','the cost of the service;','the applicable official fees.']}],
+ ['p',{bg:'Проверете внимателно тези данни преди потвърждаване на плащането.',
+      en:'Check these details carefully before confirming payment.'}],
+ ['h',{bg:'Плащането е последната стъпка преди подаването',en:'Payment is the last step before filing'}],
+ ['p',{bg:'След като всички данни са потвърдени и необходимото плащане е извършено, заявката може да бъде подготвена за подаване съгласно избраната услуга. Важно е да знаете, че плащането на услугата и подаването на заявката не означават автоматично, че марката ще бъде регистрирана. Регистрацията зависи от проверката на заявката и от приложимите законови изисквания.',
+      en:'Once everything is confirmed and payment has been made, the application can be prepared for filing under the service chosen. Paying for the service and filing the application do not automatically mean the mark will be registered. Registration depends on examination of the application and on the applicable legal requirements.'}],
+ ['warn',{bg:'Таксите за регистрация на търговски марки се определят от съответните институции и могат да се променят. Преди плащане ще видите актуалната стойност на приложимите разходи за Вашата конкретна заявка. Ако заявката включва повече класове, специфичен териториален обхват или претенция за приоритет, могат да се прилагат допълнителни изисквания или такси.',
+        en:'Trade mark fees are set by the institutions concerned and can change. Before payment you will see the current figure for the costs applicable to your particular application. Where the application covers more classes, a particular territorial scope or a priority claim, additional requirements or fees may apply.'}]
+]}
+};
+
 /* ---------- pages ---------- */
 function Home(){
- const why=[
-  [{bg:'Платена консултация, преди да знаете дали ви трябва',en:'A paid consultation before you know whether you need one'},
-   {bg:'Часова ставка за информация, която при огромната част от заявките е една и съща. Заради това малкият бизнес отлага заявяването с години — а междувременно името стои незащитено.',
-    en:'An hourly rate for information that is the same in the vast majority of filings. That is why small businesses postpone filing for years — while the name sits unprotected.'}],
-  [{bg:'Или сам, срещу формуляр без обяснения',en:'Or alone, against a form with no explanations'},
-   {bg:'Ведомствените формуляри питат какво, но не казват защо. Грешка в класовете или в изображението не се поправя след подаването — плаща се с нова заявка и нова дата.',
-    en:'Official forms ask what, but never why. A mistake in the classes or the representation cannot be fixed after filing — it costs a fresh application and a later date.'}],
-  [{bg:'Трети път: информацията е свободна, работата е с фиксирана цена',en:'A third way: the information is free, the work is a flat fee'},
-   {bg:'Четете колкото искате и попълвате когато ви е удобно. Плащате веднъж, за резултат. Правната преценка и подаването остават при адвокат, защото там отговорността не се прехвърля на потребителя.',
-    en:'Read as much as you like and fill it in when it suits you. You pay once, for an outcome. The legal judgement and the filing stay with a lawyer, because that responsibility cannot be handed to the user.'}]
+ /* Текстът е авторски. Подредбата следва останалите страници:
+    заглавен блок, призив, рамка на обещанието, шест карти, затваряне. */
+ const pillars=[
+  [{bg:'Безплатна и практична информация',en:'Free, practical information'},
+   {bg:'Получавате достъп до необходимата информация за регистрацията на търговска марка безплатно. Научавате какво да проверите предварително, какви решения трябва да вземете и как протича процедурата.',
+    en:'You get the information a trade mark registration requires at no cost. You learn what to check in advance, which decisions you have to make, and how the procedure runs.'}],
+  [{bg:'Ясно структурирани стъпки',en:'Clearly structured steps'},
+   {bg:'ScaleYourMark подрежда процеса последователно — от подготовката и проверките до подаването на заявката. Така знаете какво трябва да направите и в какъв ред, без да търсите информация в множество източници.',
+    en:'ScaleYourMark sets the process out in sequence — from preparation and checks through to filing. You know what to do and in what order, without hunting through a dozen sources.'}],
+  [{bg:'Самостоятелност без излишни разходи',en:'Independence without needless cost'},
+   {bg:'Не е необходимо да заплащате консултация, за да получите базовата информация, необходима за регистрацията. Можете сами да преминете през процеса и да вземете информирани решения, когато не е необходима индивидуална правна консултация.',
+    en:'You do not need to pay for a consultation to obtain the basic information a registration requires. You can go through the process yourself and make informed decisions where individual legal advice is not necessary.'}],
+  [{bg:'Професионална експертиза от адвокат',en:'Professional expertise from a lawyer'},
+   {bg:'Самостоятелното подаване не означава, че сте оставени без професионална подкрепа. ScaleYourMark е разработен с участието на адвокат и ви предоставя възможност за експертна обратна връзка по въпросите, които изискват професионална преценка.',
+    en:'Filing it yourself does not mean being left without professional support. ScaleYourMark was developed with a lawyer and gives you expert feedback on the questions that call for professional judgement.'}],
+  [{bg:'Фиксирана и предвидима цена',en:'A fixed and predictable price'},
+   {bg:'Знаете предварително какъв е разходът за услугата. Фиксираната цена ви дава предвидимост и ви позволява да планирате бюджета си, без неясни разходи за консултации.',
+    en:'You know the cost of the service in advance. A fixed price gives you predictability and lets you plan your budget, with no open-ended consultation fees.'}],
+  [{bg:'Всичко необходимо на едно място',en:'Everything you need in one place'},
+   {bg:'Информация, последователни стъпки, професионална експертиза и подготовка за заявяване — събрани в един процес. ScaleYourMark ви помага да преминете от идеята за защита на вашия бранд до реалното подаване на заявката по структуриран и информиран начин.',
+    en:'Information, sequential steps, professional expertise and preparation for filing — brought together in one process. ScaleYourMark takes you from the idea of protecting your brand to actually filing, in a structured and informed way.'}]
  ];
- const diff=[
-  [{bg:'Обяснението е в стъпката, не в консултация',en:'The explanation sits in the step, not in a consultation'},
-   {bg:'Всяка от деветте стъпки казва какво се пита, защо се пита, какво следва от отговора и коя е най-честата грешка на това място. Същото, което един адвокат би ви обяснил на среща — написано веднъж и достъпно по всяко време.',
-    en:'Each of the nine steps says what is asked, why it is asked, what follows from the answer, and the most common mistake at that point. The same things a lawyer would explain in a meeting — written once and available at any hour.'}],
-  [{bg:'Фиксирана цена за резултат, не часова ставка',en:'A flat fee for an outcome, not an hourly rate'},
-   {bg:'Знаете цената, преди да започнете. Държавната такса се показва отделно, преизчислява се на живо при добавяне на клас и се плаща на ведомството — тя не е наш приход.',
-    en:'You know the price before you start. The official fee is shown separately, recalculates live as classes are added, and goes to the office — it is not our revenue.'}],
-  [{bg:'Процесът е направен да завършва',en:'The process is built to be finished'},
-   {bg:'Черновата се пази след всяка стъпка и ви чака дни или седмици. Нищо не се пита два пъти. Деветте стъпки имат ясен край, а не отворен списък от въпроси, който се изоставя по средата.',
-    en:'The draft is saved after every step and waits for days or weeks. Nothing is asked twice. The nine steps have a clear end, not an open-ended list of questions that gets abandoned halfway.'}],
-  [{bg:'Накрая стои адвокат, не бутон „Изпрати“',en:'At the end there is a lawyer, not a Submit button'},
-   {bg:'Преписката се преглежда лично в срок до два работни дни и се подава от адвокат. Ако нещо не е наред, се връща с маркирани полета и обяснение — преди да е стигнала до ведомството, а не след това.',
-    en:'The matter is reviewed personally within two working days and filed by a lawyer. If something is wrong it comes back with the fields flagged and explained — before it reaches the office, not after.'}]
- ];
- return `${pageHead(
-  {bg:'Заявяване на марка без излишни консултации',en:'Trade mark filing without the unnecessary consultation'},
-  {bg:'Заявете марката си сами',en:'File your own trade mark'},
-  {bg:'Всичко, нужно за завършена заявка, е на този сайт — не в платена консултация. Накрая адвокат преглежда преписката лично и я подава във ведомството.',
-   en:'Everything you need for a finished application is on this site — not in a paid consultation. At the end a lawyer checks the matter personally and files it.'})}
+ const claim={bg:'Вие познавате своя бизнес. Ние ви помагаме да защитите неговото име.',
+              en:'You know your business. We help you protect its name.'};
+ const promise={bg:'Информирайте се безплатно. Подгответе се самостоятелно. Получете професионална подкрепа. Заявете своята търговска марка с ясна и предвидима цена.',
+                en:'Learn what you need at no cost. Prepare it yourself. Get professional support. File your trade mark at a clear, predictable price.'};
+
+ return `${pageHead({bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'}, claim, promise)}
 
  <section class="sec sec-warm" style="padding-block:20px"><div class="wrap"
    style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
    <button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете →':'Begin →'}</button>
-   <button class="btn btn-ghost" data-p="guides">${lang==='bg'?'Вижте деветте стъпки':'See the nine steps'}</button>
+   <button class="btn btn-ghost" data-p="guides">${lang==='bg'?'Вижте ръководствата':'Read the manuals'}</button>
   </div></section>
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="narrow" style="padding:0;margin:0 0 26px">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Защо съществува':'Why this exists'}</div>
-   <h2>${lang==='bg'?'Досега изборът беше между скъпо и рисковано'
-                    :'Until now the choice was between expensive and risky'}</h2>
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Как протича':'How it works'}</div>
+   <h2>${lang==='bg'?'Ясен път към регистрацията на вашата търговска марка'
+                    :'A clear path to registering your trade mark'}</h2>
    <p class="quiet" style="margin-top:12px;max-width:70ch">${lang==='bg'
-     ?'Фиксирана цена, без часова ставка и без абонамент. Държавната такса се показва отделно и се плаща на ведомството при подаването.'
-     :'A flat fee, no hourly rate and no subscription. The official fee is shown separately and paid to the office at filing.'}</p>
+     ?'Регистрацията на търговска марка не трябва да бъде сложен или неясен процес. ScaleYourMark ви предоставя необходимата информация, подрежда процеса в ясни стъпки и ви позволява сами да подготвите регистрацията си — с професионална подкрепа от адвокат, когато е необходима.'
+     :'Registering a trade mark should not be a complicated or opaque process. ScaleYourMark gives you the information you need, sets the process out in clear steps, and lets you prepare your own registration — with professional support from a lawyer where it is needed.'}</p>
   </div>
   <div class="grid3" style="gap:18px">
-   ${why.map(([t,d],i)=>`<div class="card pad stack" style="gap:9px${i===2?';border-color:var(--gold-bright)':''}">
+   ${pillars.map(([t,d],i)=>`<div class="card pad stack goldtop" style="gap:9px">
      <span class="kicker" style="color:var(--gold)">${String(i+1).padStart(2,'0')}</span>
      <h3 style="font-size:18px">${esc(L(t))}</h3>
-     <p class="quiet">${esc(L(d))}</p></div>`).join('')}
+     <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>
+
+ <section class="sec sec-navy"><div class="wrap">
+  <div class="narrow" style="padding:0">
+   <h2 style="font-size:clamp(19px,2vw,25px)">${esc(L(claim))}</h2>
+   <div class="goldrule" style="margin:14px 0"></div>
+   <p class="lede" style="font-size:15px;line-height:1.5">${esc(L(promise))}</p>
+   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
+    <button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете →':'Begin →'}</button>
+    <button class="btn btn-ghost" data-p="price">${lang==='bg'?'Вижте цените':'See the pricing'}</button>
+   </div>
   </div>
  </div></section>
 
  <section class="sec"><div class="wrap">
-  <div class="narrow" style="padding:0;margin:0 0 26px">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво го различава':'What makes it different'}</div>
-   <h2>${lang==='bg'?'Четири неща, които решават дали ще стигнете до край'
-                    :'Four things that decide whether you actually finish'}</h2>
-  </div>
-  <div class="grid2" style="gap:18px">
-   ${diff.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
-     <h3 style="font-size:18.5px">${esc(L(t))}</h3>
-     <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
-  </div>
-  <p class="quiet" style="max-width:66ch;margin-top:20px">${lang==='bg'
+  <p class="quiet" style="max-width:66ch">${lang==='bg'
     ?'Платформата не замества правния съвет там, където той е нужен. Случаите извън обичайното — опозиция, отказ на абсолютно основание, спор за по-ранно право — се поемат отделно и се възлагат изрично.'
     :'The platform does not replace legal advice where advice is genuinely needed. Cases outside the ordinary — opposition, an absolute-grounds refusal, a dispute over an earlier right — are taken on separately and engaged expressly.'}</p>
  </div></section>`;
@@ -1659,6 +2004,24 @@ function body(k){
 }
 
 function Guides(){
+ const g = GUIDE[guideStep];
+ if(g){
+  const s = STEPS[guideStep-1];
+  return `${pageHead({bg:'Ръководство · стъпка '+guideStep,en:'Manual · step '+guideStep}, s.t, s.i)}
+   <section class="sec"><div class="wrap">
+    <button class="btn btn-quiet" data-gback="1" style="padding:6px 0;font-size:14px;margin-bottom:18px">${
+      lang==='bg'?'← Всички ръководства':'← All manuals'}</button>
+    <article class="guidebody">${g.b.map(blockHtml).join('')}</article>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid var(--line-2)">
+     ${guideStep>1?`<button class="btn btn-ghost" data-gstep="${guideStep-1}" style="padding:9px 16px;font-size:14px">${
+        lang==='bg'?'← Стъпка '+(guideStep-1):'← Step '+(guideStep-1)}</button>`:''}
+     ${GUIDE[guideStep+1]?`<button class="btn btn-ghost" data-gstep="${guideStep+1}" style="padding:9px 16px;font-size:14px">${
+        lang==='bg'?'Стъпка '+(guideStep+1)+' →':'Step '+(guideStep+1)+' →'}</button>`:''}
+     <button class="btn btn-gold" data-p="file" style="padding:9px 16px;font-size:14px">${
+        lang==='bg'?'Към заявката':'Go to the application'}</button>
+    </div>
+   </div></section>`;
+ }
  return `${pageHead({bg:'Библиотека',en:'Library'},{bg:'Ръководства по стъпки',en:'Step-by-step manuals'},
   {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The same manuals from inside the wizard, collected for reading before you start.'})}
  <section class="sec"><div class="wrap grid2">
@@ -1669,8 +2032,28 @@ function Guides(){
      <div><h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:6px 0 0">${lang==='bg'?'Какво ви трябва':'What you need'}</h4>
       <ul style="margin:8px 0 0;padding-left:18px;font-size:14.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px">
        ${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
-     <button class="btn btn-ghost" data-open="${s.n}" style="align-self:start;padding:9px 18px;font-size:14px">${lang==='bg'?'Цялото ръководство':'Full manual'}</button>
+     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:auto">
+      ${GUIDE[s.n]?`<button class="btn btn-gold" data-gstep="${s.n}" style="padding:9px 16px;font-size:14px">${
+         lang==='bg'?'Прочетете ръководството':'Read the manual'}</button>`:''}
+      <button class="btn btn-ghost" data-open="${s.n}" style="padding:9px 16px;font-size:14px">${
+         lang==='bg'?'Кратки указания':'Quick notes'}</button>
+     </div>
     </div>`).join('')}</div></section>`;
+}
+
+/* Един блок от ръководството. Типът решава вида, не авторът на текста. */
+function blockHtml(bl){
+ const k=bl[0];
+ if(k==='p')  return `<p>${esc(L(bl[1]))}</p>`;
+ if(k==='h')  return `<h3>${esc(L(bl[1]))}</h3>`;
+ if(k==='q')  return `<div class="gq"><span class="kicker">${
+   lang==='bg'?'Въпросът, на който трябва да отговорите':'The question to answer'}</span><p>${esc(L(bl[1]))}</p></div>`;
+ if(k==='ul') return `<ul>${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ if(k==='warn')return `<div class="caution" style="margin:18px 0"><strong>${
+   lang==='bg'?'Важно':'Important'}</strong><br>${esc(L(bl[1]))}</div>`;
+ if(k==='btn')return `<p style="margin:20px 0"><button class="btn btn-gold" data-gact="${esc(bl[1])}"
+   style="padding:10px 18px;font-size:14.5px">${esc(L(bl[2]))}</button></p>`;
+ return '';
 }
 
 function Price(){
@@ -2145,6 +2528,15 @@ function wire(){
   }
  }
  const mk=app.querySelector('#mk');if(mk)mk.oninput=e=>{state.mark=e.target.value;save()};
+ app.querySelectorAll('[data-gstep]').forEach(el=>el.onclick=()=>{
+   guideStep=+el.dataset.gstep; page='guides'; render(); window.scrollTo(0,0);
+ });
+ const gb=app.querySelector('[data-gback]');
+ if(gb)gb.onclick=()=>{guideStep=0; render(); window.scrollTo(0,0)};
+ app.querySelectorAll('[data-gact]').forEach(el=>el.onclick=()=>{
+   if(el.dataset.gact==='search'){ guideStep=0; state.step=2; go('file') }
+   else { guideStep=0; go('contact') }
+ });
  const hg=app.querySelector('#hdbgo');
  const goHdb=(e)=>{
    if(e)e.preventDefault();
