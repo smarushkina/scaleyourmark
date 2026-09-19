@@ -2074,28 +2074,7 @@ function About(){
    en:'Your mark deserves more than a filed application. It deserves protection that is properly built.'}
  ];
 
- const split=[
-  {bg:'Затова услугата е създадена така, че процесът да бъде едновременно достъпен, разбираем и професионално обезпечен — без компромис нито с удобството, нито с правната преценка.',
-   en:'The service is therefore designed so that the process is accessible, understandable and professionally supported at once — without compromising either the convenience or the legal judgement.'},
-  {bg:'Вие предоставяте информацията за своя бизнес и преминавате през процеса стъпка по стъпка. На всяка стъпка получавате ясно обяснение какво се изисква, защо е необходимо и какви са последиците от направения избор.',
-   en:'You supply the information about your business and work through the process step by step. At each step you get a clear explanation of what is required, why it is needed, and what follows from the choice you make.'},
-  {bg:'Правната преценка и подаването на заявката остават при адвокат: отличителност на марката, обхват на стоките и услугите, представителна власт, срокове и комуникация с ведомството.',
-   en:'The legal judgement and the filing stay with a lawyer: distinctiveness, the scope of the goods and services, authority to represent, deadlines, and correspondence with the office.'},
-  {bg:'Така получавате прозрачността на самостоятелното заявяване, съчетана с правната преценка и отговорност на адвокатското представителство — достъпността на единия подход и сигурността на другия.',
-   en:'You get the transparency of filing it yourself, combined with the judgement and responsibility of legal representation — the accessibility of the one approach and the certainty of the other.'}
- ];
 
- const who=[
-  [{bg:'Нов бранд на пазара',en:'A new brand entering the market'},
-   {bg:'За предприемачи и малки компании, които предстои да изведат ново име или бранд на пазара и искат да го защитят още в началото.',
-    en:'For founders and small companies about to bring a new name or brand to market who want it protected from the start.'}],
-  [{bg:'Утвърдена марка без регистрация',en:'An established mark with no registration'},
-   {bg:'За марки, които от години използват своето име или лого без регистрация и не искат да оставят защитата на бранда си на случайността, особено при появата на конкурент със сходно име или знак.',
-    en:'For brands that have used their name or logo for years without registering it and do not want to leave protection to chance — above all when a competitor appears with a similar name or sign.'}],
-  [{bg:'Творци и свободни професии',en:'Creators and independent professionals'},
-   {bg:'За творци и лица, упражняващи свободни професии, за които собственото име, псевдонимът или професионалният бранд е неразделна част от тяхната дейност и репутация.',
-    en:'For creators and independent professionals whose own name, pseudonym or professional brand is inseparable from their work and reputation.'}]
- ];
 
  const pillars=[
   [{bg:'Безплатна и практична информация',en:'Free, practical information'},
@@ -2127,17 +2106,19 @@ function About(){
    en:'A lawyer with over ten years in intellectual property, focused on trade marks.'})}
 
  <section class="sec"><div class="wrap">
-  <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Кой стои зад услугата':'Who is behind the service'}</div>
-   <h2>${lang==='bg'?'Създадено от адвокат, специализиран в защитата на търговските марки'
-                    :'Created by a lawyer specialising in trade mark protection'}</h2>
+  <div style="text-align:center;max-width:860px;margin:0 auto 34px;padding-inline:8px">
+   <div class="kicker" style="margin-bottom:12px">${lang==='bg'?'Кой стои зад услугата':'Who is behind the service'}</div>
+   <h2 style="font-size:clamp(22px,2.5vw,30px);line-height:1.22">${lang==='bg'
+     ?'Създадено от адвокат, специализиран в защитата на търговските марки'
+     :'Created by a lawyer specialising in trade mark protection'}</h2>
+   <div class="goldrule" style="margin:16px auto 0"></div>
   </div>
   ${twocol(bio)}
  </div></section>
 
  <section class="sec sec-warm"><div class="wrap">
   <div style="text-align:center;max-width:860px;margin:0 auto 34px;padding-inline:8px">
-   <div class="kicker" style="margin-bottom:12px">${lang==='bg'?'Как протича':'How it works'}</div>
+   <div class="kicker" style="margin-bottom:12px">${lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark'}</div>
    <h2 style="font-size:clamp(22px,2.5vw,30px);line-height:1.22">${lang==='bg'
      ?'Ясен път към регистрацията на вашата търговска марка'
      :'A clear path to registering your trade mark'}</h2>
@@ -2150,27 +2131,6 @@ function About(){
    ${pillars.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:10px">
      <h3 style="font-size:18px">${esc(L(t))}</h3>
      <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
-  </div>
- </div></section>
-
- <section class="sec"><div class="wrap">
-  <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Как е разделена работата':'How the work is split'}</div>
-   <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
-                    :'You know your business. We take the legal part.'}</h2>
-  </div>
-  ${twocol(split)}
- </div></section>
-
- <section class="sec sec-warm"><div class="wrap">
-  <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'За кого е':'Who it is for'}</div>
-   <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service for?'}</h2>
-  </div>
-  <div class="grid3" style="gap:18px">
-   ${who.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
-     <h3 style="font-size:17px">${esc(L(t))}</h3>
-     <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
 
@@ -2197,6 +2157,29 @@ function About(){
 }
 
 function Mark(){
+ const split=[
+  {bg:'Затова услугата е създадена така, че процесът да бъде едновременно достъпен, разбираем и професионално обезпечен — без компромис нито с удобството, нито с правната преценка.',
+   en:'The service is therefore designed so that the process is accessible, understandable and professionally supported at once — without compromising either the convenience or the legal judgement.'},
+  {bg:'Вие предоставяте информацията за своя бизнес и преминавате през процеса стъпка по стъпка. На всяка стъпка получавате ясно обяснение какво се изисква, защо е необходимо и какви са последиците от направения избор.',
+   en:'You supply the information about your business and work through the process step by step. At each step you get a clear explanation of what is required, why it is needed, and what follows from the choice you make.'},
+  {bg:'Правната преценка и подаването на заявката остават при адвокат: отличителност на марката, обхват на стоките и услугите, представителна власт, срокове и комуникация с ведомството.',
+   en:'The legal judgement and the filing stay with a lawyer: distinctiveness, the scope of the goods and services, authority to represent, deadlines, and correspondence with the office.'},
+  {bg:'Така получавате прозрачността на самостоятелното заявяване, съчетана с правната преценка и отговорност на адвокатското представителство — достъпността на единия подход и сигурността на другия.',
+   en:'You get the transparency of filing it yourself, combined with the judgement and responsibility of legal representation — the accessibility of the one approach and the certainty of the other.'}
+ ];
+
+ const who=[
+  [{bg:'Нов бранд на пазара',en:'A new brand entering the market'},
+   {bg:'За предприемачи и малки компании, които предстои да изведат ново име или бранд на пазара и искат да го защитят още в началото.',
+    en:'For founders and small companies about to bring a new name or brand to market who want it protected from the start.'}],
+  [{bg:'Утвърдена марка без регистрация',en:'An established mark with no registration'},
+   {bg:'За марки, които от години използват своето име или лого без регистрация и не искат да оставят защитата на бранда си на случайността, особено при появата на конкурент със сходно име или знак.',
+    en:'For brands that have used their name or logo for years without registering it and do not want to leave protection to chance — above all when a competitor appears with a similar name or sign.'}],
+  [{bg:'Творци и свободни професии',en:'Creators and independent professionals'},
+   {bg:'За творци и лица, упражняващи свободни професии, за които собственото име, псевдонимът или професионалният бранд е неразделна част от тяхната дейност и репутация.',
+    en:'For creators and independent professionals whose own name, pseudonym or professional brand is inseparable from their work and reputation.'}]
+ ];
+
  const asset=[
   {bg:'Търговската марка е знакът, чрез който клиентите разпознават вашия бизнес и го отличават от останалите. Това може да бъде име, лого или съчетание от двете.',
    en:'A trade mark is the sign by which customers recognise your business and tell it apart from the rest. It may be a name, a logo, or the two together.'},
@@ -2287,6 +2270,27 @@ function Mark(){
        <span class="kicker">${esc(L(k))}</span>
        <h3 style="font-size:17px">${esc(L(t))}</h3>
        <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>
+
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Как е разделена работата':'How the work is split'}</div>
+   <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
+                    :'You know your business. We take the legal part.'}</h2>
+  </div>
+  ${twocol(split)}
+ </div></section>
+
+ <section class="sec"><div class="wrap">
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'За кого е':'Who it is for'}</div>
+   <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service for?'}</h2>
+  </div>
+  <div class="grid3" style="gap:18px">
+   ${who.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+     <h3 style="font-size:17px">${esc(L(t))}</h3>
+     <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
 
