@@ -1577,17 +1577,18 @@ function Home(){
   </div></section>
 
  <section class="sec sec-warm"><div class="wrap">
-  <div class="narrow" style="padding:0;margin:0 0 26px">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Как протича':'How it works'}</div>
-   <h2>${lang==='bg'?'Ясен път към регистрацията на вашата търговска марка'
-                    :'A clear path to registering your trade mark'}</h2>
-   <p class="quiet" style="margin-top:12px;max-width:70ch">${lang==='bg'
+  <div style="text-align:center;max-width:860px;margin:0 auto 34px;padding-inline:8px">
+   <div class="kicker" style="margin-bottom:12px">${lang==='bg'?'Как протича':'How it works'}</div>
+   <h2 style="font-size:clamp(22px,2.5vw,30px);line-height:1.22">${lang==='bg'
+     ?'Ясен път към регистрацията на вашата търговска марка'
+     :'A clear path to registering your trade mark'}</h2>
+   <div class="goldrule" style="margin:16px auto 0"></div>
+   <p class="quiet" style="margin:16px auto 0;max-width:68ch;font-size:16px;line-height:1.62">${lang==='bg'
      ?'Регистрацията на търговска марка не трябва да бъде сложен или неясен процес. ScaleYourMark ви предоставя необходимата информация, подрежда процеса в ясни стъпки и ви позволява сами да подготвите регистрацията си — с професионална подкрепа от адвокат, когато е необходима.'
      :'Registering a trade mark should not be a complicated or opaque process. ScaleYourMark gives you the information you need, sets the process out in clear steps, and lets you prepare your own registration — with professional support from a lawyer where it is needed.'}</p>
   </div>
   <div class="grid3" style="gap:18px">
-   ${pillars.map(([t,d],i)=>`<div class="card pad stack goldtop" style="gap:9px">
-     <span class="kicker" style="color:var(--gold)">${String(i+1).padStart(2,'0')}</span>
+   ${pillars.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:10px">
      <h3 style="font-size:18px">${esc(L(t))}</h3>
      <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
   </div>
