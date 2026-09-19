@@ -1963,8 +1963,6 @@ function Guides(){
      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:auto">
       ${GUIDE[s.n]?`<button class="btn btn-gold" data-gstep="${s.n}" style="padding:9px 16px;font-size:14px">${
          lang==='bg'?'Прочетете ръководството':'Read the manual'}</button>`:''}
-      <button class="btn btn-ghost" data-open="${s.n}" style="padding:9px 16px;font-size:14px">${
-         lang==='bg'?'Кратки указания':'Quick notes'}</button>
      </div>
     </div>`).join('')}</div></section>`;
 }
@@ -2106,28 +2104,24 @@ function About(){
    en:'A lawyer with over ten years in intellectual property, focused on trade marks.'})}
 
  <section class="sec"><div class="wrap">
-  <div style="text-align:center;max-width:860px;margin:0 auto 34px;padding-inline:8px">
-   <div class="kicker" style="margin-bottom:12px">${lang==='bg'?'Кой стои зад услугата':'Who is behind the service'}</div>
-   <h2 style="font-size:clamp(22px,2.5vw,30px);line-height:1.22">${lang==='bg'
-     ?'Създадено от адвокат, специализиран в защитата на търговските марки'
-     :'Created by a lawyer specialising in trade mark protection'}</h2>
-   <div class="goldrule" style="margin:16px auto 0"></div>
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Кой стои зад услугата':'Who is behind the service'}</div>
+   <h2>${lang==='bg'?'Създадено от адвокат, специализиран в защитата на търговските марки'
+                    :'Created by a lawyer specialising in trade mark protection'}</h2>
   </div>
   ${twocol(bio)}
  </div></section>
 
  <section class="sec sec-warm"><div class="wrap">
-  <div style="text-align:center;max-width:860px;margin:0 auto 34px;padding-inline:8px">
-   <div class="kicker" style="margin-bottom:12px">${lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark'}</div>
-   <h2 style="font-size:clamp(22px,2.5vw,30px);line-height:1.22">${lang==='bg'
-     ?'Ясен път към регистрацията на вашата търговска марка'
-     :'A clear path to registering your trade mark'}</h2>
-   <div class="goldrule" style="margin:16px auto 0"></div>
-   <p class="quiet" style="margin:16px auto 0;max-width:68ch;font-size:16px;line-height:1.62">${lang==='bg'
+  <div class="sechead">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark'}</div>
+   <h2>${lang==='bg'?'Ясен път към регистрацията на вашата търговска марка'
+                    :'A clear path to registering your trade mark'}</h2>
+   <p class="quiet" style="margin:14px 0 0;max-width:70ch;font-size:15.5px;line-height:1.62">${lang==='bg'
      ?'Регистрацията на търговска марка не трябва да бъде сложен или неясен процес. ScaleYourMark ви предоставя необходимата информация, подрежда процеса в ясни стъпки и ви позволява сами да подготвите регистрацията си — с професионална подкрепа от адвокат.'
      :'Registering a trade mark should not be a complicated or opaque process. ScaleYourMark gives you the information you need, sets the process out in clear steps, and lets you prepare your own registration — with professional support from a lawyer.'}</p>
   </div>
-  <div class="grid3" style="gap:18px">
+  <div class="grid3" style="gap:18px;margin-top:26px">
    ${pillars.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:10px">
      <h3 style="font-size:18px">${esc(L(t))}</h3>
      <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
@@ -2147,12 +2141,12 @@ function About(){
  </div></section>
 
  <section class="sec"><div class="wrap grid2" style="gap:26px;align-items:start">
-  <p class="quiet" style="max-width:66ch">${lang==='bg'
+  <p class="quiet" style="font-size:15px;line-height:1.62;margin:0">${lang==='bg'
     ?'Платформата не замества правния съвет там, където той е нужен. Случаите извън обичайното — опозиция, отказ на абсолютно основание, спор за по-ранно право — се поемат отделно и се възлагат изрично.'
     :'The platform does not replace legal advice where advice is genuinely needed. Cases outside the ordinary — opposition, an absolute-grounds refusal, a dispute over an earlier right — are taken on separately and engaged expressly.'}</p>
-  <div class="caution">${lang==='bg'
+  <p class="quiet" style="font-size:15px;line-height:1.62;margin:0">${lang==='bg'
     ?'Правен съвет по конкретна преписка се дава след сключване на договор за правна помощ. Материалите в блога и ръководствата са с информационен характер и не създават адвокатско правоотношение.'
-    :'Advice on a specific matter is given once an engagement letter is in place. The blog and the manuals are informational and do not create a lawyer\u2013client relationship.'}</div>
+    :'Advice on a specific matter is given once an engagement letter is in place. The blog and the manuals are informational and do not create a lawyer\u2013client relationship.'}</p>
  </div></section>`;
 }
 
@@ -2294,17 +2288,10 @@ function Mark(){
   </div>
  </div></section>
 
- <section class="sec sec-warm"><div class="wrap grid2" style="gap:26px;align-items:start">
-  <div class="card pad stack" style="gap:10px">
-   <div class="kicker">${lang==='bg'?'Често задаван въпрос':'A frequent question'}</div>
-   <div style="font-weight:700;font-size:15.5px">${lang==='bg'?'Регистрирах фирма — това пази ли името ми?':'I registered a company — does that protect my name?'}</div>
-   <p class="quiet">${lang==='bg'
-     ?'Не. Вписването в търговския регистър ви дава право да ползвате наименованието като фирма, но не и изключително право върху знака за стоки и услуги. Двата регистъра са различни и се проверяват поотделно.'
-     :'No. Registration in the commercial register lets you use the name as a company name; it does not give an exclusive right over the sign for goods and services. The two registers are separate and are checked separately.'}</p>
-  </div>
-  <div class="caution">${lang==='bg'
+ <section class="sec sec-warm"><div class="wrap">
+  <p class="quiet" style="font-size:15px;line-height:1.62;max-width:70ch;margin:0">${lang==='bg'
     ?'Съдържанието на тази страница е с информационен характер и не представлява правен съвет по конкретен случай.'
-    :'The content of this page is informational and does not constitute legal advice on a particular case.'}</div>
+    :'The content of this page is informational and does not constitute legal advice on a particular case.'}</p>
  </div></section>
 
  <section class="sec sec-navy"><div class="wrap stack" style="gap:16px;max-width:760px">
