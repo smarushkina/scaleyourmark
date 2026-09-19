@@ -170,6 +170,11 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .gq{border-left:3px solid var(--gold-bright); padding:2px 0 2px 16px; margin:22px 0}
 .gq .kicker{display:block; margin-bottom:6px}
 .gq p{font-size:18px; line-height:1.5; color:var(--ink); margin:0; font-family:"Fraunces","Iowan Old Style",Georgia,serif}
+.guidebody ul.gcheck{list-style:none; padding-left:0}
+.guidebody ul.gcheck li{position:relative; padding-left:26px}
+.guidebody ul.gcheck li::before{content:'\2713'; position:absolute; left:0; top:0; color:var(--teal); font-weight:700}
+.guidebody .glead{font-family:"Fraunces","Iowan Old Style",Georgia,serif; font-size:19px; line-height:1.45;
+  color:var(--ink); border-left:3px solid var(--gold-bright); padding-left:16px; margin:26px 0 0}
 /* еднакъв блок заглавие във всяка секция */
 .sechead{max-width:760px; margin:0 0 22px}
 .sechead .kicker{display:block; margin-bottom:10px}
@@ -1536,6 +1541,69 @@ const GUIDE = {
       en:'Once everything is confirmed and payment has been made, the application can be prepared for filing under the service chosen. Paying for the service and filing the application do not automatically mean the mark will be registered. Registration depends on examination of the application and on the applicable legal requirements.'}],
  ['warn',{bg:'Таксите за регистрация на търговски марки се определят от съответните институции и могат да се променят. Преди плащане ще видите актуалната стойност на приложимите разходи за Вашата конкретна заявка. Ако заявката включва повече класове, специфичен териториален обхват или претенция за приоритет, могат да се прилагат допълнителни изисквания или такси.',
         en:'Trade mark fees are set by the institutions concerned and can change. Before payment you will see the current figure for the costs applicable to your particular application. Where the application covers more classes, a particular territorial scope or a priority claim, additional requirements or fees may apply.'}]
+]},
+9:{b:[
+ ['p',{bg:'След като потвърдите заявката и извършите плащането, Вие сте готови.',
+      en:'Once you have confirmed the application and made the payment, you are done.'}],
+ ['p',{bg:'От този момент ScaleYourMark поема подготовката и подаването на заявката, а след подаването следим развитието на процедурата и приложимите срокове от Ваше име.',
+      en:'From that point ScaleYourMark takes over preparing and filing the application, and after filing we follow the progress of the procedure and the applicable deadlines on your behalf.'}],
+ ['h',{bg:'Какво се случва след плащането?',en:'What happens after payment'}],
+ ['p',{bg:'1. Проверяваме преписката. След плащането информацията по заявката се заключва и преписката постъпва за финален преглед. Проверяваме предоставените данни и документите, преди заявката да бъде подадена във ведомството. Ако е необходима корекция или допълнителна информация, ще се свържем с Вас.',
+      en:'1. We check the matter. After payment the information in the application is locked and the matter goes for a final review. We check the data and documents provided before the application is filed with the office. If a correction or further information is needed, we will contact you.'}],
+ ['p',{bg:'2. Подаваме заявката. След финалния преглед заявката се подава във компетентното ведомство. От този момент процедурата по регистрация се развива пред съответната институция съгласно приложимите правила и срокове.',
+      en:'2. We file the application. After the final review the application is filed with the competent office. From then on the registration procedure runs before that institution under the applicable rules and time limits.'}],
+ ['p',{bg:'3. Следим процедурата. След подаването следим преписката и важните срокове по процедурата. При активиран мониторинг ще получавате информация за релевантни развития, които изискват Вашето внимание или действие. Не е необходимо сами да следите преписката и да проверявате периодично за промени.',
+      en:'3. We follow the procedure. After filing we track the matter and the deadlines that matter. With monitoring switched on you will receive information about relevant developments that call for your attention or action. You do not need to follow the matter yourself or check periodically for changes.'}],
+ ['h',{bg:'Какво се изисква от Вас?',en:'What is required of you'}],
+ ['p',{bg:'В повечето случаи — нищо повече. След плащането е необходимо:',
+      en:'In most cases, nothing further. After payment you need:'}],
+ ['ul',{bg:['да имате достъп до посочения от Вас имейл;',
+            'да следите съобщенията, които Ви изпращаме;',
+            'да реагирате, ако Ви поискаме допълнителна информация или корекция;',
+            'да изберете дали желаете услугата за мониторинг.'],
+        en:['access to the email address you gave us;',
+            'to keep an eye on the messages we send you;',
+            'to respond if we ask for further information or a correction;',
+            'to decide whether you want the monitoring service.']}],
+ ['p',{bg:'Ако не е необходима допълнителна информация от Вас, можете да оставите процедурата на нас.',
+      en:'If nothing further is needed from you, you can leave the procedure with us.'}],
+ ['h',{bg:'А ако възникне въпрос или проблем?',en:'And if a question or a problem arises?'}],
+ ['p',{bg:'Ако по време на процедурата бъде получено съобщение, възражение или друго действие от ведомството, което изисква Вашето участие, ще бъдете информирани.',
+      en:'If during the procedure a communication, an objection or any other act of the office arrives that calls for your involvement, you will be informed.'}],
+ ['p',{bg:'Когато е необходимо Ваше решение или действие, ще получите информация какво е необходимо да направите и в какъв срок.',
+      en:'Where a decision or an action of yours is needed, you will be told what has to be done and by when.'}],
+ ['p',{bg:'По този начин знаете кога трябва да предприемете действие и кога не е необходимо да правите нищо.',
+      en:'That way you know when you have to act and when there is nothing for you to do.'}],
+ ['h',{bg:'Какво представлява мониторингът?',en:'What monitoring is'}],
+ ['p',{bg:'Регистрацията на марката е началото на защитата, а не нейният край.',
+      en:'Registering the mark is the beginning of protection, not the end of it.'}],
+ ['p',{bg:'При активиран мониторинг можете да получавате информация за определени нови заявки или регистрации, които могат да бъдат релевантни към Вашата марка.',
+      en:'With monitoring switched on you can receive information about certain new applications or registrations that may be relevant to your mark.'}],
+ ['p',{bg:'Това Ви позволява да реагирате своевременно, ако се появи потенциално сходна марка.',
+      en:'That lets you react in good time if a potentially similar mark appears.'}],
+ ['p',{bg:'Мониторингът е отделна услуга и не е задължителен за подаването на заявката.',
+      en:'Monitoring is a separate service and is not required in order to file.'}],
+ ['h',{bg:'Какво трябва да направите сега?',en:'What to do now'}],
+ ['p',{bg:'След като сте преминали през всички предходни стъпки:',
+      en:'Once you have been through all the previous steps:'}],
+ ['check',{bg:['заявката е подготвена;',
+               'данните са проверени;',
+               'услугата е заплатена;',
+               'преписката е предадена за финален преглед;',
+               'заявката ще бъде подадена във ведомството;',
+               'след подаването ще следим процедурата съгласно избраната услуга.'],
+           en:['the application is prepared;',
+               'the details have been checked;',
+               'the service has been paid for;',
+               'the matter has been handed over for final review;',
+               'the application will be filed with the office;',
+               'after filing we will follow the procedure under the service you chose.']}],
+ ['p',{bg:'Оттук нататък оставяме административната част на нас.',
+      en:'From here the administrative part is ours.'}],
+ ['p',{bg:'Вашата задача е единствено да бъдете достъпни на посочения имейл, ако се наложи да предоставите информация или да вземете решение.',
+      en:'Your only task is to be reachable at the email address you gave, in case information or a decision is needed from you.'}],
+ ['lead',{bg:'Вашата марка е заявена. Ние следим какво се случва след това.',
+         en:'Your mark is filed. We watch what happens next.'}]
 ]}
 };
 
@@ -1975,6 +2043,8 @@ function blockHtml(bl){
  if(k==='q')  return `<div class="gq"><span class="kicker">${
    lang==='bg'?'Въпросът, на който трябва да отговорите':'The question to answer'}</span><p>${esc(L(bl[1]))}</p></div>`;
  if(k==='ul') return `<ul>${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ if(k==='check') return `<ul class="gcheck">${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ if(k==='lead') return `<p class="glead">${esc(L(bl[1]))}</p>`;
  if(k==='warn')return `<div class="caution" style="margin:18px 0"><strong>${
    lang==='bg'?'Важно':'Important'}</strong><br>${esc(L(bl[1]))}</div>`;
  if(k==='btn')return `<p style="margin:20px 0"><button class="btn btn-gold" data-gact="${esc(bl[1])}"
