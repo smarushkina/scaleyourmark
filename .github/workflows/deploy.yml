@@ -1,0 +1,78 @@
+name: Публикуване към SuperHosting
+
+# При всяка промяна в main файлът тръгва към хостинга.
+# Може и ръчно — Actions → този процес → Run workflow.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'robots.txt'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ftp
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Взимане на файловете
+        uses: actions/checkout@v4
+
+      - name: Качване по FTPS
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}   # по избор; празна = коренът след вход
+        run: |
+          set -euo pipefail
+
+          for v in FTP_HOST FTP_USER FTP_PASS; do
+            if [ -z "${!v}" ]; then
+              echo "Липсва тайната $v в Settings → Secrets and variables → Actions."
+              exit 1
+            fi
+          done
+
+          # Ако FTP акаунтът е заключен в public_html, папката след вход е
+          # коренът — тогава FTP_DIR се оставя празна.
+          FTP_DIR="${FTP_DIR:-.}"
+
+          # Паролата минава през .netrc, за да не се тълкува от обвивката
+          # и да не се появи в журнала.
+          printf 'machine %s\nlogin %s\npassword %s\n' "$FTP_HOST" "$FTP_USER" "$FTP_PASS" > "$HOME/.netrc"
+          chmod 600 "$HOME/.netrc"
+
+          upload() {
+            local f="$1"
+            if [ ! -f "$f" ]; then
+              echo "Пропуснат (липсва): $f"
+              return 0
+            fi
+            echo "Качване: $f  →  $FTP_DIR/$f"
+            curl --fail --show-error --silent \
+                 --ssl-reqd --netrc \
+                 --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 300 \
+                 -T "$f" "ftp://$FTP_HOST/$FTP_DIR/$f"
+          }
+
+          upload index.html
+          upload robots.txt
+
+          rm -f "$HOME/.netrc"
+          echo "Готово."
+
+      - name: Проверка, че сайтът отговаря
+        if: success()
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          for host in https://scaleyourmark.com https://www.scaleyourmark.com; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 30 "$host" || echo "000")
+            echo "$host → HTTP $code"
+          done
