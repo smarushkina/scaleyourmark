@@ -96,6 +96,17 @@ header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); colo
 .btn-gold{background:var(--gold-bright); color:#0A1730; box-shadow:var(--lift); font-weight:600}
 .btn-gold:hover{background:#CBA678}
 .goldrule{height:3px; width:52px; border-radius:2px; background:var(--gold-bright)}
+/* Името на марката в текста — както е в логото: „ScaleYour“ в мастило, „Mark“ в злато. */
+.smark{font-weight:600; color:var(--ink); white-space:nowrap}
+.smark b{font-weight:600; color:var(--gold)}
+.sec-navy .smark{color:#fff}
+.sec-navy .smark b{color:var(--gold-bright)}
+/* Етикет, с който започва всяка секция — чете се като знак, не като дребен надпис. */
+.seclabel{display:inline-block; font-size:11.5px; letter-spacing:.15em; text-transform:uppercase;
+  font-weight:600; color:var(--gold); background:var(--gold-soft);
+  border:1px solid var(--gold-bright); border-radius:999px; padding:6px 15px; line-height:1.3}
+.sec-navy .seclabel{color:var(--gold-bright); background:rgba(255,255,255,.07);
+  border-color:rgba(214,177,131,.45)}
 section.sec.pagehead{padding-block:18px; height:152px; display:flex; align-items:center}
 @media (max-width:860px){ section.sec.pagehead{height:auto; min-height:122px} }
 .pagehead .lede{max-width:none}
@@ -1146,10 +1157,14 @@ async function resetDraft(){
  render();
 }
 
+/* Екранира и чак тогава изписва името на марката като в логото. */
+function brand(s){
+ return esc(s).replace(/ScaleYourMark/g,'<span class="smark">ScaleYour<b>Mark</b></span>');
+}
 function twocol(arr){
  const t=arr.map(x=>L(x));
  const half=Math.ceil(t.length/2);          // еднакъв брой абзаци във всяка колона
- const col=xs=>xs.map(x=>`<p class="copy">${esc(x)}</p>`).join('');
+ const col=xs=>xs.map(x=>`<p class="copy">${brand(x)}</p>`).join('');
  return `<div class="twocol"><div>${col(t.slice(0,half))}</div><div>${col(t.slice(half))}</div></div>`;
 }
 
@@ -2038,13 +2053,13 @@ function Guides(){
 /* Един блок от ръководството. Типът решава вида, не авторът на текста. */
 function blockHtml(bl){
  const k=bl[0];
- if(k==='p')  return `<p>${esc(L(bl[1]))}</p>`;
+ if(k==='p')  return `<p>${brand(L(bl[1]))}</p>`;
  if(k==='h')  return `<h3>${esc(L(bl[1]))}</h3>`;
  if(k==='q')  return `<div class="gq"><span class="kicker">${
    lang==='bg'?'Въпросът, на който трябва да отговорите':'The question to answer'}</span><p>${esc(L(bl[1]))}</p></div>`;
  if(k==='ul') return `<ul>${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
  if(k==='check') return `<ul class="gcheck">${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
- if(k==='lead') return `<p class="glead">${esc(L(bl[1]))}</p>`;
+ if(k==='lead') return `<p class="glead">${brand(L(bl[1]))}</p>`;
  if(k==='warn')return `<div class="caution" style="margin:18px 0"><strong>${
    lang==='bg'?'Важно':'Important'}</strong><br>${esc(L(bl[1]))}</div>`;
  if(k==='btn')return `<p style="margin:20px 0"><button class="btn btn-gold" data-gact="${esc(bl[1])}"
@@ -2187,14 +2202,14 @@ function About(){
    <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark'}</div>
    <h2>${lang==='bg'?'Ясен път към регистрацията на вашата търговска марка'
                     :'A clear path to registering your trade mark'}</h2>
-   <p class="quiet" style="margin:14px 0 0;max-width:70ch;font-size:15.5px;line-height:1.62">${lang==='bg'
+   <p class="quiet" style="margin:14px 0 0;max-width:70ch;font-size:15.5px;line-height:1.62">${brand(lang==='bg'
      ?'Регистрацията на търговска марка не трябва да бъде сложен или неясен процес. ScaleYourMark ви предоставя необходимата информация, подрежда процеса в ясни стъпки и ви позволява сами да подготвите регистрацията си — с професионална подкрепа от адвокат.'
-     :'Registering a trade mark should not be a complicated or opaque process. ScaleYourMark gives you the information you need, sets the process out in clear steps, and lets you prepare your own registration — with professional support from a lawyer.'}</p>
+     :'Registering a trade mark should not be a complicated or opaque process. ScaleYourMark gives you the information you need, sets the process out in clear steps, and lets you prepare your own registration — with professional support from a lawyer.')}</p>
   </div>
   <div class="grid3" style="gap:18px;margin-top:26px">
    ${pillars.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:10px">
-     <h3 style="font-size:18px">${esc(L(t))}</h3>
-     <p class="quiet" style="font-size:15px">${esc(L(d))}</p></div>`).join('')}
+     <h3 style="font-size:18px">${brand(L(t))}</h3>
+     <p class="quiet" style="font-size:15px">${brand(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
 
@@ -2288,7 +2303,7 @@ function Mark(){
 
  <section class="sec"><div class="wrap">
   <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво е марката':'What a mark is'}</div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Какво е марката':'What a mark is'}</span></div>
    <h2>${lang==='bg'?'Знакът, по който ви разпознават':'The sign you are recognised by'}</h2>
   </div>
   ${twocol(asset)}
@@ -2301,7 +2316,7 @@ function Mark(){
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Къде се решава всичко':'Where it is decided'}</div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Къде се решава всичко':'Where it is decided'}</span></div>
    <h2>${lang==='bg'?'Най-важните решения се вземат преди подаването'
                     :'The decisions that matter are taken before filing'}</h2>
   </div>
@@ -2310,7 +2325,7 @@ function Mark(){
 
  <section class="sec"><div class="wrap">
   <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Територия на защита':'Territory of protection'}</div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Територия на защита':'Territory of protection'}</span></div>
    <h2>${lang==='bg'?'Защита там, където развивате бизнеса си'
                     :'Protection where you actually trade'}</h2>
   </div>
@@ -2339,7 +2354,7 @@ function Mark(){
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Как е разделена работата':'How the work is split'}</div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Как е разделена работата':'How the work is split'}</span></div>
    <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
                     :'You know your business. We take the legal part.'}</h2>
   </div>
@@ -2348,7 +2363,7 @@ function Mark(){
 
  <section class="sec"><div class="wrap">
   <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'За кого е':'Who it is for'}</div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'За кого е':'Who it is for'}</span></div>
    <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service for?'}</h2>
   </div>
   <div class="grid3" style="gap:18px">
@@ -2365,7 +2380,7 @@ function Mark(){
  </div></section>
 
  <section class="sec sec-navy"><div class="wrap stack" style="gap:16px;max-width:760px">
-  <div class="kicker">${lang==='bg'?'Накрая':'Finally'}</div>
+  <div><span class="seclabel">${lang==='bg'?'Накрая':'Finally'}</span></div>
   <h2>${lang==='bg'?'Защитете името, преди да се наложи да го защитавате'
                    :'Protect the name before you have to defend it'}</h2>
   <div class="goldrule"></div>
