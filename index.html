@@ -97,6 +97,9 @@ header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); colo
 .btn-gold:hover{background:#CBA678}
 .goldrule{height:3px; width:52px; border-radius:2px; background:var(--gold-bright)}
 /* Името на марката в текста — както е в логото: „ScaleYour“ в мастило, „Mark“ в злато. */
+/* В етикета на секцията главните букви биха развалили изписването на името. */
+.brandkicker{text-transform:none; font-size:13px; letter-spacing:.06em}
+.brandkicker .smark{font-size:14px}
 .smark{font-weight:600; color:var(--ink); white-space:nowrap}
 .smark b{font-weight:600; color:var(--gold)}
 .sec-navy .smark{color:#fff}
@@ -2145,14 +2148,14 @@ function About(){
  const bio=[
   {bg:'Тази услуга е създадена от адв. Силвия Марушкина — адвокат с над 10 години професионален опит в областта на правото и защитата на интелектуалната собственост, с основен фокус върху регистрацията и защитата на търговски марки.',
    en:'This service was created by Silviya Marushkina, attorney-at-law, with over ten years of professional experience in intellectual property law, focused on the registration and protection of trade marks.'},
-  {bg:'Идеята зад платформата е проста: регистрацията на търговска марка трябва да бъде достъпна и разбираема за всеки бизнес, без това да означава компромис с професионалната правна преценка.',
-   en:'The idea behind the platform is simple: registering a trade mark should be accessible and understandable for any business, without compromising on professional legal judgement.'},
+  {bg:'Идеята зад ScaleYourMark е проста: регистрацията на търговска марка трябва да бъде достъпна и разбираема за всеки бизнес, без това да означава компромис с професионалната правна преценка.',
+   en:'The idea behind ScaleYourMark is simple: registering a trade mark should be accessible and understandable for any business, without compromising on professional legal judgement.'},
   {bg:'На практика значителна част от решенията, които определят качеството и обхвата на една регистрация, се вземат още преди подаването на заявката.',
    en:'In practice, a significant part of what determines the quality and scope of a registration is decided before the application is ever filed.'},
   {bg:'Изборът на знак, стоките и услугите, за които ще бъде защитен, територията на защита и лицето, на чието име ще бъде регистриран, имат пряко значение за правата, които ще бъдат придобити.',
    en:'The choice of sign, the goods and services it will cover, the territory of protection and the name in which it is registered all bear directly on the rights acquired.'},
-  {bg:'Затова платформата е изградена около професионалния опит, натрупан в реалната практика по регистрация и защита на търговски марки. Целта е да се съчетаят удобството и прозрачността на дигиталния процес с правната експертиза, необходима за вземането на правилните решения.',
-   en:'The platform is therefore built around experience drawn from actual practice in registering and defending trade marks. The aim is to combine the convenience and transparency of a digital process with the legal expertise needed to make the right decisions.'},
+  {bg:'Затова ScaleYourMark е изграден около професионалния опит, натрупан в реалната практика по регистрация и защита на търговски марки. Целта е да се съчетаят удобството и прозрачността на дигиталния процес с правната експертиза, необходима за вземането на правилните решения.',
+   en:'ScaleYourMark is therefore built around experience drawn from actual practice in registering and defending trade marks. The aim is to combine the convenience and transparency of a digital process with the legal expertise needed to make the right decisions.'},
   {bg:'Вашата марка заслужава повече от просто подадена заявка. Тя заслужава правилно изградена защита.',
    en:'Your mark deserves more than a filed application. It deserves protection that is properly built.'}
  ];
@@ -2199,7 +2202,8 @@ function About(){
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark'}</div>
+   <div class="kicker brandkicker" style="margin-bottom:10px">${
+     brand(lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark')}</div>
    <h2>${lang==='bg'?'Ясен път към регистрацията на вашата търговска марка'
                     :'A clear path to registering your trade mark'}</h2>
    <p class="quiet" style="margin:14px 0 0;max-width:70ch;font-size:15.5px;line-height:1.62">${brand(lang==='bg'
