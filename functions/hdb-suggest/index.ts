@@ -26,9 +26,14 @@ const CLIENT_ID = (Deno.env.get('EUIPO_CLIENT_ID') || '').trim();
 const CLIENT_SECRET = (Deno.env.get('EUIPO_CLIENT_SECRET') || '').trim();
 const SANDBOX = ENV !== 'production';
 
-const AUTH_HOST = SANDBOX
-  ? 'https://auth-sandbox.euipo.europa.eu'
-  : 'https://auth.euipo.europa.eu';
+// Адресът за жетона е различен в двете среди не само по поддомейн, а и по път.
+// Взето от самата OpenAPI спецификация на портала (tokenUrl), 21 септември 2026:
+//   sandbox     https://auth-sandbox.euipo.europa.eu/oidc/accessToken
+//   production  https://euipo.europa.eu/cas-server-webapp/oidc/accessToken
+// Предположението, че production е auth.euipo.europa.eu/oidc/accessToken, дава 502.
+const AUTH_URL = (Deno.env.get('EUIPO_AUTH_URL') || '').trim() || (SANDBOX
+  ? 'https://auth-sandbox.euipo.europa.eu/oidc/accessToken'
+  : 'https://euipo.europa.eu/cas-server-webapp/oidc/accessToken');
 const PORTAL = SANDBOX
   ? 'https://dev-sandbox.euipo.europa.eu'
   : 'https://dev.euipo.europa.eu';
@@ -47,7 +52,7 @@ async function token(): Promise<string> {
     scope: 'uid',
   });
 
-  const r = await fetch(AUTH_HOST + '/oidc/accessToken', {
+  const r = await fetch(AUTH_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -73,7 +78,7 @@ function apiHeaders(t: string) {
 
 // ---------- диагностика: намираме истинския адрес на API-то ----------
 async function probe() {
-  const out: any = { env: ENV, authHost: AUTH_HOST, hasId: !!CLIENT_ID, hasSecret: !!CLIENT_SECRET };
+  const out: any = { env: ENV, authUrl: AUTH_URL, base: BASE, hasId: !!CLIENT_ID, hasSecret: !!CLIENT_SECRET };
 
   // 1. жетон
   try {
