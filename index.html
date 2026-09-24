@@ -205,7 +205,9 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .acchead[aria-expanded="true"]{color:var(--gold)}
 .accbody{padding:0 14px 13px}
 .accbody p{margin:0; font-size:14.5px; line-height:1.6; color:var(--ink-3)}
-.whyhead{margin:4px 0 12px; font-size:18px}
+.whyhead{margin:10px 0 14px; font-size:19.5px; line-height:1.2}
+.whyhead::after{content:""; display:block; height:3px; width:52px; border-radius:2px;
+  background:var(--gold-bright); margin-top:11px}
 @media (max-width:900px){ .whygrid{grid-template-columns:1fr; gap:24px} }
 /* Представянето на адвоката: снимка вляво, текст вдясно. */
 .biogrid{display:grid; grid-template-columns:262px minmax(0,1fr); gap:30px; align-items:start}
@@ -2469,7 +2471,9 @@ function Mark(){
     <h2>${lang==='bg'?'Знакът, по който ви разпознават':'The sign you are recognised by'}</h2>
    </div>
    ${twocol(asset)}
-   <div class="grid2" style="gap:18px;margin-top:26px">
+   <h3 class="whyhead" style="margin:34px 0 16px">${lang==='bg'?'Защо да регистрирате марката си'
+                                                              :'Why register your mark'}</h3>
+   <div class="grid2" style="gap:18px;margin-top:0">
     ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
       <h3 style="font-size:17px">${esc(L(t))}</h3>
       <p class="quiet" style="font-size:14.5px;line-height:1.62">${esc(L(d))}</p></div>`).join('')}
