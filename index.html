@@ -746,7 +746,10 @@ const SB_URL = 'https://shxfpymoydvvkssnoujq.supabase.co';
 const SB_KEY = 'sb_publishable_iHE6972u_ujtaYc4mRH2hQ_cahf31sM';
 
 const AUTH_KEY='sym_auth_v1', USERS_KEY='sym_users_v1';
-const ADMIN={user:'Admin', pass:'password'};
+/* Тук стоеше резервна двойка за вход като администратор, записана в кода.
+   Махната на 24.09.2026: кодът на страницата е публичен, а панелът показва
+   преписки на клиенти. Права на адвокат се дават единствено от полето
+   is_lawyer в app.profiles, което се чете от сървъра при влизане. */
 
 let sb = null;            // клиентът на Supabase
 let remote = false;       // true = истинска автентикация
@@ -906,10 +909,8 @@ async function doLogin(f){
   }catch(e){ authMsg={type:'err',text:authErr(e)} }
   busy=false; render(); return;
  }
- if(f.email===ADMIN.user && f.pass===ADMIN.pass){
-  auth={name:'Администратор', email:'admin', phone:'', admin:true}; saveAuth(auth);
-  authMsg=null; render(); return;
- }
+ /* Без връзка със сървъра няма и администратор — резервният режим служи само
+    да не се губи черновата, не да дава достъп до преписки. */
  const u=loadUsers().find(x=>x.email.toLowerCase()===(f.email||'').trim().toLowerCase() && x.pass===f.pass);
  if(!u){authMsg={type:'err',text:lang==='bg'?'Грешен имейл или парола.':'Wrong email or password.'}; render(); return}
  auth={name:u.name, email:u.email, phone:u.phone, admin:false}; saveAuth(auth); authMsg=null; render();
