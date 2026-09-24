@@ -2718,13 +2718,32 @@ function wire(){
   const el=app.querySelector('#mkpan-'+markTab);
   if(el){el.style.animation='none'; void el.offsetWidth; el.style.animation=''}
  });
- /* „Защо ScaleYourMark" — всеки блок се отваря и затваря сам за себе си. */
- app.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{
-  const k=b.dataset.acc, open=b.getAttribute('aria-expanded')==='true';
-  b.setAttribute('aria-expanded', open?'false':'true');
-  const body=app.querySelector('#accb-'+k);
-  if(body) body.hidden = open;
-  if(open) whyOpen.delete(k); else whyOpen.add(k);
+ /* „Защо ScaleYourMark" — всеки блок се отваря и затваря сам за себе си.
+    На компютър се отваря и само като застоите с мишката върху него: 150 ms,
+    за да не се отварят всички, докато мишката просто минава надолу.
+    Затваря се само с натискане — иначе страницата би подскачала при всяко
+    отдръпване на мишката. На телефон и таблет hover няма, там остава
+    натискането. */
+ const setAcc=(b,open)=>{
+  const k=b.dataset.acc, body=app.querySelector('#accb-'+k);
+  b.setAttribute('aria-expanded', open?'true':'false');
+  if(body) body.hidden = !open;
+  if(open) whyOpen.add(k); else whyOpen.delete(k);
+ };
+ const canHover = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+ app.querySelectorAll('.accitem').forEach(it=>{
+  const b=it.querySelector('[data-acc]');
+  if(!b) return;
+  let t=null, shut=false;   // shut: затворен е нарочно, докато мишката още стои върху него
+  b.onclick=()=>{
+   const open = b.getAttribute('aria-expanded')!=='true';
+   if(t){clearTimeout(t); t=null}
+   shut = !open;            // иначе таймерът щеше да го отвори пак след 150 ms
+   setAcc(b, open);
+  };
+  if(!canHover) return;
+  it.addEventListener('mouseenter',()=>{ if(shut) return; t=setTimeout(()=>setAcc(b,true),150) });
+  it.addEventListener('mouseleave',()=>{ if(t){clearTimeout(t); t=null} shut=false });
  });
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
  const vl=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
