@@ -191,6 +191,22 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 /* --- „За нас": двата раздела като бутони един до друг с падащо съдържание --- */
 .abpanel{animation:abfade .22s ease}
 .abpanel-warm{background:var(--warm); border:1px solid var(--line-2); border-radius:18px; padding:26px 26px 30px}
+/* „Защо ScaleYourMark": текстът вляво, разгъващите се блокове вдясно. */
+.whygrid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px 38px; align-items:start}
+.whycopy .copy{max-width:none; margin:0 0 18px}
+.whycopy > .copy:last-child{margin-bottom:0}
+.acc{display:flex; flex-direction:column; gap:8px}
+.accitem{background:var(--surface); border:1px solid var(--line); border-top:2px solid var(--gold-bright);
+  border-radius:12px; box-shadow:var(--lift); overflow:hidden}
+.acchead{display:block; width:100%; text-align:left; background:none; border:0; font:inherit;
+  font-size:14.5px; font-weight:600; line-height:1.3; color:var(--ink); cursor:pointer; padding:10px 14px}
+.acchead:hover{color:var(--gold)}
+.acchead:focus-visible{outline:2px solid var(--gold-bright); outline-offset:-2px}
+.acchead[aria-expanded="true"]{color:var(--gold)}
+.accbody{padding:0 14px 13px}
+.accbody p{margin:0; font-size:14.5px; line-height:1.6; color:var(--ink-3)}
+.whyhead{margin:4px 0 12px; font-size:18px}
+@media (max-width:900px){ .whygrid{grid-template-columns:1fr; gap:24px} }
 /* Представянето на адвоката: снимка вляво, текст вдясно. */
 .biogrid{display:grid; grid-template-columns:262px minmax(0,1fr); gap:30px; align-items:start}
 .biophoto{display:block; width:100%; height:auto; border-radius:18px; border:1px solid var(--line);
@@ -439,6 +455,8 @@ body{overflow-wrap:break-word}
   .blogread{display:inline-block; padding:10px 0}
   /* Етикетите-бутони на „За нас" и „За търговската марка" — и на таблет. */
   .mktab{padding-block:12px}
+  /* Разгъващите се блокове: същият вид, но цел за палец. */
+  .acchead{padding-block:12px}
 }
 
 @media (max-width:640px){
@@ -780,6 +798,7 @@ let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръков
 let authTab = 'login';          // login | register | reset | newpass
 let aboutTab = 'who';           // who | why — кой раздел на „За нас" е разгънат
 let markTab  = 'what';          // кой раздел на „За търговската марка" е разгънат
+const whyOpen = new Set();      // кои блокове в „Защо ScaleYourMark" са отворени
 let authMsg = null;             // {type:'err'|'ok', text}
 
 function isAdmin(){return !!(auth && auth.admin)}
@@ -2325,11 +2344,22 @@ function About(){
     <h2>${lang==='bg'?'Ясен път към регистрацията на вашата търговска марка'
                      :'A clear path to registering your trade mark'}</h2>
    </div>
-   ${twocol(idea)}
-   <div class="grid3" style="gap:18px;margin-top:26px">
-    ${pillars.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:10px">
-      <h3 style="font-size:18px">${brand(L(t))}</h3>
-      <p class="quiet" style="font-size:15px">${brand(L(d))}</p></div>`).join('')}
+   <div class="whygrid">
+    <div class="whycopy">
+     ${idea.slice(0,4).map(x=>`<p class="copy">${brand(L(x))}</p>`).join('')}
+    </div>
+    <div class="whycopy">
+     ${idea.slice(4).map(x=>`<p class="copy">${brand(L(x))}</p>`).join('')}
+     <h3 class="whyhead">${brand(lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark')}</h3>
+     <div class="acc">
+      ${pillars.map(([t,d],i)=>`<div class="accitem">
+        <button class="acchead" data-acc="${i}" id="acch-${i}" aria-controls="accb-${i}"
+          aria-expanded="${whyOpen.has(String(i))?'true':'false'}">${brand(L(t))}</button>
+        <div class="accbody" id="accb-${i}" role="region" aria-labelledby="acch-${i}" ${whyOpen.has(String(i))?'':'hidden'}>
+         <p>${brand(L(d))}</p></div>
+       </div>`).join('')}
+     </div>
+    </div>
    </div>
   </div>
  </div></section>
@@ -2687,6 +2717,14 @@ function wire(){
   app.querySelectorAll('[id^="mkpan-"]').forEach(p=>{p.hidden = p.id!=='mkpan-'+markTab});
   const el=app.querySelector('#mkpan-'+markTab);
   if(el){el.style.animation='none'; void el.offsetWidth; el.style.animation=''}
+ });
+ /* „Защо ScaleYourMark" — всеки блок се отваря и затваря сам за себе си. */
+ app.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.acc, open=b.getAttribute('aria-expanded')==='true';
+  b.setAttribute('aria-expanded', open?'false':'true');
+  const body=app.querySelector('#accb-'+k);
+  if(body) body.hidden = open;
+  if(open) whyOpen.delete(k); else whyOpen.add(k);
  });
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
  const vl=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
