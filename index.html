@@ -108,20 +108,6 @@ header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); colo
 .seclabel{display:inline-block; font-size:11.5px; letter-spacing:.15em; text-transform:uppercase;
   font-weight:600; color:var(--gold); background:var(--gold-soft);
   border:1px solid var(--gold-bright); border-radius:999px; padding:6px 15px; line-height:1.3}
-/* Същите етикети, но като бутони: всички на един ред, съдържанието пада отдолу. */
-.mktabs{display:flex; gap:8px; margin:0 0 26px; overflow-x:auto; padding-bottom:4px;
-  scrollbar-width:none; -ms-overflow-style:none;
-  overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; scroll-padding-inline:4px}
-.mktabs::-webkit-scrollbar{display:none}
-.mktab{flex:1 1 auto; white-space:nowrap; text-align:center; font-family:inherit; cursor:pointer;
-  transition:background .15s ease, color .15s ease, transform .15s ease}
-.mktab:hover{transform:translateY(-1px)}
-.mktab.on{background:var(--gold-bright); color:var(--navy); border-color:var(--gold-bright); font-weight:700}
-.mktab:focus-visible{outline:2px solid var(--navy); outline-offset:3px}
-/* Когато етикетите са само два, разтеглянето им през целия ред ги прави
-   непропорционални — там стоят с естествената си ширина. */
-.mktabs.fit .mktab{flex:0 0 auto}
-@media (max-width:760px){ .mktab{flex:0 0 auto} }
 .sec-navy .seclabel{color:var(--gold-bright); background:rgba(255,255,255,.07);
   border-color:rgba(214,177,131,.45)}
 section.sec.pagehead{padding-block:18px; height:152px; display:flex; align-items:center}
@@ -188,9 +174,6 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .sec-navy .tag.v{background:rgba(190,150,102,.2); color:var(--gold-bright)}
 .sec-warm{background:var(--warm); border-block:1px solid var(--line-2)}
 .goldtop{border-top:3px solid var(--gold-bright)}
-/* --- „За нас": двата раздела като бутони един до друг с падащо съдържание --- */
-.abpanel{animation:abfade .22s ease}
-.abpanel-warm{background:var(--warm); border:1px solid var(--line-2); border-radius:18px; padding:26px 26px 30px}
 .whyhead{margin:10px 0 14px; font-size:19.5px; line-height:1.2}
 .whyhead::after{content:""; display:block; height:3px; width:52px; border-radius:2px;
   background:var(--gold-bright); margin-top:11px}
@@ -203,8 +186,6 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
   .biogrid{grid-template-columns:1fr; gap:20px}
   .biofig{max-width:240px}
 }
-@keyframes abfade{from{opacity:0; transform:translateY(-5px)} to{opacity:1; transform:none}}
-@media (max-width:640px){ .abpanel-warm{padding:20px 18px 24px} }
 /* Дългите ръководства. Една колона, мярка за четене, спокоен ритъм. */
 .guidebody{max-width:68ch}
 .guidebody p{font-size:16px; line-height:1.68; color:var(--ink-2); margin:0 0 15px}
@@ -440,8 +421,6 @@ body{overflow-wrap:break-word}
   .pill{padding:9px 12px}
   /* „Прочети →" беше висок 24px — трудна цел с палец. */
   .blogread{display:inline-block; padding:10px 0}
-  /* Етикетите-бутони на „За нас" и „За търговската марка" — и на таблет. */
-  .mktab{padding-block:12px}
 }
 
 @media (max-width:640px){
@@ -449,8 +428,6 @@ body{overflow-wrap:break-word}
   .seclabel{font-size:12px; letter-spacing:.12em; padding:7px 14px}
   .tag{font-size:12px; padding:5px 10px}
   .kicker{font-size:12px}
-  /* след .seclabel, иначе краткото правило за padding го връща обратно */
-  .mktab{padding-block:12px}
 }
 
 /* Най-тесните телефони (320–400px): повече място за самия текст. */
@@ -782,7 +759,6 @@ function saveAuth(a){try{a?localStorage.setItem(AUTH_KEY,JSON.stringify(a)):loca
 let auth = null;
 let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръководство
 let authTab = 'login';          // login | register | reset | newpass
-let markTab  = 'what';          // кой раздел на „За търговската марка" е разгънат
 let authMsg = null;             // {type:'err'|'ok', text}
 
 function isAdmin(){return !!(auth && auth.admin)}
@@ -2420,84 +2396,76 @@ function Mark(){
    en:'What a trade mark is, what registration gives you, and which decisions are taken before the application is ever filed.'})}
 
  <section class="sec"><div class="wrap">
-  <div class="mktabs" role="tablist" aria-label="${lang==='bg'?'Раздели на страницата':'Sections of this page'}">
-   ${[['what',{bg:'Какво е марката',en:'What a mark is'}],
-      ['before',{bg:'Къде се решава всичко',en:'Where it is decided'}],
-      ['where',{bg:'Територия на защита',en:'Territory of protection'}],
-      ['split',{bg:'Как е разделена работата',en:'How the work is split'}],
-      ['who',{bg:'За кого е',en:'Who it is for'}]]
-     .map(([k,t])=>`<button class="seclabel mktab${markTab===k?' on':''}" role="tab" id="mktab-${k}"
-       data-mtab="${k}" aria-controls="mkpan-${k}" aria-selected="${markTab===k?'true':'false'}"
-       >${esc(L(t))}</button>`).join('')}
+  <div class="sechead">
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Какво е марката':'What a mark is'}</span></div>
+   <h2>${lang==='bg'?'Знакът, по който ви разпознават':'The sign you are recognised by'}</h2>
   </div>
-
-  <div class="abpanel" id="mkpan-what" role="tabpanel" aria-labelledby="mktab-what" ${markTab==='what'?'':'hidden'}>
-   <div class="sechead">
-    <h2>${lang==='bg'?'Знакът, по който ви разпознават':'The sign you are recognised by'}</h2>
-   </div>
-   ${twocol(asset)}
-   <h3 class="whyhead" style="margin:34px 0 16px">${lang==='bg'?'Защо да регистрирате марката си'
-                                                              :'Why register your mark'}</h3>
-   <div class="grid2" style="gap:18px;margin-top:0">
-    ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
-      <h3 style="font-size:17px">${esc(L(t))}</h3>
-      <p class="quiet" style="font-size:14.5px;line-height:1.62">${esc(L(d))}</p></div>`).join('')}
-   </div>
+  ${twocol(asset)}
+  <div style="margin:34px 0 14px"><span class="seclabel">${lang==='bg'?'Защо да регистрирате марката си'
+                                                                      :'Why register your mark'}</span></div>
+  <div class="grid2" style="gap:18px;margin-top:0">
+   ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+     <h3 style="font-size:17px">${esc(L(t))}</h3>
+     <p class="quiet" style="font-size:14.5px;line-height:1.62">${esc(L(d))}</p></div>`).join('')}
   </div>
+ </div></section>
 
-  <div class="abpanel abpanel-warm" id="mkpan-before" role="tabpanel" aria-labelledby="mktab-before" ${markTab==='before'?'':'hidden'}>
-   <div class="sechead">
-    <h2>${lang==='bg'?'Най-важните решения се вземат преди подаването'
-                     :'The decisions that matter are taken before filing'}</h2>
-   </div>
-   ${twocol(before)}
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="sechead">
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Къде се решава всичко':'Where it is decided'}</span></div>
+   <h2>${lang==='bg'?'Най-важните решения се вземат преди подаването'
+                    :'The decisions that matter are taken before filing'}</h2>
   </div>
+  ${twocol(before)}
+ </div></section>
 
-  <div class="abpanel" id="mkpan-where" role="tabpanel" aria-labelledby="mktab-where" ${markTab==='where'?'':'hidden'}>
-   <div class="sechead">
-    <h2>${lang==='bg'?'Защита там, където развивате бизнеса си'
-                     :'Protection where you actually trade'}</h2>
-   </div>
-   ${twocol([
-    {bg:'Една и съща услуга може да бъде приложена към различни режими на защита в зависимост от пазара, на който оперирате или планирате да развивате дейността си.',
-     en:'The same service applies to different protection regimes, depending on the market you trade in or plan to enter.'},
-    {bg:'Изборът на правилната територия е част от стратегията за защита на марката и трябва да бъде съобразен с настоящите и бъдещите ви бизнес планове.',
-     en:'Choosing the right territory is part of the protection strategy and has to match your present and future business plans.'}
-   ])}
-   <div class="grid3" style="gap:18px;margin-top:26px">
-    ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National registration'},
-        {bg:'Когато защитата е необходима само на територията на страната. Заявява се пред Патентното ведомство на Република България.',
-         en:'When protection is needed in Bulgaria alone. Filed with the Bulgarian Patent Office.'}],
-       [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union trade mark'},
-        {bg:'Когато бизнесът ви има или предстои да има присъствие в повече държави членки. Едно заявяване, единна закрила в 27 държави.',
-         en:'When your business has, or will have, a presence in several Member States. One filing, unitary protection across 27 countries.'}],
-       [{bg:'Международно',en:'International'},{bg:'Мадридска система',en:'The Madrid System'},
-        {bg:'За защита на определени международни пазари. Надгражда базова марка и се разширява към избрани територии.',
-         en:'For protection in particular international markets. It builds on a base mark and extends to the territories you designate.'}]]
-      .map(([k,t,d])=>`<div class="card pad stack goldtop" style="gap:7px">
-        <span class="kicker">${esc(L(k))}</span>
-        <h3 style="font-size:17px">${esc(L(t))}</h3>
-        <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
-   </div>
+ <section class="sec"><div class="wrap">
+  <div class="sechead">
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Територия на защита':'Territory of protection'}</span></div>
+   <h2>${lang==='bg'?'Защита там, където развивате бизнеса си'
+                    :'Protection where you actually trade'}</h2>
   </div>
-
-  <div class="abpanel abpanel-warm" id="mkpan-split" role="tabpanel" aria-labelledby="mktab-split" ${markTab==='split'?'':'hidden'}>
-   <div class="sechead">
-    <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
-                     :'You know your business. We take the legal part.'}</h2>
-   </div>
-   ${twocol(split)}
+  ${twocol([
+   {bg:'Една и съща услуга може да бъде приложена към различни режими на защита в зависимост от пазара, на който оперирате или планирате да развивате дейността си.',
+    en:'The same service applies to different protection regimes, depending on the market you trade in or plan to enter.'},
+   {bg:'Изборът на правилната територия е част от стратегията за защита на марката и трябва да бъде съобразен с настоящите и бъдещите ви бизнес планове.',
+    en:'Choosing the right territory is part of the protection strategy and has to match your present and future business plans.'}
+  ])}
+  <div class="grid3" style="gap:18px;margin-top:26px">
+   ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National registration'},
+       {bg:'Когато защитата е необходима само на територията на страната. Заявява се пред Патентното ведомство на Република България.',
+        en:'When protection is needed in Bulgaria alone. Filed with the Bulgarian Patent Office.'}],
+      [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union trade mark'},
+       {bg:'Когато бизнесът ви има или предстои да има присъствие в повече държави членки. Едно заявяване, единна закрила в 27 държави.',
+        en:'When your business has, or will have, a presence in several Member States. One filing, unitary protection across 27 countries.'}],
+      [{bg:'Международно',en:'International'},{bg:'Мадридска система',en:'The Madrid System'},
+       {bg:'За защита на определени международни пазари. Надгражда базова марка и се разширява към избрани територии.',
+        en:'For protection in particular international markets. It builds on a base mark and extends to the territories you designate.'}]]
+     .map(([k,t,d])=>`<div class="card pad stack goldtop" style="gap:7px">
+       <span class="kicker">${esc(L(k))}</span>
+       <h3 style="font-size:17px">${esc(L(t))}</h3>
+       <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
+ </div></section>
 
-  <div class="abpanel" id="mkpan-who" role="tabpanel" aria-labelledby="mktab-who" ${markTab==='who'?'':'hidden'}>
-   <div class="sechead">
-    <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service for?'}</h2>
-   </div>
-   <div class="grid3" style="gap:18px">
-    ${who.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
-      <h3 style="font-size:17px">${esc(L(t))}</h3>
-      <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
-   </div>
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="sechead">
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Как е разделена работата':'How the work is split'}</span></div>
+   <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
+                    :'You know your business. We take the legal part.'}</h2>
+  </div>
+  ${twocol(split)}
+ </div></section>
+
+ <section class="sec"><div class="wrap">
+  <div class="sechead">
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'За кого е':'Who it is for'}</span></div>
+   <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service for?'}</h2>
+  </div>
+  <div class="grid3" style="gap:18px">
+   ${who.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
+     <h3 style="font-size:17px">${esc(L(t))}</h3>
+     <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
 
@@ -2669,15 +2637,7 @@ function Acct(){
 function wire(){
  app.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
  app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{authTab=b.dataset.tab;authMsg=null;render()});
- /* „За търговската марка" — същото поведение за петте етикета */
- app.querySelectorAll('[data-mtab]').forEach(b=>b.onclick=()=>{
-  markTab=b.dataset.mtab;
-  app.querySelectorAll('[data-mtab]').forEach(x=>{const on=x.dataset.mtab===markTab;
-   x.classList.toggle('on',on); x.setAttribute('aria-selected',on?'true':'false')});
-  app.querySelectorAll('[id^="mkpan-"]').forEach(p=>{p.hidden = p.id!=='mkpan-'+markTab});
-  const el=app.querySelector('#mkpan-'+markTab);
-  if(el){el.style.animation='none'; void el.offsetWidth; el.style.animation=''}
- });
+
 
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
  const vl=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
