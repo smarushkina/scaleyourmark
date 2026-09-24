@@ -762,6 +762,7 @@ function saveAuth(a){try{a?localStorage.setItem(AUTH_KEY,JSON.stringify(a)):loca
 let auth = null;
 let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръководство
 let authTab = 'login';          // login | register | reset | newpass
+let recovering = false;         // отворена е връзката за нова парола от имейла
 let authMsg = null;             // {type:'err'|'ok', text}
 
 function isAdmin(){return !!(auth && auth.admin)}
@@ -791,7 +792,7 @@ async function initAuth(){
    setTimeout(async ()=>{
     await adoptSession(session);
     if(evt==='PASSWORD_RECOVERY'){
-     authTab='newpass';
+     recovering=true; authTab='newpass';
      authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
      page='acct';
     }
@@ -801,6 +802,30 @@ async function initAuth(){
  } else {
   auth = loadAuth();
  }
+
+ /* Връзката от писмото носи type=recovery. Supabase обработва адреса още при
+    създаването на клиента, тоест събитието PASSWORD_RECOVERY може да се случи,
+    преди да сме се абонирали за него — и тогава се губи. Затова четем и самия
+    адрес. Проверено: без това страницата отваря профила и полето за нова
+    парола изобщо не се показва. */
+ try{
+  const frag = new URLSearchParams(String(location.hash||'').replace(/^#/,''));
+  const qs   = new URLSearchParams(location.search||'');
+  const bad  = frag.get('error_description') || qs.get('error_description')
+            || frag.get('error') || qs.get('error');
+  if(frag.get('type')==='recovery' || qs.get('type')==='recovery'){
+   recovering=true; authTab='newpass'; page='acct';
+   authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
+  } else if(bad){
+   authTab='reset'; page='acct';
+   authMsg={type:'err',text:lang==='bg'
+     ?'Връзката е изтекла или вече е използвана. Поискайте нова.'
+     :'The link has expired or has already been used. Request a new one.'};
+  }
+  /* Жетонът не бива да остава в адреса — при презареждане вече не важи. */
+  if(location.hash || location.search) history.replaceState({}, '', location.pathname);
+ }catch(e){}
+
  render();
 }
 
@@ -822,6 +847,7 @@ async function adoptSession(session){
 }
 
 function signOut(){
+ recovering=false;
  if(remote && sb){ sb.auth.signOut().catch(()=>{}) }
  auth=null; saveAuth(null); authTab='login'; authMsg=null; go('acct');
 }
@@ -947,6 +973,7 @@ async function doNewPass(f){
  try{
   const {error}=await sb.auth.updateUser({password:f.pass});
   if(error) throw error;
+  recovering=false;
   authMsg={type:'ok',text:lang==='bg'?'Паролата е сменена.':'The password has been changed.'};
   authTab='login';
  }catch(e){ authMsg={type:'err',text:authErr(e)} }
@@ -957,6 +984,9 @@ function authBox(){
  const tabs=[['login',{bg:'Вход',en:'Sign in'}],
              ['register',{bg:'Регистрация',en:'Register'}],
              ['reset',{bg:'Забравена парола',en:'Forgot password'}]];
+ /* В режим на смяна на забравена парола винаги показваме именно това поле,
+    каквото и да е било избрано преди това. */
+ if(recovering && authTab!=='newpass') authTab='newpass';
  const msg = authMsg?`<div class="${authMsg.type==='err'?'caution':'helpbar'}" style="margin-bottom:14px">
     <span ${authMsg.type==='err'?'':'class="ht"'}>${esc(authMsg.text)}</span></div>`:'';
 
@@ -2569,7 +2599,10 @@ function Office(){
 
 function Acct(){
  const f=officialFee();
- if(!auth) return `${pageHead({bg:'Профил',en:'Account'},
+ /* При смяна на забравена парола връзката вече е влязла в профила, тоест auth
+    е налице. Ако гледаме само него, показваме преписките, а полето за нова
+    парола не се вижда — точно това беше счупено. */
+ if(!auth || recovering) return `${pageHead({bg:'Профил',en:'Account'},
    {bg:'Вход и регистрация',en:'Sign in and register'},
    {bg:'Профилът пази черновата ви и е начинът адвокатът да се свърже с вас.',
     en:'Your account keeps the draft and is how the lawyer reaches you.'})}
@@ -2637,7 +2670,7 @@ function Acct(){
 /* ---------- wiring ---------- */
 function wire(){
  app.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
- app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{authTab=b.dataset.tab;authMsg=null;render()});
+ app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{authTab=b.dataset.tab;authMsg=null;recovering=false;render()});
 
 
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
