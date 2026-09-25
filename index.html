@@ -763,6 +763,7 @@ let auth = null;
 let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръководство
 let authTab = 'login';          // login | register | reset | newpass
 let recovering = false;         // отворена е връзката за нова парола от имейла
+let resetEmail = '';            // адресът, на който е изпратен кодът за нова парола
 let authMsg = null;             // {type:'err'|'ok', text}
 
 function isAdmin(){return !!(auth && auth.admin)}
@@ -865,6 +866,9 @@ function authErr(e){
  if(/Email not confirmed/i.test(m))
    return lang==='bg'?'Профилът не е потвърден. Отворете връзката в имейла, който ви изпратихме.'
                      :'The account is not confirmed. Open the link in the email we sent you.';
+ if(/Token has expired|invalid.*(token|otp)|otp_expired/i.test(m))
+   return lang==='bg'?'Кодът е грешен или е изтекъл. Поискайте нов.'
+                     :'The code is wrong or has expired. Request a new one.';
  if(/rate limit|too many/i.test(m))
    return lang==='bg'?'Твърде много опити. Опитайте отново след няколко минути.'
                      :'Too many attempts. Try again in a few minutes.';
@@ -952,10 +956,45 @@ async function doReset(f){
   }catch(e){}
   busy=false;
  }
+ resetEmail=f.email.trim();
  authMsg={type:'ok',text:lang==='bg'
-   ?'Ако имаме профил с този имейл, изпратихме връзка за нова парола. Връзката е валидна 60 минути.'
-   :'If we hold an account for that email, a reset link has been sent. The link is valid for 60 minutes.'};
- authTab='login'; render();
+   ?'Ако имаме профил с този имейл, изпратихме шестцифрен код. Кодът е валиден 60 минути.'
+   :'If we hold an account for that email, a six-digit code has been sent. It is valid for 60 minutes.'};
+ authTab='otp'; render();
+}
+
+/* Код вместо връзка. Причината е записана в документацията: пощенските
+   скенери на Yahoo и на служебните пощи отварят връзките в писмата, а
+   връзката е еднократна — до клиента тя стига вече изхабена. Код, който
+   стои само в текста на писмото, скенерът не може да похарчи. */
+async function doOtp(f){
+ if(busy) return;
+ const code=String(f.code||'').replace(/\s+/g,'');
+ if(!/^\d{6}$/.test(code)){
+  authMsg={type:'err',text:lang==='bg'?'Кодът е шест цифри.':'The code is six digits.'};
+  render(); return;
+ }
+ if(!f.pass || f.pass.length<8){
+  authMsg={type:'err',text:lang==='bg'?'Паролата трябва да е поне 8 знака.':'The password must be at least 8 characters.'};
+  render(); return;
+ }
+ if(f.pass!==f.pass2){
+  authMsg={type:'err',text:lang==='bg'?'Двете полета не съвпадат.':'The two fields do not match.'};
+  render(); return;
+ }
+ if(!remote){ authTab='login'; render(); return }
+ busy=true; render();
+ try{
+  const {error:e1}=await sb.auth.verifyOtp({email:resetEmail, token:code, type:'recovery'});
+  if(e1) throw e1;
+  const {error:e2}=await sb.auth.updateUser({password:f.pass});
+  if(e2) throw e2;
+  recovering=false;
+  authMsg={type:'ok',text:lang==='bg'?'Паролата е сменена. Влязохте в профила си.'
+                                     :'The password has been changed. You are signed in.'};
+  authTab='login';
+ }catch(e){ authMsg={type:'err',text:authErr(e)} }
+ busy=false; render();
 }
 
 async function doNewPass(f){
@@ -1014,6 +1053,17 @@ function authBox(){
    <p class="quiet" style="margin-top:10px">${lang==='bg'
      ?'За сигурност отговорът е един и същ, независимо дали имейлът съществува в системата.'
      :'For security the answer is the same whether or not the email exists in the system.'}</p>`;
+ } else if(authTab==='otp'){
+  body=`${F('o_code',lang==='bg'?'Код от имейла':'Code from the email','text','123456',
+        'required inputmode="numeric" autocomplete="one-time-code" maxlength="6"')}
+   <div class="grid2" style="gap:14px">
+    ${F('o_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
+    ${F('o_pass2',lang==='bg'?'Потвърдете паролата':'Confirm password','password','','required')}
+   </div>
+   <button class="btn btn-primary" id="do_otp" style="align-self:start">${lang==='bg'?'Запазете новата парола':'Save the new password'}</button>
+   <p class="quiet" style="margin-top:10px">${lang==='bg'
+     ?('Изпратихме кода на '+(resetEmail||'вашия имейл')+'. Валиден е 60 минути. Ако го няма, проверете папката за нежелана поща.')
+     :('We sent the code to '+(resetEmail||'your email')+'. It is valid for 60 minutes. If it has not arrived, check the spam folder.')}</p>`;
  } else if(authTab==='newpass'){
   body=`<div class="grid2" style="gap:14px">
     ${F('n_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
@@ -2682,11 +2732,13 @@ function wire(){
  if(bl) bl.onclick=()=>doLogin({email:vl('l_email'),pass:vl('l_pass')});
  const bx=app.querySelector('#do_reset');
  if(bx) bx.onclick=()=>doReset({email:vl('x_email')});
+ const bo=app.querySelector('#do_otp');
+ if(bo) bo.onclick=()=>doOtp({code:vl('o_code'),pass:vl('o_pass'),pass2:vl('o_pass2')});
  const bn=app.querySelector('#do_newpass');
  if(bn) bn.onclick=()=>doNewPass({pass:vl('n_pass'),pass2:vl('n_pass2')});
  app.querySelectorAll('.card input').forEach(i=>i.onkeydown=e=>{
    if(e.key!=='Enter')return; e.preventDefault();
-   const t=app.querySelector('#do_login')||app.querySelector('#do_register')||app.querySelector('#do_reset')||app.querySelector('#do_newpass');
+   const t=app.querySelector('#do_login')||app.querySelector('#do_register')||app.querySelector('#do_reset')||app.querySelector('#do_otp')||app.querySelector('#do_newpass');
    if(t)t.click();});
  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openDrawer(+b.dataset.open)});
  app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{state.step=+b.dataset.step;save();render()});
