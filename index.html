@@ -422,6 +422,26 @@ footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-to
 /* Дълга дума или адрес не бива да избутва страницата настрани. */
 /* Скрито поле в контактната форма: човек не го вижда и не го попълва. */
 .hp{position:absolute!important;left:-9999px!important;top:auto;width:1px;height:1px;overflow:hidden;opacity:0}
+/* Пълномощното на екрана: лист хартия, а не карта от сайта. */
+.sheet{background:#fff; border:1px solid var(--line); border-radius:10px;
+  padding:24px 26px; max-height:340px; overflow:auto;
+  font-family:"Times New Roman",Georgia,serif; color:#14181f; font-size:14.5px; line-height:1.55}
+.sheet h4{font-family:inherit; font-size:15.5px; text-align:center; letter-spacing:.06em;
+  margin:0 0 14px; font-weight:700}
+.sheet h5{font-family:inherit; font-size:14.5px; text-align:center; letter-spacing:.14em;
+  margin:16px 0 12px; font-weight:700}
+.sheet p{margin:0 0 10px}
+.sheet .sub{color:#5a5f68; font-size:12.5px}
+.sheet hr{border:0; border-top:1px solid #d9d4c8; margin:20px 0}
+.sheet .sigimg{display:block; max-width:230px; max-height:90px; margin:4px 0}
+.sheet .sigline{border-top:1px solid #14181f; width:230px; margin-top:4px; padding-top:4px}
+.sigpad{border:1px dashed var(--line); border-radius:10px; background:#fff; width:100%;
+  max-width:360px; height:130px; touch-action:none; cursor:crosshair; display:block}
+.sigwrap{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end}
+.poadone{background:var(--teal-soft,rgba(46,125,110,.12)); border:1px solid var(--line);
+  border-radius:10px; padding:12px 14px; font-size:14.5px}
+.hashline{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px;
+  color:var(--ink-3); overflow-wrap:anywhere}
 /* Досие по преписка */
 .dossbtn{padding:7px 13px;font-size:13px;white-space:nowrap}
 .dosssec{border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
@@ -726,6 +746,7 @@ const POSTS=[
 const KEY='sym_atelier_v1';
 const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,
   signatory:'',declared:false,terms:[],done:{},status:'draft',
+  sigName:'', sigCapacity:'', sigPng:null, poa_signed_at:null, poa_hash:null,
   matter_id:null, ref:null, signed_at:null,
   applicant:{kind:'legal',name:'',id:'',addr:'',country:'BG'},
   priority:{claim:'none',number:''}};
@@ -1247,9 +1268,11 @@ function handoverBlockers(){
  if(!state.terms.length) m.push(lang==='bg'?'поне един термин в стъпка 4':'at least one term in step 4');
  if(!state.applicant || !(state.applicant.name||'').trim())
    m.push(lang==='bg'?'заявител в стъпка 5':'an applicant in step 5');
- if(!(state.signatory||'').trim())
+ if(!(state.sigName||state.signatory||'').trim())
    m.push(lang==='bg'?'име на подписващия в стъпка 7':'the signatory in step 7');
  if(!state.declared) m.push(lang==='bg'?'декларацията в стъпка 7':'the declaration in step 7');
+ if(!state.poa_signed_at)
+   m.push(lang==='bg'?'подписано пълномощно в стъпка 7':'the signed power of attorney in step 7');
  if((state.kind==='word'||state.kind==='comb') && !(state.mark||'').trim())
    m.push(lang==='bg'?'изписване на марката в стъпка 3':'the wording of the mark in step 3');
  return m;
@@ -1291,16 +1314,20 @@ async function handover(){
 
   if(state.img && state.img.url) await uploadMarkImage(id);
 
-  const sig=(state.signatory||'').trim();
-  const cut=sig.indexOf(',');
-  await sb.from('powers_of_attorney').delete().eq('matter_id', id);
-  const poa = await sb.from('powers_of_attorney').insert({
-    matter_id:id,
-    signatory_name: (cut>0?sig.slice(0,cut):sig).trim(),
-    signatory_capacity: (cut>0?sig.slice(cut+1):'').trim() || (lang==='bg'?'заявител':'applicant'),
-    method:'declared',
-    signed_at: state.signed_at || new Date().toISOString()});
-  if(poa.error) throw poa.error;
+  /* Подписаното пълномощно се вписва от функцията „poa“ при полагането на
+     подписа. Тук то не се пипа — иначе подписът щеше да се загуби. */
+  if(!state.poa_signed_at){
+   const sig=(state.signatory||'').trim();
+   const cut=sig.indexOf(',');
+   await sb.from('powers_of_attorney').delete().eq('matter_id', id);
+   const poa = await sb.from('powers_of_attorney').insert({
+     matter_id:id,
+     signatory_name: (cut>0?sig.slice(0,cut):sig).trim(),
+     signatory_capacity: (cut>0?sig.slice(cut+1):'').trim() || (lang==='bg'?'заявител':'applicant'),
+     method:'declared',
+     signed_at: state.signed_at || new Date().toISOString()});
+   if(poa.error) throw poa.error;
+  }
 
   const done = await sb.from('matters').update({
     status:'received',
@@ -2141,35 +2168,69 @@ function body(k){
     :'A copy of the earlier application is also needed — the lawyer will ask for it if missing.'}</p>`:''}`;
  }
 
- if(k==='engage')return `
-  <div class="poaline">
-   <span class="poatick">✓</span>
-   <span><strong>${lang==='bg'?'Адвокатско пълномощно':'Power of attorney'}</strong>
-    <span class="quiet"> · ${lang==='bg'?'предварително попълнено с данните от стъпка 5'
-                                        :'pre-filled from step 5'}</span></span>
-  </div>
-
-  <div class="stack" style="gap:6px;margin-top:10px">
-   <div class="signrow">
-    <input type="text" id="sg" value="${esc(state.signatory||'')}"
-      aria-label="${lang==='bg'?'Име и качество на подписващото лице':'Name and capacity of the signatory'}"
-      placeholder="${lang==='bg'?'Име и качество — Иван Петров, управител':'Name and capacity — Ivan Petrov, manager'}">
-    <button class="btn btn-primary" id="dosign" style="padding:9px 14px;white-space:nowrap">${
-      state.signed_at?(lang==='bg'?'Подпиши отново':'Sign again'):(lang==='bg'?'Подпиши електронно':'Sign electronically')}</button>
+ if(k==='engage'){
+  const miss=poaReady();
+  const signed=!!state.poa_signed_at;
+  const sheet=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+     <span class="kicker">${lang==='bg'?'Пълномощно — попълнено от стъпки 1–6':'Power of attorney — filled from steps 1–6'}</span>
+     <button class="btn btn-quiet" id="poaopen" style="padding:6px 12px;font-size:13px">${
+       lang==='bg'?'Отворете в нов прозорец':'Open in a new window'}</button></div>
+   <div class="sheet" id="poasheet">${poaHtml({signature:state.sigPng,
+      signedAt:state.poa_signed_at, email:auth&&auth.email, hash:state.poa_hash})}</div>`;
+  if(signed) return `
+   ${sheet}
+   <div class="poadone" style="margin-top:14px">
+    <strong>${lang==='bg'?'Подписано':'Signed'}</strong> · ${esc(new Date(state.poa_signed_at).toLocaleString(lang==='bg'?'bg-BG':'en-GB'))}
+    <div class="quiet" style="margin-top:4px">${lang==='bg'
+      ?'Пълномощното е приложено към преписката. Копие има и в имейла ви.'
+      :'The power of attorney is attached to the matter. A copy is also in your inbox.'}</div>
+    ${state.poa_hash?`<div class="hashline" style="margin-top:6px">SHA-256: ${esc(state.poa_hash)}</div>`:''}
    </div>
-   ${state.signed_at?`<p class="quiet" style="margin:0">${lang==='bg'?'Подписано на ':'Signed on '}${
-      esc(new Date(state.signed_at).toLocaleString(lang==='bg'?'bg-BG':'en-GB'))}</p>`:''}
-  </div>
-  <p class="quiet" style="margin:7px 0 0">${lang==='bg'
-    ?'КЕП не се изисква. Представителната власт се проверява срещу търговския регистър.'
-    :'No qualified e-signature required. Authority is verified against the commercial register.'}</p>
+   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+    <button class="btn btn-ghost" id="poadl">${lang==='bg'?'Свалете копие':'Download a copy'}</button>
+    <button class="btn btn-ghost" id="poaredo">${lang==='bg'?'Подпишете отново':'Sign again'}</button>
+   </div>`;
 
-  <button class="opt" data-declare="1" data-on="${state.declared?1:0}" style="margin-top:8px">
+  return `
+  ${miss.length?`<div class="caution" style="margin-bottom:12px">${lang==='bg'
+     ?'Пълномощното ще се допълни само, щом попълните: ':'The power of attorney fills itself once you complete: '}${esc(miss.join(', '))}.</div>`:''}
+  ${sheet}
+  <div class="grid2" style="gap:0 18px;margin-top:16px">
+   <div class="field"><label for="sgn">${lang==='bg'?'Име на подписващия':'Signatory’s name'}</label>
+    <input type="text" id="sgn" value="${esc(state.sigName||'')}" placeholder="${lang==='bg'?'Иван Петров':'Ivan Petrov'}"></div>
+   <div class="field"><label for="sgc">${lang==='bg'?'Качество':'Capacity'}</label>
+    <input type="text" id="sgc" value="${esc(state.sigCapacity||'')}" placeholder="${lang==='bg'?'управител':'manager'}"></div>
+  </div>
+  <div class="sigwrap">
+   <div class="stack" style="gap:6px">
+    <span class="quiet">${lang==='bg'?'Подпис — начертайте с мишката или с пръст':'Signature — draw with the mouse or your finger'}</span>
+    <canvas class="sigpad" id="sigpad" width="360" height="130"></canvas>
+   </div>
+   <button class="btn btn-ghost" id="sigclear" style="padding:9px 14px">${lang==='bg'?'Изчистете':'Clear'}</button>
+  </div>
+  <button class="opt" data-declare="1" data-on="${state.declared?1:0}" style="margin-top:12px">
    <span class="tick" style="border-radius:6px"></span>
-   <span><span class="ot">${lang==='bg'?'Декларация за подписа':'Declaration as to the signature'}</span>
+   <span><span class="ot">${lang==='bg'?'Декларация':'Declaration'}</span>
     <span class="os">${lang==='bg'
-      ?'Декларирам, че подписът е на заявителя или на упълномощено от него лице, положен с негово съгласие.'
-      :'I declare the signature is the applicant’s, or that of a person they authorised, affixed with their consent.'}</span></span><span></span></button>`;
+      ?'Декларирам, че подписът е мой и че имам правото да представлявам заявителя.'
+      :'I declare that the signature is mine and that I am entitled to represent the applicant.'}</span></span><span></span></button>
+  ${poaMsg?`<div class="${poaMsg.type==='ok'?'helpbar':'caution'}" style="margin-top:12px">
+     <span ${poaMsg.type==='ok'?'class="ht"':''}>${esc(poaMsg.text)}</span></div>`:''}
+  ${poaStage==='code'?`
+   <div class="signrow" style="margin-top:12px">
+    <input type="text" id="poacode" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+      placeholder="${lang==='bg'?'Код от имейла':'Code from the email'}">
+    <button class="btn btn-primary" id="poasign" ${poaBusy?'disabled':''} style="padding:9px 14px;white-space:nowrap">${
+      poaBusy?(lang==='bg'?'Подписваме…':'Signing…'):(lang==='bg'?'Подпишете':'Sign')}</button>
+   </div>
+   <button class="btn btn-ghost" id="poaresend" style="margin-top:8px;padding:8px 13px;font-size:13.5px">${
+     lang==='bg'?'Изпратете нов код':'Send a new code'}</button>`
+  :`<button class="btn btn-primary" id="poasend" ${poaBusy?'disabled':''} style="margin-top:12px">${
+     poaBusy?(lang==='bg'?'Изпращаме…':'Sending…'):(lang==='bg'?'Подпишете електронно':'Sign electronically')}</button>`}
+  <p class="quiet" style="margin:10px 0 0">${lang==='bg'
+    ?'Прост електронен подпис: подписът, който начертахте, се свързва с този документ и се потвърждава с код, изпратен на имейла ви. КЕП не е необходим. Пазят се документът, отпечатъкът му, датата и часът.'
+    :'A simple electronic signature: the signature you draw is bound to this document and confirmed by a code sent to your email. No qualified certificate is needed. The document, its hash and the timestamp are kept.'}</p>`;
+ }
 
  if(k==='pay'){const f=officialFee(),sv=SERVICE[state.route];
   const net=sv+(state.search==='full'?SEARCH_FEE:0);   // облагаемо с ДДС
@@ -2628,6 +2689,107 @@ function Mark(){
    го записва в app.contact_messages и го изпраща на пощата на кантората
    през Resend. Ключът стои на сървъра; страницата не вижда нито ключ, нито
    адрес за препращане.                                                    */
+/* Подписване на пълномощното: рисуван подпис + код на имейла. */
+let poaBusy=false, poaMsg=null, poaStage='idle';   // idle | code
+let poaPad=null;
+
+function poaReady(){
+ const f=poaFacts();
+ const need=[];
+ if(!f.applicantName) need.push(lang==='bg'?'заявител (стъпка 5)':'the applicant (step 5)');
+ if(!f.classes.length) need.push(lang==='bg'?'поне един термин (стъпка 4)':'at least one term (step 4)');
+ if((state.kind==='word'||state.kind==='comb') && !f.markName)
+   need.push(lang==='bg'?'изписване на марката (стъпка 3)':'the wording of the mark (step 3)');
+ return need;
+}
+
+function sigPadInit(){
+ const c=app.querySelector('#sigpad'); if(!c) return;
+ const dpr=Math.min(window.devicePixelRatio||1,2);
+ const r=c.getBoundingClientRect();
+ c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr);
+ const x=c.getContext('2d');
+ x.scale(dpr,dpr); x.lineWidth=2.1; x.lineCap='round'; x.lineJoin='round'; x.strokeStyle='#14181f';
+ if(state.sigPng){ const im=new Image(); im.onload=()=>x.drawImage(im,0,0,r.width,r.height); im.src=state.sigPng; }
+ let drawing=false, last=null, dirty=false;
+ const pt=ev=>{const b=c.getBoundingClientRect();
+   const t=ev.touches?ev.touches[0]:ev; return {x:t.clientX-b.left, y:t.clientY-b.top}};
+ const start=ev=>{ev.preventDefault(); drawing=true; last=pt(ev)};
+ const move=ev=>{ if(!drawing) return; ev.preventDefault();
+   const p=pt(ev); x.beginPath(); x.moveTo(last.x,last.y); x.lineTo(p.x,p.y); x.stroke(); last=p; dirty=true};
+ const end=()=>{ if(!drawing) return; drawing=false;
+   if(dirty){ state.sigPng=c.toDataURL('image/png'); saveLocal(); dirty=false;
+     const prev=app.querySelector('#poasheet'); if(prev) prev.innerHTML=poaHtml({signature:state.sigPng}); } };
+ c.onmousedown=start; c.onmousemove=move; window.onmouseup=end;
+ c.ontouchstart=start; c.ontouchmove=move; c.ontouchend=end;
+ poaPad={clear:()=>{ x.clearRect(0,0,r.width,r.height); state.sigPng=null; saveLocal(); render(); }};
+}
+
+async function poaSendCode(){
+ if(poaBusy) return;
+ const miss=poaReady();
+ if(miss.length){ poaMsg={type:'err',text:(lang==='bg'?'Първо попълнете: ':'First complete: ')+miss.join(', ')}; render(); return }
+ if(!(state.sigName||'').trim()){ poaMsg={type:'err',text:lang==='bg'?'Напишете името на подписващия.':'Enter the signatory’s name.'}; render(); return }
+ if(!state.sigPng){ poaMsg={type:'err',text:lang==='bg'?'Положете подпис в полето.':'Draw your signature in the box.'}; render(); return }
+ if(!state.declared){ poaMsg={type:'err',text:lang==='bg'?'Отбележете декларацията.':'Tick the declaration.'}; render(); return }
+ if(!remote || !sb || !auth){ poaMsg={type:'err',text:lang==='bg'
+   ?'Подписването изисква влизане в профил — там отива и преписката.'
+   :'Signing requires an account — that is where the matter is kept.'}; render(); return }
+ if(!state.matter_id){ poaMsg={type:'err',text:lang==='bg'?'Преписката още не е записана. Върнете се една стъпка и опитайте пак.':'The matter has not been saved yet. Go back one step and try again.'}; render(); return }
+ poaBusy=true; poaMsg=null; render();
+ try{
+  const {data,error}=await sb.functions.invoke('poa',{body:{action:'send_code',matter_id:state.matter_id}});
+  if(error) throw error;
+  if(data&&data.error) throw new Error(data.error);
+  poaStage='code';
+  poaMsg={type:'ok',text:(lang==='bg'?'Изпратихме код на ':'A code has been sent to ')+((data&&data.email)||auth.email)+(lang==='bg'?'. Валиден е 15 минути.':'. It is valid for 15 minutes.')};
+ }catch(e){
+  poaMsg={type:'err',text:lang==='bg'?'Кодът не тръгна. Опитайте пак след минута.':'The code did not go out. Try again in a minute.'};
+ }
+ poaBusy=false; render();
+}
+
+async function poaSign(){
+ if(poaBusy) return;
+ const code=((app.querySelector('#poacode')||{}).value||'').replace(/\D+/g,'');
+ if(code.length!==6){ poaMsg={type:'err',text:lang==='bg'?'Кодът е шест цифри.':'The code is six digits.'}; render(); return }
+ poaBusy=true; poaMsg=null; render();
+ const html=poaStandalone({signature:state.sigPng, signedAt:new Date().toISOString(), email:auth&&auth.email});
+ try{
+  const {data,error}=await sb.functions.invoke('poa',{body:{
+    action:'sign', matter_id:state.matter_id, code:code,
+    signatory_name:(state.sigName||'').trim(),
+    signatory_capacity:(state.sigCapacity||'').trim(),
+    poa_html:html, signature_png:state.sigPng }});
+  if(error){
+   let c=null;
+   if(error.context && typeof error.context.json==='function'){ try{const j=await error.context.json(); c=j&&j.error}catch(x){} }
+   throw new Error(c||'sign');
+  }
+  if(data&&data.error) throw new Error(data.error);
+  state.poa_signed_at=data.signed_at; state.poa_hash=data.hash;
+  state.signed_at=data.signed_at;
+  state.signatory=((state.sigName||'').trim()+(state.sigCapacity?', '+state.sigCapacity.trim():''));
+  saveLocal(); poaStage='idle';
+  poaMsg={type:'ok',text:lang==='bg'?'Пълномощното е подписано и приложено към преписката.'
+                                    :'The power of attorney has been signed and attached to the matter.'};
+ }catch(e){
+  const c=(e&&e.message)||'';
+  poaMsg={type:'err',text:/code_expired/.test(c)?(lang==='bg'?'Кодът е изтекъл. Поискайте нов.':'The code has expired. Ask for a new one.')
+    :/code_used/.test(c)?(lang==='bg'?'Кодът вече е използван. Поискайте нов.':'The code has already been used. Ask for a new one.')
+    :/code/.test(c)?(lang==='bg'?'Кодът не съвпада.':'The code does not match.')
+    :(lang==='bg'?'Подписването не мина. Опитайте пак.':'Signing did not go through. Please try again.')};
+ }
+ poaBusy=false; render();
+}
+
+function poaDownload(){
+ const html=poaStandalone({signature:state.sigPng, signedAt:state.poa_signed_at,
+   email:auth&&auth.email, hash:state.poa_hash});
+ const blob=new Blob(['\ufeff'+html],{type:'text/html;charset=utf-8'});
+ saveBlob(blob, (state.ref||'poa')+(lang==='bg'?' — пълномощно.html':' — power of attorney.html'));
+}
+
 let nlBusy=false, nlMsg=null;
 /* Връзките за потвърждение и отписване идват като ?nl=… и ?nlu=… .
    Прочитат се още при зареждане, защото initAuth изчиства адреса. */
@@ -2780,6 +2942,125 @@ function Contact(){
   </div></div></section>`;
 }
 
+/* ---------- пълномощното -------------------------------------------------
+   Текстът се сглобява от въведеното в стъпки 1–6. Двуезичен е, защото
+   същият лист трябва да върши работа и пред Патентно ведомство, и пред
+   EUIPO. Данните на адвоката стоят на едно място отдолу.                  */
+const ATTORNEY = {
+  name_bg:'адв. Силвия Руменова Марушкина',
+  name_en:'Attorney-at-law Silviya Rumenova Marushkina',
+  bar_bg:'личен номер от регистъра на Софийска адвокатска колегия: 1100051527',
+  bar_en:'personal registration number with the Sofia Bar Association: 1100051527',
+  email:'office@scaleyourmark.com'
+};
+const OFFICE_POA = {
+  bg_nat:{bg:'Патентното ведомство на Република България', en:'the Patent Office of the Republic of Bulgaria'},
+  eutm:{bg:'Службата на Европейския съюз за интелектуална собственост (EUIPO)', en:'the European Union Intellectual Property Office (EUIPO)'},
+  madrid:{bg:'Световната организация за интелектуална собственост (СОИС) и Патентното ведомство на Република България като ведомство по произход',
+          en:'the World Intellectual Property Organization (WIPO) and the Patent Office of the Republic of Bulgaria as office of origin'}
+};
+const MKIND_POA = {
+  word:{bg:'словна', en:'word'},
+  fig:{bg:'фигуративна', en:'figurative'},
+  comb:{bg:'комбинирана', en:'combined'},
+  other:{bg:'друг вид (триизмерна, звукова или движеща се)', en:'other (three-dimensional, sound or motion)'}
+};
+
+function poaFacts(){
+ const a=state.applicant||{};
+ const legal=a.kind==='legal';
+ const classes=[...new Set((state.terms||[]).map(t=>t.c))].sort((x,y)=>x-y);
+ const markName=(state.mark||'').trim();
+ return {
+  legal:legal,
+  applicantName:(a.name||'').trim(),
+  applicantId:(a.id||'').trim(),
+  applicantAddr:(a.addr||'').trim(),
+  country:(a.country||'BG'),
+  classes:classes,
+  markName:markName,
+  kind:state.kind||'word',
+  colour:!!state.colour,
+  route:state.route,
+  signName:(state.sigName||'').trim(),
+  signCap:(state.sigCapacity||'').trim(),
+  ref:state.ref||'',
+  date:new Date().toLocaleDateString('bg-BG')
+ };
+}
+
+function poaHtml(opts){
+ opts=opts||{};
+ const f=poaFacts();
+ const e=esc;
+ const off=OFFICE_POA[f.route]||OFFICE_POA.eutm;
+ const kind=MKIND_POA[f.kind]||MKIND_POA.word;
+ const cls=f.classes.length?f.classes.join(', '):'—';
+ const markBG = f.markName ? '„'+e(f.markName)+'“' : '(марка без словен елемент, съгласно приложеното изображение)';
+ const markEN = f.markName ? '“'+e(f.markName)+'”' : '(a mark without a word element, as per the image attached)';
+ const whoBG = f.legal
+   ? `Долуподписаният/ата <b>${e(f.signName||'…')}</b>, в качеството ми на <b>${e(f.signCap||'представляващ')}</b> на <b>${e(f.applicantName||'…')}</b>, ЕИК/рег. № ${e(f.applicantId||'…')}, със седалище и адрес на управление: ${e(f.applicantAddr||'…')} (Дружеството)`
+   : `Долуподписаният/ата <b>${e(f.applicantName||'…')}</b>, ЕГН/№ на документ за самоличност ${e(f.applicantId||'…')}, с адрес: ${e(f.applicantAddr||'…')}`;
+ const whoEN = f.legal
+   ? `The undersigned, <b>${e(f.signName||'…')}</b>, in my capacity as <b>${e(f.signCap||'representative')}</b> of <b>${e(f.applicantName||'…')}</b>, company number ${e(f.applicantId||'…')}, having its registered office at ${e(f.applicantAddr||'…')} (the “Company”)`
+   : `The undersigned, <b>${e(f.applicantName||'…')}</b>, personal identification / identity document number ${e(f.applicantId||'…')}, residing at ${e(f.applicantAddr||'…')}`;
+ const onBehalfBG = f.legal ? 'от името и за сметка на Дружеството' : 'от мое име и за моя сметка';
+ const onBehalfEN = f.legal ? 'in the name and on behalf of the Company' : 'in my name and on my behalf';
+
+ const sigBlock = opts.signature
+  ? `<img class="sigimg" src="${opts.signature}" alt="">`
+  : `<div style="height:62px"></div>`;
+ const stamp = opts.signedAt
+  ? `<p class="sub" style="margin-top:14px">Подписано с прост електронен подпис на ${e(new Date(opts.signedAt).toLocaleString('bg-BG'))} ч.,
+      след потвърждение с код, изпратен на ${e(opts.email||'')}.
+      Signed with a simple electronic signature on ${e(new Date(opts.signedAt).toLocaleString('en-GB'))},
+      confirmed by a code sent to ${e(opts.email||'')}.</p>
+     ${opts.hash?`<p class="sub hashline">SHA-256: ${e(opts.hash)}</p>`:''}`
+  : '';
+
+ return `<div class="sheet-body">
+ <h4>ПЪЛНОМОЩНО</h4>
+ <p>${whoBG}</p>
+ <h5>УПЪЛНОМОЩАВАМ</h5>
+ <p>${e(ATTORNEY.name_bg)} — ${e(ATTORNEY.bar_bg)}, e-mail: ${e(ATTORNEY.email)},</p>
+ <p>да ме представлява относно регистрацията на следната марка:</p>
+ <p><b>${markBG}</b> — ${e(kind.bg)}, индивидуална марка${f.colour?', със заявена претенция за цвят':''}, за стоки и/или услуги от клас ${e(cls)} по Ницската класификация.</p>
+ <p>С правото да подава заявка за регистрация на горепосочената марка ${onBehalfBG} пред ${e(off.bg)}, както и да извършва ${onBehalfBG} всички необходими действия пред ${e(off.bg)} по защита на правата и законните интереси на упълномощителя относно посочения обект на индустриална собственост, да упълномощава трето лице за процесуално представителство, както и да прехвърля изцяло или частично предоставените тук правомощия на трето лице, което има законовото право да ги упражнява.</p>
+ <hr>
+ <h4>POWER OF ATTORNEY</h4>
+ <p>${whoEN}</p>
+ <h5>HEREBY AUTHORIZE</h5>
+ <p>${e(ATTORNEY.name_en)} — ${e(ATTORNEY.bar_en)}, e-mail: ${e(ATTORNEY.email)},</p>
+ <p>to represent me in connection with the registration of the following trade mark:</p>
+ <p><b>${markEN}</b> — ${e(kind.en)}, individual trade mark${f.colour?', with a colour claim'.replace('a colour','a colour'):''}, for goods and/or services in class ${e(cls)} of the Nice Classification.</p>
+ <p>With the right to file an application for registration of the above-mentioned mark ${onBehalfEN} before ${e(off.en)}, as well as to perform ${onBehalfEN} all necessary actions before ${e(off.en)} protecting the principal’s rights and legitimate interests with regard to the industrial property subject matter specified herein; to authorize a third party to provide procedural representation; and to wholly or partially transfer the powers granted herein to a third party who is legally entitled to exercise them.</p>
+ <hr>
+ <p><b>Дата / Date:</b> ${e(opts.signedAt?new Date(opts.signedAt).toLocaleDateString('bg-BG'):f.date)}${f.ref?` &nbsp;·&nbsp; <b>Преписка / Matter:</b> ${e(f.ref)}`:''}</p>
+ <p style="margin-top:14px"><b>Упълномощител / Authorizer:</b></p>
+ ${sigBlock}
+ <div class="sigline">${e(f.signName|| (f.legal?'':f.applicantName) ||'…')}${f.signCap?', '+e(f.signCap):''}</div>
+ ${stamp}
+</div>`;
+}
+
+/* Самостоятелен файл за сваляне и за архива на преписката. */
+function poaStandalone(opts){
+ return `<!doctype html><html lang="bg"><head><meta charset="utf-8">
+<title>Пълномощно${state.ref?(' '+esc(state.ref)):''}</title>
+<style>
+@page{size:A4;margin:2cm}
+body{font-family:"Times New Roman",Georgia,serif;color:#14181f;font-size:12pt;line-height:1.5;max-width:18cm;margin:2cm auto;padding:0 1cm}
+h4{font-size:13.5pt;text-align:center;letter-spacing:.06em;margin:0 0 14px}
+h5{font-size:12.5pt;text-align:center;letter-spacing:.14em;margin:16px 0 12px}
+p{margin:0 0 10px}
+.sub{color:#5a5f68;font-size:10pt}
+hr{border:0;border-top:1px solid #d9d4c8;margin:20px 0}
+.sigimg{display:block;max-width:6cm;max-height:2.4cm;margin:4px 0}
+.sigline{border-top:1px solid #14181f;width:6cm;margin-top:4px;padding-top:4px}
+.hashline{font-family:monospace;font-size:8.5pt;word-break:break-all}
+</style></head><body>${poaHtml(opts)}</body></html>`;
+}
+
 function officeRows(){
  const cell=t=>`<td colspan="6" style="padding-left:22px" class="quiet">${t}</td>`;
  if(!remote) return `<tr>${cell(lang==='bg'
@@ -2867,6 +3148,8 @@ const AKIND={company:{bg:'Юридическо лице',en:'Legal entity'},
              person:{bg:'Физическо лице',en:'Individual'},
              sole_trader:{bg:'Едноличен търговец',en:'Sole trader'}};
 const PMETH={declared:{bg:'Декларация, подписана на страницата',en:'Declaration signed on the page'},
+             ses_drawn:{bg:'Прост електронен подпис — рисуван, потвърден с код по имейл',
+                        en:'Simple electronic signature — drawn, confirmed by an emailed code'},
              qes:{bg:'Квалифициран електронен подпис',en:'Qualified electronic signature'},
              scan:{bg:'Сканиран подпис',en:'Scanned signature'}};
 const PRIOR={none:{bg:'Не се претендира',en:'Not claimed'},
@@ -3186,6 +3469,29 @@ function wire(){
  app.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{state.kind=el.dataset.kind;save();render()});
  app.querySelectorAll('[data-search]').forEach(el=>el.onclick=()=>{state.search=el.dataset.search;save();render()});
  app.querySelectorAll('[data-declare]').forEach(el=>el.onclick=()=>{state.declared=!state.declared;save();render()});
+ if(app.querySelector('#sigpad')) sigPadInit();
+ const sgn=app.querySelector('#sgn');
+ if(sgn) sgn.oninput=e=>{ state.sigName=e.target.value;
+   state.signatory=(state.sigName||'')+((state.sigCapacity||'')?', '+state.sigCapacity:''); save();
+   const sh=app.querySelector('#poasheet'); if(sh) sh.innerHTML=poaHtml({signature:state.sigPng}); };
+ const sgc=app.querySelector('#sgc');
+ if(sgc) sgc.oninput=e=>{ state.sigCapacity=e.target.value;
+   state.signatory=(state.sigName||'')+((state.sigCapacity||'')?', '+state.sigCapacity:''); save();
+   const sh=app.querySelector('#poasheet'); if(sh) sh.innerHTML=poaHtml({signature:state.sigPng}); };
+ const sc=app.querySelector('#sigclear'); if(sc) sc.onclick=()=>{ if(poaPad) poaPad.clear(); };
+ const ps=app.querySelector('#poasend'); if(ps) ps.onclick=()=>poaSendCode();
+ const pr=app.querySelector('#poaresend'); if(pr) pr.onclick=()=>{poaStage='idle'; poaSendCode()};
+ const pg=app.querySelector('#poasign'); if(pg) pg.onclick=()=>poaSign();
+ const pd=app.querySelector('#poadl'); if(pd) pd.onclick=()=>poaDownload();
+ const po=app.querySelector('#poaopen');
+ if(po) po.onclick=()=>{
+   const html=poaStandalone({signature:state.sigPng, signedAt:state.poa_signed_at,
+     email:auth&&auth.email, hash:state.poa_hash});
+   const u=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+   window.open(u,'_blank','noopener'); setTimeout(()=>URL.revokeObjectURL(u),30000);
+ };
+ const prd=app.querySelector('#poaredo'); if(prd) prd.onclick=()=>{
+   state.poa_signed_at=null; state.poa_hash=null; poaStage='idle'; poaMsg=null; saveLocal(); render(); };
  const sg=app.querySelector('#sg');if(sg)sg.oninput=e=>{state.signatory=e.target.value;save()};
  const din=app.querySelector('#imgin'), dz=app.querySelector('#drop');
  if(din){
