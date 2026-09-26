@@ -764,6 +764,7 @@ let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръков
 let authTab = 'login';          // login | register | reset | newpass
 let recovering = false;         // отворена е връзката за нова парола от имейла
 let resetEmail = '';            // адресът, на който е изпратен кодът за нова парола
+try{ resetEmail = sessionStorage.getItem('sym_reset_email') || '' }catch(e){}
 let authMsg = null;             // {type:'err'|'ok', text}
 
 function isAdmin(){return !!(auth && auth.admin)}
@@ -957,9 +958,10 @@ async function doReset(f){
   busy=false;
  }
  resetEmail=f.email.trim();
+ try{ sessionStorage.setItem('sym_reset_email', resetEmail) }catch(e){}
  authMsg={type:'ok',text:lang==='bg'
-   ?'Ако имаме профил с този имейл, изпратихме шестцифрен код. Кодът е валиден 60 минути.'
-   :'If we hold an account for that email, a six-digit code has been sent. It is valid for 60 minutes.'};
+   ?'Ако имаме профил с този имейл, изпратихме код. Кодът е валиден 60 минути.'
+   :'If we hold an account for that email, a code has been sent. It is valid for 60 minutes.'};
  authTab='otp'; render();
 }
 
@@ -969,9 +971,10 @@ async function doReset(f){
    стои само в текста на писмото, скенерът не може да похарчи. */
 async function doOtp(f){
  if(busy) return;
- const code=String(f.code||'').replace(/\s+/g,'');
- if(!/^\d{6}$/.test(code)){
-  authMsg={type:'err',text:lang==='bg'?'Кодът е шест цифри.':'The code is six digits.'};
+ const code=String(f.code||'').replace(/\D+/g,'');
+ if(code.length<4){
+  authMsg={type:'err',text:lang==='bg'?'Въведете кода от имейла — само цифрите.'
+                                      :'Enter the code from the email — digits only.'};
   render(); return;
  }
  if(!f.pass || f.pass.length<8){
@@ -1054,16 +1057,16 @@ function authBox(){
      ?'За сигурност отговорът е един и същ, независимо дали имейлът съществува в системата.'
      :'For security the answer is the same whether or not the email exists in the system.'}</p>`;
  } else if(authTab==='otp'){
-  body=`${F('o_code',lang==='bg'?'Код от имейла':'Code from the email','text','123456',
-        'required inputmode="numeric" autocomplete="one-time-code" maxlength="6"')}
+  body=`${F('o_code',lang==='bg'?'Код от имейла':'Code from the email','text','12345678',
+        'required inputmode="numeric" autocomplete="one-time-code" maxlength="10"')}
    <div class="grid2" style="gap:14px">
     ${F('o_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
     ${F('o_pass2',lang==='bg'?'Потвърдете паролата':'Confirm password','password','','required')}
    </div>
    <button class="btn btn-primary" id="do_otp" style="align-self:start">${lang==='bg'?'Запазете новата парола':'Save the new password'}</button>
    <p class="quiet" style="margin-top:10px">${lang==='bg'
-     ?('Изпратихме кода на '+(resetEmail||'вашия имейл')+'. Валиден е 60 минути. Ако го няма, проверете папката за нежелана поща.')
-     :('We sent the code to '+(resetEmail||'your email')+'. It is valid for 60 minutes. If it has not arrived, check the spam folder.')}</p>`;
+     ?('Изпратихме кода на '+(resetEmail||'вашия имейл')+'. Въведете всички цифри от писмото. Валиден е 60 минути; всяка нова заявка обезсилва предишния код. Ако го няма, проверете папката за нежелана поща.')
+     :('We sent the code to '+(resetEmail||'your email')+'. Enter every digit from the email. It is valid for 60 minutes; each new request voids the previous code. If it has not arrived, check the spam folder.')}</p>`;
  } else if(authTab==='newpass'){
   body=`<div class="grid2" style="gap:14px">
     ${F('n_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
