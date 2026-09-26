@@ -2298,12 +2298,20 @@ function Blog(){
     <div style="display:flex;gap:10px;align-items:center"><span class="tag t">${esc(L(p.c))}</span><span class="quiet num">${p.d}</span></div>
     <h3>${esc(L(p.t))}</h3><p class="quiet" style="font-size:15px">${esc(L(p.s))}</p>
     <a href="#" class="blogread" style="color:var(--gold);font-weight:700;text-decoration:none;font-size:14.5px">${lang==='bg'?'Прочети →':'Read →'}</a></article>`).join('')}</div>
-  <div class="card pad" style="display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap">
-   <div><h3>${lang==='bg'?'Месечен бюлетин':'Monthly briefing'}</h3>
-    <p class="quiet">${lang==='bg'?'Практика на EUIPO и на Патентно ведомство, обобщена за пет минути четене.':'EUIPO and Bulgarian Patent Office practice in a five-minute read.'}</p></div>
-   <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;max-width:420px">
-    <input type="email" id="nl" placeholder="you@company.bg" style="flex:1 1 190px;width:auto;min-width:0">
-    <button class="btn btn-primary" style="flex:0 0 auto">${lang==='bg'?'Абонирай':'Subscribe'}</button></div></div>
+  <div class="card pad stack" id="nlbox" style="gap:14px">
+   <div style="display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap">
+    <div><h3>${lang==='bg'?'Месечен бюлетин':'Monthly briefing'}</h3>
+     <p class="quiet">${lang==='bg'?'Практика на EUIPO и на Патентно ведомство, обобщена за пет минути четене.':'EUIPO and Bulgarian Patent Office practice in a five-minute read.'}</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;max-width:420px">
+     <input type="email" id="nl" placeholder="you@company.bg" autocomplete="email" style="flex:1 1 190px;width:auto;min-width:0">
+     <button class="btn btn-primary" id="do_nl" ${nlBusy?'disabled':''} style="flex:0 0 auto">${
+       nlBusy?(lang==='bg'?'Момент…':'One moment…'):(lang==='bg'?'Абонирай':'Subscribe')}</button></div>
+   </div>
+   ${nlMsg?`<div class="${nlMsg.type==='ok'?'helpbar':'caution'}">
+     <span ${nlMsg.type==='ok'?'class="ht"':''}>${esc(nlMsg.text)}</span></div>`:''}
+   <p class="quiet" style="font-size:13.5px;margin:0">${lang==='bg'
+     ?'Изпращаме писмо за потвърждение; абонаментът влиза в сила чак след него. Адресът се използва само за бюлетина и всяко писмо носи връзка за отписване.'
+     :'We send a confirmation email; the subscription starts only after it. The address is used for the briefing alone and every issue carries an unsubscribe link.'}</p></div>
  </div></section>`;
 }
 
@@ -2589,6 +2597,80 @@ function Mark(){
    го записва в app.contact_messages и го изпраща на пощата на кантората
    през Resend. Ключът стои на сървъра; страницата не вижда нито ключ, нито
    адрес за препращане.                                                    */
+let nlBusy=false, nlMsg=null;
+/* Връзките за потвърждение и отписване идват като ?nl=… и ?nlu=… .
+   Прочитат се още при зареждане, защото initAuth изчиства адреса. */
+const NL_LINK=(()=>{ try{
+  const q=new URLSearchParams(location.search||'');
+  const c=q.get('nl'), u=q.get('nlu');
+  if(c && /^[0-9a-f]{48}$/.test(c)) return {action:'confirm', token:c};
+  if(u && /^[0-9a-f]{48}$/.test(u)) return {action:'unsubscribe', token:u};
+ }catch(e){} return null; })();
+
+async function doNewsletter(){
+ if(nlBusy) return;
+ const e=app.querySelector('#nl');
+ const email=((e&&e.value)||'').trim().toLowerCase();
+ if(!validEmail(email)){
+  nlMsg={type:'err',text:lang==='bg'?'Въведете валиден имейл.':'Enter a valid email address.'};
+  render(); return;
+ }
+ if(!remote || !sb){
+  nlMsg={type:'err',text:lang==='bg'
+    ?'Тази страница не вижда сървъра. Пишете ни на office@scaleyourmark.com.'
+    :'This page cannot see the server. Please write to office@scaleyourmark.com.'};
+  render(); return;
+ }
+ nlBusy=true; nlMsg=null; render();
+ try{
+  const {data,error}=await sb.functions.invoke('newsletter',{body:{action:'subscribe',email:email,lang:lang}});
+  if(error) throw error;
+  if(data && data.error) throw new Error(data.error);
+  nlMsg = (data && data.already)
+   ? {type:'ok',text:lang==='bg'?'Този адрес вече получава бюлетина.':'This address already receives the briefing.'}
+   : {type:'ok',text:lang==='bg'
+      ?'Изпратихме писмо за потвърждение. Абонаментът влиза в сила, след като отворите връзката в него.'
+      :'A confirmation email is on its way. The subscription starts once you open the link in it.'};
+ }catch(err){
+  nlMsg={type:'err',text:lang==='bg'
+    ?'Записването не мина. Опитайте пак или ни пишете на office@scaleyourmark.com.'
+    :'The sign-up did not go through. Please try again or write to office@scaleyourmark.com.'};
+ }
+ nlBusy=false; render();
+}
+
+/* Отварянето на връзката от писмото потвърждава или отписва адреса. */
+async function runNewsletterLink(){
+ if(!NL_LINK) return;
+ page='blog'; nlBusy=true; render();
+ /* Връзката със сървъра се вдига успоредно с първото рисуване. */
+ for(let i=0;i<40 && (!remote || !sb); i++) await new Promise(r=>setTimeout(r,250));
+ if(!remote || !sb){
+  nlBusy=false;
+  nlMsg={type:'err',text:lang==='bg'
+    ?'Няма връзка със сървъра. Отворете връзката от писмото отново след малко.'
+    :'No connection to the server. Please open the link from the email again shortly.'};
+  render(); return;
+ }
+ try{
+  const {data,error}=await sb.functions.invoke('newsletter',
+    {body:{action:NL_LINK.action, token:NL_LINK.token}});
+  if(error) throw error;
+  if(data && data.error) throw new Error(data.error);
+  nlMsg = NL_LINK.action==='confirm'
+   ? {type:'ok',text:lang==='bg'?'Готово — адресът е потвърден и ще получава бюлетина.'
+                                :'Done — the address is confirmed and will receive the briefing.'}
+   : {type:'ok',text:lang==='bg'?'Отписахме адреса. Повече няма да получавате бюлетина.'
+                                :'The address has been removed. You will not receive the briefing again.'};
+ }catch(err){
+  nlMsg={type:'err',text:lang==='bg'
+    ?'Връзката не е валидна или вече е използвана. Заявете абонамента отново.'
+    :'The link is not valid or has already been used. Please sign up again.'};
+ }
+ nlBusy=false; render();
+ const c=app.querySelector('#nlbox'); if(c) c.scrollIntoView({block:'center'});
+}
+
 let contactBusy=false, contactMsg=null;
 let contactForm={name:'',email:'',topic:'',message:''};
 
@@ -3021,6 +3103,8 @@ function wire(){
 
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
  const dc=app.querySelector('#do_contact'); if(dc) dc.onclick=()=>doContact();
+ const dn=app.querySelector('#do_nl'); if(dn) dn.onclick=()=>doNewsletter();
+ const nli=app.querySelector('#nl'); if(nli) nli.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault(); doNewsletter()}};
  app.querySelectorAll('[data-dossier]').forEach(b=>b.onclick=()=>openDossier(b.dataset.dossier));
  const dbk=app.querySelector('#doss_back'); if(dbk) dbk.onclick=()=>{dossier=null;go('office')};
  const ddc=app.querySelector('#doss_doc');  if(ddc) ddc.onclick=()=>dossierDownloadDoc();
@@ -3303,6 +3387,7 @@ document.getElementById('lang').querySelectorAll('button').forEach(b=>b.onclick=
 });
 document.getElementById('burger').onclick=()=>document.getElementById('side').classList.toggle('open');
 initAuth();
+runNewsletterLink();
 </script>
 
 </body>
