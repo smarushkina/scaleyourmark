@@ -398,6 +398,8 @@ footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-to
    ============================================================ */
 
 /* Дълга дума или адрес не бива да избутва страницата настрани. */
+/* Скрито поле в контактната форма: човек не го вижда и не го попълва. */
+.hp{position:absolute!important;left:-9999px!important;top:auto;width:1px;height:1px;overflow:hidden;opacity:0}
 /* Досие по преписка */
 .dossbtn{padding:7px 13px;font-size:13px;white-space:nowrap}
 .dosssec{border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
@@ -2583,6 +2585,54 @@ function Mark(){
  </div></section>`;
 }
 
+/* Контактната форма праща запитването на Edge Function-а `contact`, който
+   го записва в app.contact_messages и го изпраща на пощата на кантората
+   през Resend. Ключът стои на сървъра; страницата не вижда нито ключ, нито
+   адрес за препращане.                                                    */
+let contactBusy=false, contactMsg=null;
+let contactForm={name:'',email:'',topic:'',message:''};
+
+async function doContact(){
+ if(contactBusy) return;
+ const gv=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
+ const name=gv('cn').trim(), email=gv('ce').trim().toLowerCase();
+ const topic=gv('ct'), message=gv('cm').trim(), company=gv('cc');
+ contactForm={name:name, email:email, topic:topic, message:message};
+ const bad=t=>{contactMsg={type:'err',text:t}; render()};
+ if(name.length<2) return bad(lang==='bg'?'Напишете името си.':'Enter your name.');
+ if(!validEmail(email)) return bad(lang==='bg'?'Проверете имейла.':'Check the email address.');
+ if(message.length<5) return bad(lang==='bg'?'Напишете съобщението си.':'Write your message.');
+ if(!remote || !sb) return bad(lang==='bg'
+   ?'Тази страница не вижда сървъра. Пишете ни направо на office@scaleyourmark.com.'
+   :'This page cannot see the server. Please write to office@scaleyourmark.com.');
+
+ contactBusy=true; contactMsg=null; render();
+ let code=null;
+ try{
+  const {data,error}=await sb.functions.invoke('contact',
+    {body:{name:name, email:email, topic:topic, message:message, company:company}});
+  if(error){
+   if(error.context && typeof error.context.json==='function'){
+    try{ const j=await error.context.json(); code=j&&j.error }catch(e){}
+   }
+   throw new Error(code||error.message||'send');
+  }
+  if(data && data.error){ code=data.error; throw new Error(code) }
+  contactMsg={type:'ok',text:lang==='bg'
+    ?'Благодарим — запитването е изпратено. Отговаряме в рамките на един работен ден.'
+    :'Thank you — your enquiry has been sent. We reply within one working day.'};
+  contactForm={name:'',email:'',topic:topic,message:''};
+ }catch(e){
+  const t = code==='too_many'
+    ? (lang==='bg'?'Получихме няколко запитвания от този адрес. Опитайте пак след няколко минути.'
+                  :'Several enquiries have come from this address. Please try again in a few minutes.')
+    : (lang==='bg'?'Изпращането не мина. Пишете ни направо на office@scaleyourmark.com.'
+                  :'The message did not go through. Please write to office@scaleyourmark.com.');
+  contactMsg={type:'err',text:t};
+ }
+ contactBusy=false; render();
+}
+
 function Contact(){
  return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'},
   {bg:'Отговаряме в рамките на един работен ден. За текущи заявки пишете от профила си.',
@@ -2597,15 +2647,21 @@ function Contact(){
   </div>
   <div class="card pad">
    <div class="grid2" style="gap:0 18px">
-    <div class="field"><label for="cn">${lang==='bg'?'Име':'Name'}</label><input type="text" id="cn"></div>
-    <div class="field"><label for="ce">${lang==='bg'?'Имейл':'Email'}</label><input type="email" id="ce"></div></div>
+    <div class="field"><label for="cn">${lang==='bg'?'Име':'Name'}</label><input type="text" id="cn" value="${esc(contactForm.name)}" autocomplete="name"></div>
+    <div class="field"><label for="ce">${lang==='bg'?'Имейл':'Email'}</label><input type="email" id="ce" value="${esc(contactForm.email)}" autocomplete="email"></div></div>
+   <div class="hp" aria-hidden="true"><label for="cc">Company</label><input type="text" id="cc" tabindex="-1" autocomplete="off"></div>
    <div class="field"><label for="ct">${lang==='bg'?'Тема':'Subject'}</label>
-    <select id="ct"><option>${lang==='bg'?'Въпрос преди заявяване':'Question before filing'}</option>
-     <option>${lang==='bg'?'Текуща заявка':'Live application'}</option>
-     <option>${lang==='bg'?'Опозиция или отказ':'Opposition or refusal'}</option>
-     <option>${lang==='bg'?'Фактура и плащане':'Invoice and payment'}</option></select></div>
-   <div class="field"><label for="cm">${lang==='bg'?'Съобщение':'Message'}</label><textarea id="cm" rows="5"></textarea></div>
-   <button class="btn btn-primary">${lang==='bg'?'Изпрати':'Send'}</button>
+    <select id="ct">${[
+      {bg:'Въпрос преди заявяване',en:'Question before filing'},
+      {bg:'Текуща заявка',en:'Live application'},
+      {bg:'Опозиция или отказ',en:'Opposition or refusal'},
+      {bg:'Фактура и плащане',en:'Invoice and payment'}]
+      .map(o=>`<option ${contactForm.topic===L(o)?'selected':''}>${esc(L(o))}</option>`).join('')}</select></div>
+   <div class="field"><label for="cm">${lang==='bg'?'Съобщение':'Message'}</label><textarea id="cm" rows="5">${esc(contactForm.message)}</textarea></div>
+   ${contactMsg?`<div class="${contactMsg.type==='ok'?'helpbar':'caution'}" style="margin-bottom:12px">
+     <span ${contactMsg.type==='ok'?'class="ht"':''}>${esc(contactMsg.text)}</span></div>`:''}
+   <button class="btn btn-primary" id="do_contact" ${contactBusy?'disabled':''}>${
+     contactBusy?(lang==='bg'?'Изпращаме…':'Sending…'):(lang==='bg'?'Изпрати':'Send')}</button>
    <p class="quiet" style="margin-top:12px">${lang==='bg'?'Данните се обработват съгласно Политиката за поверителност. Не изпращайте поверителни документи през тази форма.'
                                                         :'Data is processed under the Privacy Policy. Do not send confidential documents through this form.'}</p>
   </div></div></section>`;
@@ -2964,6 +3020,7 @@ function wire(){
 
 
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
+ const dc=app.querySelector('#do_contact'); if(dc) dc.onclick=()=>doContact();
  app.querySelectorAll('[data-dossier]').forEach(b=>b.onclick=()=>openDossier(b.dataset.dossier));
  const dbk=app.querySelector('#doss_back'); if(dbk) dbk.onclick=()=>{dossier=null;go('office')};
  const ddc=app.querySelector('#doss_doc');  if(ddc) ddc.onclick=()=>dossierDownloadDoc();
