@@ -398,6 +398,15 @@ footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-to
    ============================================================ */
 
 /* Дълга дума или адрес не бива да избутва страницата настрани. */
+/* Досие по преписка */
+.dossbtn{padding:7px 13px;font-size:13px;white-space:nowrap}
+.dosssec{border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+.dosskv{display:grid;grid-template-columns:minmax(150px,34%) minmax(0,1fr);gap:8px 18px;font-size:14.5px}
+.dosskv dt{font-weight:600;color:var(--ink-2)}
+.dosskv dd{margin:0;color:var(--ink-3);overflow-wrap:anywhere}
+.dossterms{margin:0;padding-left:20px;font-size:14.5px;color:var(--ink-3)}
+.dossterms li{padding:2px 0}
+@media (max-width:560px){ .dosskv{grid-template-columns:1fr;gap:2px 0} .dosskv dd{margin-bottom:8px} }
 html{-webkit-text-size-adjust:100%}
 body{overflow-wrap:break-word}
 
@@ -1127,6 +1136,12 @@ const EEA = ['BG','DE','AT','BE','HR','CY','CZ','DK','EE','FI','FR','GR','HU','I
 let draftTimer = null;
 let syncState = null;        // {type:'ok'|'err'|'busy', text}
 let matters = null;          // преписките на потребителя, заредени от базата
+
+/* ---------- досие по преписка -----------------------------------------
+   Целият запис на една заявка, както клиентът го е въвел, на един екран и
+   в един файл за Word. Изображението на марката се сваля отделно: файлът
+   за ведомството носи текста, а знакът пътува като самостоятелен образец. */
+let dossier = null;          // {loading, data, imageUrl, imageName, error}
 let mattersAsked = false;
 
 function markKindDb(){
@@ -1356,7 +1371,7 @@ function chrome(){
 function go(p){ if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
 function render(){if(page==='office'&&!isAdmin())page='acct';
  if(page==='acct'&&remote&&auth&&!mattersAsked){loadMatters()}
- chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,blog:Blog,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office}[page]||Why)();wire()}
+ chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,blog:Blog,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire()}
 
 /* ---------- drawer ---------- */
 function openDrawer(n){
@@ -2650,6 +2665,205 @@ function Office(){
  </div></section>`;
 }
 
+/* Речници за четимите имена на стойностите от базата. Непозната стойност
+   се показва както е — по-добре сурово, отколкото подведено.              */
+const MKIND={word:{bg:'Словна',en:'Word'},
+             figurative:{bg:'Фигуративна (несловна)',en:'Figurative'},
+             combined:{bg:'Комбинирана',en:'Combined'},
+             other:{bg:'Друг вид',en:'Other'}};
+const AKIND={company:{bg:'Юридическо лице',en:'Legal entity'},
+             person:{bg:'Физическо лице',en:'Individual'},
+             sole_trader:{bg:'Едноличен търговец',en:'Sole trader'}};
+const PMETH={declared:{bg:'Декларация, подписана на страницата',en:'Declaration signed on the page'},
+             qes:{bg:'Квалифициран електронен подпис',en:'Qualified electronic signature'},
+             scan:{bg:'Сканиран подпис',en:'Scanned signature'}};
+const PRIOR={none:{bg:'Не се претендира',en:'Not claimed'},
+             convention:{bg:'Конвенционен приоритет',en:'Convention priority'},
+             exhibition:{bg:'Изложбен приоритет',en:'Exhibition priority'}};
+const SRCHO={none:{bg:'Без проучване',en:'No search'},
+             basic:{bg:'Основно проучване',en:'Basic search'},
+             full:{bg:'Задълбочено проучване за сходство',en:'Full similarity search'}};
+const lbl=(dict,k)=>k?(dict[k]?L(dict[k]):String(k)):'';
+const dts=v=>{ if(!v) return ''; const d=new Date(v); return isNaN(d.getTime())?String(v)
+  :d.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{dateStyle:'medium',timeStyle:'short'}); };
+
+async function openDossier(id){
+ if(!remote) return;
+ dossier={loading:true}; page='dossier'; closeDrawer();
+ window.scrollTo({top:0,behavior:'instant'}); render();
+ try{
+  const {data,error}=await sb.rpc('matter_summary',{p_matter:id});
+  if(error) throw error;
+  if(!data) throw new Error(lang==='bg'?'Преписката не е намерена.':'Matter not found.');
+  const d={loading:false, data:data};
+  /* Документите се четат от таблицата, а не от обобщението: там стои ключът
+     в хранилището, който трябва за подписаната връзка.                     */
+  try{
+   const q=await sb.from('documents').select('kind,storage_key,filename,mime_type,byte_size').eq('matter_id',id);
+   const img=(q.data||[]).find(x=>x.kind==='mark_image');
+   if(img&&img.storage_key){
+    const sig=await sb.storage.from('matter-files').createSignedUrl(img.storage_key,600);
+    if(sig&&sig.data&&sig.data.signedUrl){
+     d.imageUrl=sig.data.signedUrl;
+     d.imageName=img.filename||((data.ref||'mark')+'.jpg');
+    }
+   }
+  }catch(e){}
+  dossier=d;
+ }catch(e){ dossier={loading:false, error:(e&&e.message)?e.message:String(e)} }
+ render();
+}
+
+function dossierRows(d){
+ const cls=Array.isArray(d.classes)?d.classes:[];
+ const ap=(d.applicants&&d.applicants[0])||null;
+ const poa=d.power_of_attorney||null;
+ const cl=d.client||null;
+ const fe=feeOf(d.route, cls.length||1, !!d.colour_claimed);
+ const st=STATUS[d.status]||STATUS.draft;
+ const R=ROUTES[d.route];
+ const kv=(k,v)=>v===''||v===null||v===undefined?null:[k,v];
+ const S=(t,pairs)=>({t:t, pairs:pairs.filter(Boolean)});
+ const out=[];
+ out.push(S({bg:'Преписка',en:'Matter'},[
+   kv({bg:'Номер',en:'Reference'}, d.ref),
+   kv({bg:'Състояние',en:'Status'}, L(st)),
+   kv({bg:'Маршрут',en:'Route'}, R?L(R):d.route),
+   kv({bg:'Ведомство',en:'Office'}, R?L(R.office):''),
+   kv({bg:'Предадена на',en:'Handed over'}, dts(d.locked_at)),
+   kv({bg:'Срок за преглед',en:'Review due'}, dts(d.sla_due_at))]));
+ out.push(S({bg:'Марка',en:'Mark'},[
+   kv({bg:'Вид',en:'Kind'}, lbl(MKIND,d.mark_kind)),
+   kv({bg:'Изписване',en:'Wording'}, d.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)')),
+   kv({bg:'Претенция за цвят',en:'Colour claimed'}, d.colour_claimed?(lang==='bg'?'Да':'Yes'):(lang==='bg'?'Не':'No')),
+   kv({bg:'Приоритет',en:'Priority'}, lbl(PRIOR,d.priority_kind)),
+   kv({bg:'Номер на приоритета',en:'Priority number'}, d.priority_number),
+   kv({bg:'Проучване',en:'Search'}, lbl(SRCHO,d.search_option))]));
+ if(ap) out.push(S({bg:'Заявител',en:'Applicant'},[
+   kv({bg:'Наименование',en:'Name'}, ap.legal_name),
+   kv({bg:'Вид',en:'Kind'}, lbl(AKIND,ap.kind)),
+   kv({bg:'Идентификатор',en:'Registration number'}, ap.reg_number),
+   kv({bg:'Държава',en:'Country'}, ap.country),
+   kv({bg:'Адрес',en:'Address'}, ap.address),
+   kv({bg:'Сверено с регистър',en:'Matched against register'},
+      ap.register_match===null||ap.register_match===undefined?'' :
+      (ap.register_match?(lang==='bg'?'Да':'Yes'):(lang==='bg'?'Не':'No')))]));
+ if(poa) out.push(S({bg:'Пълномощно',en:'Power of attorney'},[
+   kv({bg:'Подписал',en:'Signatory'}, poa.signatory),
+   kv({bg:'Качество',en:'Capacity'}, poa.capacity),
+   kv({bg:'Начин',en:'Method'}, lbl(PMETH,poa.method)),
+   kv({bg:'Подписано на',en:'Signed at'}, dts(poa.signed_at))]));
+ if(cl) out.push(S({bg:'Клиент',en:'Client'},[
+   kv({bg:'Име',en:'Name'}, cl.name),
+   kv({bg:'Имейл',en:'Email'}, cl.email),
+   kv({bg:'Телефон',en:'Phone'}, cl.phone)]));
+ out.push(S({bg:'Такси',en:'Fees'},[
+   kv({bg:'Класове',en:'Classes'}, cls.length?cls.join(', '):'—'),
+   kv({bg:'Държавна такса',en:'Official fee'}, money(fe.v,fe.cur)),
+   kv({bg:'Възнаграждение',en:'Service fee'}, money(SERVICE[d.route]||0,'EUR')),
+   kv({bg:'Проучване',en:'Search fee'}, d.search_option&&d.search_option!=='none'?money(SEARCH_FEE,'EUR'):'')]));
+ return out;
+}
+
+function Dossier(){
+ const back=`<button class="btn btn-ghost" id="doss_back">${lang==='bg'?'← Към заявките':'← Back to applications'}</button>`;
+ if(!dossier) return `${pageHead({bg:'Досие',en:'File'},{bg:'Няма избрана преписка',en:'No matter selected'},null)}
+  <section class="sec"><div class="wrap">${back}</div></section>`;
+ if(dossier.loading) return `${pageHead({bg:'Досие',en:'File'},{bg:'Зареждаме преписката',en:'Loading the matter'},null)}
+  <section class="sec"><div class="wrap stack" style="gap:18px"><p class="quiet">${lang==='bg'?'Момент…':'One moment…'}</p>${back}</div></section>`;
+ if(dossier.error) return `${pageHead({bg:'Досие',en:'File'},{bg:'Преписката не можа да се отвори',en:'The matter could not be opened'},null)}
+  <section class="sec"><div class="wrap stack" style="gap:18px"><div class="caution">${esc(dossier.error)}</div>${back}</div></section>`;
+ const d=dossier.data;
+ const secs=dossierRows(d).map(sec=>`<div class="dosssec">
+   <div class="kicker" style="margin-bottom:10px">${esc(L(sec.t))}</div>
+   <dl class="dosskv">${sec.pairs.map(([k,v])=>`<dt>${esc(L(k))}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`).join('');
+ const terms=Array.isArray(d.terms)?d.terms:[];
+ const tsec=terms.length?`<div class="dosssec">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Стоки и услуги':'Goods and services'}</div>
+   <ol class="dossterms">${terms.map(t=>`<li>${lang==='bg'?'Клас':'Class'} ${esc(t.class)} — ${esc(t.term)}</li>`).join('')}</ol></div>`:'';
+ const imgblock=dossier.imageUrl
+  ? `<div class="dosssec"><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Изображение на марката':'Mark image'}</div>
+     <img src="${esc(dossier.imageUrl)}" alt="" style="max-width:260px;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#fff">
+     <p class="quiet" style="margin-top:10px;font-size:14px">${lang==='bg'
+       ?'Сваля се като отделен файл до досието — така изображението остава в оригиналния си вид.'
+       :'Downloaded as a separate file next to the record, so the image keeps its original form.'}</p></div>`
+  : (d.mark_kind&&d.mark_kind!=='word'
+     ? `<div class="dosssec"><div class="caution">${lang==='bg'
+         ?'Марката не е словна, но към преписката няма качено изображение.'
+         :'The mark is not a word mark, but no image is attached to this matter.'}</div></div>`
+     : '');
+ return `${pageHead({bg:'Досие по преписка',en:'Matter file'},
+   {bg:(d.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)')),en:(d.mark_text||'(no word element)')},
+   {bg:'Всичко, въведено от заявителя, на един екран и в един файл.',
+    en:'Everything the applicant entered, on one screen and in one file.'})}
+ <section class="sec"><div class="wrap stack" style="gap:22px">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+   ${back}
+   <button class="btn btn-primary" id="doss_doc">${lang==='bg'?'Изтеглете за Word':'Download for Word'}</button>
+   ${dossier.imageUrl?`<button class="btn btn-ghost" id="doss_img">${lang==='bg'?'Изтеглете изображението':'Download the image'}</button>`:''}
+  </div>
+  <div class="card pad stack" style="gap:18px">${secs}${tsec}${imgblock}</div>
+ </div></section>`;
+}
+
+/* Word отваря HTML файл с разширение .doc и запазва форматирането. Така
+   файлът е редактируем, не иска външна библиотека и излиза на кирилица,
+   стига да носи BOM и изрично кодиране.                                   */
+function dossierWordHtml(d){
+ const secs=dossierRows(d);
+ const terms=Array.isArray(d.terms)?d.terms:[];
+ const e=esc;
+ const body=secs.map(sec=>`<h2>${e(L(sec.t))}</h2><table>${
+   sec.pairs.map(([k,v])=>`<tr><td class="k">${e(L(k))}</td><td>${e(v)}</td></tr>`).join('')}</table>`).join('')
+  + (terms.length?`<h2>${lang==='bg'?'Стоки и услуги':'Goods and services'}</h2><table>${
+      terms.map(t=>`<tr><td class="k">${lang==='bg'?'Клас':'Class'} ${e(t.class)}</td><td>${e(t.term)}</td></tr>`).join('')}</table>`:'')
+  + (d.mark_kind&&d.mark_kind!=='word'
+     ? `<p class="note">${lang==='bg'
+         ? 'Изображението на марката е приложено като отделен файл до този документ.'
+         : 'The mark image is attached as a separate file next to this document.'}</p>`
+     : '');
+ return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${e(d.ref||'')}</title>
+<style>
+@page{size:A4;margin:2cm}
+body{font-family:"Times New Roman",serif;font-size:12pt;color:#000}
+h1{font-size:16pt;margin:0 0 4pt}
+h2{font-size:12.5pt;margin:16pt 0 4pt;border-bottom:1pt solid #999;padding-bottom:2pt}
+table{border-collapse:collapse;width:100%}
+td{padding:3pt 6pt 3pt 0;vertical-align:top;font-size:11.5pt}
+td.k{width:38%;font-weight:bold}
+.sub{font-size:10.5pt;color:#555;margin:0 0 6pt}
+.note{margin-top:14pt;font-size:10.5pt;color:#555}
+</style></head><body>
+<h1>${lang==='bg'?'Досие по преписка':'Matter file'} ${e(d.ref||'')}</h1>
+<p class="sub">ScaleYourMark · ${e(dts(new Date().toISOString()))}</p>
+${body}
+</body></html>`;
+}
+
+function saveBlob(blob,name){
+ const u=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=u; a.download=name; document.body.appendChild(a); a.click();
+ setTimeout(()=>{URL.revokeObjectURL(u); a.remove()},1500);
+}
+function dossierDownloadDoc(){
+ if(!dossier||!dossier.data) return;
+ const d=dossier.data;
+ const blob=new Blob(['\ufeff'+dossierWordHtml(d)],{type:'application/msword;charset=utf-8'});
+ saveBlob(blob, (d.ref||'dossier')+(lang==='bg'?' — досие.doc':' — file.doc'));
+}
+async function dossierDownloadImage(){
+ if(!dossier||!dossier.imageUrl) return;
+ try{
+  const r=await fetch(dossier.imageUrl);
+  const b=await r.blob();
+  const ref=(dossier.data&&dossier.data.ref)||'mark';
+  const ext=(dossier.imageName&&dossier.imageName.split('.').pop())||'jpg';
+  saveBlob(b, ref+(lang==='bg'?' — изображение.':' — image.')+ext);
+ }catch(e){ window.open(dossier.imageUrl,'_blank','noopener') }
+}
+
 function Acct(){
  const f=officialFee();
  /* При смяна на забравена парола връзката вече е влязла в профила, тоест auth
@@ -2669,11 +2883,12 @@ function Acct(){
     <td class="num">${ROUTES[state.route].code}</td>
     <td class="num">${[...new Set(state.terms.map(t=>t.c))].sort((a,b)=>a-b).join(', ')||'—'}</td>
     <td><span class="tag ${STATUS[state.status||'draft'].cls}">${esc(L(STATUS[state.status||'draft']))}</span></td>
-    <td class="r" style="padding-right:22px">${money(f.v,f.cur)}</td></tr>`;
+    <td class="r">${money(f.v,f.cur)}</td>
+    <td class="r" style="padding-right:22px"><span class="quiet" style="font-size:13px">—</span></td></tr>`;
  } else if(matters===null){
-  rows=`<tr><td colspan="5" style="padding-left:22px" class="quiet">${lang==='bg'?'Зареждаме…':'Loading…'}</td></tr>`;
+  rows=`<tr><td colspan="6" style="padding-left:22px" class="quiet">${lang==='bg'?'Зареждаме…':'Loading…'}</td></tr>`;
  } else if(!matters.length){
-  rows=`<tr><td colspan="5" style="padding-left:22px" class="quiet">${lang==='bg'
+  rows=`<tr><td colspan="6" style="padding-left:22px" class="quiet">${lang==='bg'
      ?'Още няма преписки. Започнете от „Заявяване“.':'No matters yet. Start under “Filing”.'}</td></tr>`;
  } else {
   rows=matters.map(m=>{
@@ -2687,7 +2902,10 @@ function Acct(){
     <td class="num">${m.class_count||'—'}</td>
     <td><span class="tag ${st.cls}">${esc(L(st))}</span>${
        m.open_flags?` <span class="tag a">${m.open_flags} ${lang==='bg'?'за поправка':'to fix'}</span>`:''}</td>
-    <td class="r" style="padding-right:22px">${money(fe.v,fe.cur)}</td></tr>`;
+    <td class="r">${money(fe.v,fe.cur)}</td>
+    <td class="r" style="padding-right:22px">${m.status==='draft'
+      ? `<span class="quiet" style="font-size:13px" title="${lang==='bg'?'Досие се прави след предаване на заявката':'The file is available once the application is handed over'}">—</span>`
+      : `<button class="btn btn-ghost dossbtn" data-dossier="${esc(m.id)}">${lang==='bg'?'Досие':'File'}</button>`}</td></tr>`;
   }).join('');
  }
 
@@ -2702,7 +2920,8 @@ function Acct(){
   </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
-    <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Такса':'Fee'}</th></tr></thead>
+    <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right">${lang==='bg'?'Такса':'Fee'}</th>
+    <th style="text-align:right;padding-right:22px"></th></tr></thead>
    <tbody>${rows}</tbody></table></div></div>
   <div class="grid2">
    <div class="card pad stack" style="gap:12px"><div class="kicker">${lang==='bg'?'Как работи запазването':'How saving works'}</div>
@@ -2727,6 +2946,10 @@ function wire(){
 
 
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
+ app.querySelectorAll('[data-dossier]').forEach(b=>b.onclick=()=>openDossier(b.dataset.dossier));
+ const dbk=app.querySelector('#doss_back'); if(dbk) dbk.onclick=()=>{dossier=null;go('acct')};
+ const ddc=app.querySelector('#doss_doc');  if(ddc) ddc.onclick=()=>dossierDownloadDoc();
+ const dim=app.querySelector('#doss_img');  if(dim) dim.onclick=()=>dossierDownloadImage();
  const vl=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
  const br=app.querySelector('#do_register');
  if(br) br.onclick=()=>doRegister({name:vl('r_name'),email:vl('r_email'),phone:vl('r_phone'),
