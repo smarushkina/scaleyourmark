@@ -3086,11 +3086,50 @@ function wire(){
    вижда нито ключ, нито жетон.                                            */
 let suggQ='', suggCls='', suggTimer=null, suggRows=[], suggTotal=0, suggState='idle';
 
+/* Търсенето пита EUIPO на живо и едно питане струва около секунда. Две
+   неща спестяват чакането, без да местят нищо на сървъра:
+   1) вече питаните думи стоят в паметта на страницата — връщане назад,
+      изтрита буква или същата дума втори път излиза мигновено;
+   2) докато EUIPO отговаря, показваме стеснените вече видени редове.
+      Когато новата дума надгражда старата, отговорът ѝ е подмножество на
+      показаното, тоест стесняването не лъже — само избързва.             */
+const SUGG_CACHE_MAX=200;
+let suggCache=new Map();
+let suggLastQ='', suggLastCls='', suggLastRows=[], suggProvisional=false;
+const suggKey=(q,c)=>lang+'|'+(c||'')+'|'+String(q).trim().toLowerCase();
+function suggRemember(q,c,rows,total){
+ suggCache.set(suggKey(q,c),{rows:rows,total:total});
+ while(suggCache.size>SUGG_CACHE_MAX) suggCache.delete(suggCache.keys().next().value);
+}
+function suggNarrow(q){
+ const toks=String(q).toLowerCase().split(/\s+/).filter(Boolean);
+ if(!toks.length) return [];
+ return suggLastRows.filter(r=>{
+   const t=String(r.t||'').toLowerCase();
+   return toks.every(w=>t.indexOf(w)>=0);
+ });
+}
+
 async function runSugg(){
  const q=(suggQ||'').trim();
  if(q.length<2){ suggRows=[]; suggTotal=0; suggState='idle'; paintSugg(); return }
  if(!remote || !sb){ suggState='offline'; paintSugg(); return }
- suggState='busy'; paintSugg();
+
+ const hit=suggCache.get(suggKey(q,suggCls));
+ if(hit){
+  suggRows=hit.rows; suggTotal=hit.total; suggState='ok'; suggProvisional=false;
+  suggLastQ=q; suggLastCls=suggCls; suggLastRows=hit.rows; paintSugg(); return;
+ }
+
+ const grows = suggLastRows.length && suggCls===suggLastCls
+   && q.toLowerCase().indexOf(String(suggLastQ).toLowerCase())===0;
+ const near = grows ? suggNarrow(q) : [];
+ if(near.length){
+  suggRows=near; suggTotal=near.length; suggState='ok'; suggProvisional=true; paintSugg();
+ } else {
+  suggProvisional=false; suggState='busy'; paintSugg();
+ }
+
  const asked=q+'|'+suggCls;
  try{
   const {data,error}=await sb.functions.invoke('hdb-suggest',
@@ -3099,9 +3138,12 @@ async function runSugg(){
   if(error) throw error;
   if(data && data.error) throw new Error(data.error);
   suggRows=(data&&data.rows)||[]; suggTotal=(data&&data.total)||suggRows.length;
-  suggState='ok';
+  suggState='ok'; suggProvisional=false;
+  suggRemember(q, suggCls, suggRows, suggTotal);
+  suggLastQ=q; suggLastCls=suggCls; suggLastRows=suggRows;
  }catch(e){
-  suggRows=[]; suggTotal=0; suggState='err'; suggErr=(e&&e.message)||String(e);
+  suggRows=[]; suggTotal=0; suggState='err'; suggProvisional=false;
+  suggErr=(e&&e.message)||String(e);
  }
  paintSugg();
 }
@@ -3137,7 +3179,10 @@ function paintSugg(){
  }
 
  const chosen=new Set(state.terms.map(t=>String(t.id)));
- box.innerHTML = suggRows.map(r=>{
+ const waiting = suggProvisional ? note(lang==='bg'
+   ? 'Стеснено от вече показаното. Уточняваме от базата на EUIPO…'
+   : 'Narrowed from what was already shown. Checking the EUIPO database…') : '';
+ box.innerHTML = waiting + suggRows.map(r=>{
    const id='hdb:'+r.id, on=chosen.has(id);
    return `<div class="trow" data-add="${esc(id)}" data-c="${r.c}" data-t="${esc(r.t)}" data-on="${on?1:0}">
      <span class="chip">${lang==='bg'?'Кл.':'Cl.'} ${r.c}</span>
