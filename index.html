@@ -649,13 +649,10 @@ const STATUS={
  registered:{bg:'регистрирана',en:'registered',cls:'t'}
 };
 
-const QUEUE=[
- {ref:'2026-0412',mark:'ORBITA',route:'eutm',cls:'25, 35',st:'review',sla:{bg:'остават 1 д. 4 ч.',en:'1d 4h left'},who:{bg:'ОРБИТА ЕООД',en:'ORBITA EOOD'}},
- {ref:'2026-0411',mark:'ЛОЗЕН',route:'bg_nat',cls:'33',st:'returned',sla:{bg:'при клиента от 2 д.',en:'with client 2d'},who:{bg:'Винарна Лозен АД',en:'Vinarna Lozen AD'}},
- {ref:'2026-0409',mark:'KAVALINE',route:'eutm',cls:'30, 43',st:'ready',sla:{bg:'за подаване днес',en:'file today'},who:{bg:'Кавалине ООД',en:'Kavaline OOD'}},
- {ref:'2026-0402',mark:'NUR TEXT',route:'madrid',cls:'25',st:'filed',sla:{bg:'подадена 04.09',en:'filed 04 Sep'},who:{bg:'Nur Textile FZE, Дубай',en:'Nur Textile FZE, Dubai'}},
- {ref:'2026-0388',mark:'ТОПОЛА',route:'bg_nat',cls:'33',st:'registered',sla:{bg:'подновяване 2034',en:'renewal 2034'},who:{bg:'Топола ЕООД',en:'Topola EOOD'}}
-];
+/* Макетната опашка беше премахната на 26.09.2026: „Панел“ чете истинските
+   преписки от базата. Адвокатът вижда всички, защото политиката за четене
+   на app.matters пуска is_lawyer(), а изгледът app.my_matters е
+   security invoker и не филтрира сам.                                     */
 
 const CHECKLIST=[
  {ok:1,bg:'Отличителност — няма явно абсолютно основание по чл. 11 ЗМГО / чл. 7 EUTMR',en:'Distinctiveness — no obvious absolute ground under art. 11 BG TMA / art. 7 EUTMR'},
@@ -1369,8 +1366,8 @@ function chrome(){
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
 function go(p){ if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
-function render(){if(page==='office'&&!isAdmin())page='acct';
- if(page==='acct'&&remote&&auth&&!mattersAsked){loadMatters()}
+function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct';
+ if((page==='acct'||page==='office')&&remote&&auth&&!mattersAsked){loadMatters()}
  chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,blog:Blog,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire()}
 
 /* ---------- drawer ---------- */
@@ -2614,27 +2611,53 @@ function Contact(){
   </div></div></section>`;
 }
 
+function officeRows(){
+ const cell=t=>`<td colspan="6" style="padding-left:22px" class="quiet">${t}</td>`;
+ if(!remote) return `<tr>${cell(lang==='bg'
+   ?'Тази страница не вижда сървъра, затова панелът е празен.'
+   :'This page cannot see the server, so the panel is empty.')}</tr>`;
+ if(matters===null) return `<tr>${cell(lang==='bg'?'Зареждаме…':'Loading…')}</tr>`;
+ if(!matters.length) return `<tr>${cell(lang==='bg'?'Още няма преписки.':'No matters yet.')}</tr>`;
+ return matters.map(m=>{
+  const st=STATUS[m.status]||STATUS.draft;
+  const sub=m.status==='draft'
+    ? (lang==='bg'?'чернова, стъпка ':'draft, step ')+(m.current_step||1)+'/9 · '+esc(m.ref)
+    : esc(m.ref);
+  return `<tr><td style="padding-left:22px">
+    <strong>${esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)'))}</strong>
+    <div class="quiet num">${sub}</div></td>
+   <td class="num">${ROUTES[m.route]?ROUTES[m.route].code:esc(m.route)}</td>
+   <td class="num">${m.class_count||'—'}</td>
+   <td><span class="tag ${st.cls}">${esc(L(st))}</span>${
+      m.open_flags?` <span class="tag a">${m.open_flags} ${lang==='bg'?'за поправка':'to fix'}</span>`:''}</td>
+   <td class="quiet">${m.locked_at?esc(dts(m.locked_at)):'—'}</td>
+   <td class="r" style="padding-right:22px">${m.status==='draft'
+     ? `<span class="quiet" style="font-size:13px" title="${lang==='bg'?'Досие се прави след предаване на заявката':'The file is available once the application is handed over'}">—</span>`
+     : `<button class="btn btn-ghost dossbtn" data-dossier="${esc(m.id)}">${lang==='bg'?'Досие':'File'}</button>`}</td></tr>`;
+ }).join('');
+}
+
 function Office(){
  return `${pageHead({bg:'Вътрешен изглед · само за адвоката',en:'Internal view · lawyer only'},
   {bg:'Опашка от преписки',en:'Matter queue'},
   {bg:'Преписките по срок, с контролния лист преди подаване.',
    en:'Matters by deadline, with the pre-filing checklist.'})}
  <section class="sec"><div class="wrap stack" style="gap:22px">
-  <div class="grid3">
-   ${[[{bg:'За преглед днес',en:'To review today'},'2','v'],
-      [{bg:'При клиента за корекция',en:'With client for correction'},'1','a'],
-      [{bg:'Срок за държавна такса под 5 дни',en:'Official-fee deadline under 5 days'},'1','a']]
+  ${(()=>{const ms=matters||[];
+    const rec=ms.filter(m=>m.status==='received').length;
+    const dra=ms.filter(m=>m.status==='draft').length;
+    return `<div class="grid3">${[
+      [{bg:'Предадени за преглед',en:'Handed over for review'},rec,'v'],
+      [{bg:'Чернови при клиентите',en:'Drafts with clients'},dra,'a'],
+      [{bg:'Всички преписки',en:'All matters'},ms.length,'v']]
      .map(([t,v,c])=>`<div class="card pad stack" style="gap:6px"><div class="kicker">${esc(L(t))}</div>
-       <div class="num" style="font-size:32px;color:var(--${c==='a'?'amber':'violet'})">${v}</div></div>`).join('')}
-  </div>
+       <div class="num" style="font-size:32px;color:var(--${c==='a'?'amber':'violet'})">${v}</div></div>`).join('')}</div>`})()}
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl"><thead><tr>
-   <th style="padding-left:22px">${lang==='bg'?'Преписка':'Matter'}</th><th>${lang==='bg'?'Клиент':'Client'}</th>
+   <th style="padding-left:22px">${lang==='bg'?'Преписка':'Matter'}</th>
    <th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
-   <th>${lang==='bg'?'Състояние':'Status'}</th><th style="padding-right:22px">${lang==='bg'?'Срок':'Clock'}</th></tr></thead>
-   <tbody>${QUEUE.map(q=>`<tr><td style="padding-left:22px"><strong>${q.mark}</strong><div class="quiet num">${q.ref}</div></td>
-    <td class="quiet">${esc(L(q.who))}</td><td class="num">${ROUTES[q.route].code}</td><td class="num">${q.cls}</td>
-    <td><span class="tag ${STATUS[q.st].cls}">${esc(L(STATUS[q.st]))}</span></td>
-    <td class="quiet" style="padding-right:22px">${esc(L(q.sla))}</td></tr>`).join('')}</tbody></table></div></div>
+   <th>${lang==='bg'?'Състояние':'Status'}</th><th>${lang==='bg'?'Предадена':'Handed over'}</th>
+   <th style="text-align:right;padding-right:22px"></th></tr></thead>
+   <tbody>${officeRows()}</tbody></table></div></div>
   <div class="grid2">
    <div class="card pad stack" style="gap:12px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
@@ -2688,7 +2711,7 @@ const dts=v=>{ if(!v) return ''; const d=new Date(v); return isNaN(d.getTime())?
   :d.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{dateStyle:'medium',timeStyle:'short'}); };
 
 async function openDossier(id){
- if(!remote) return;
+ if(!remote || !isAdmin()) return;
  dossier={loading:true}; page='dossier'; closeDrawer();
  window.scrollTo({top:0,behavior:'instant'}); render();
  try{
@@ -2766,7 +2789,7 @@ function dossierRows(d){
 }
 
 function Dossier(){
- const back=`<button class="btn btn-ghost" id="doss_back">${lang==='bg'?'← Към заявките':'← Back to applications'}</button>`;
+ const back=`<button class="btn btn-ghost" id="doss_back">${lang==='bg'?'← Към панела':'← Back to the panel'}</button>`;
  if(!dossier) return `${pageHead({bg:'Досие',en:'File'},{bg:'Няма избрана преписка',en:'No matter selected'},null)}
   <section class="sec"><div class="wrap">${back}</div></section>`;
  if(dossier.loading) return `${pageHead({bg:'Досие',en:'File'},{bg:'Зареждаме преписката',en:'Loading the matter'},null)}
@@ -2883,12 +2906,11 @@ function Acct(){
     <td class="num">${ROUTES[state.route].code}</td>
     <td class="num">${[...new Set(state.terms.map(t=>t.c))].sort((a,b)=>a-b).join(', ')||'—'}</td>
     <td><span class="tag ${STATUS[state.status||'draft'].cls}">${esc(L(STATUS[state.status||'draft']))}</span></td>
-    <td class="r">${money(f.v,f.cur)}</td>
-    <td class="r" style="padding-right:22px"><span class="quiet" style="font-size:13px">—</span></td></tr>`;
+    <td class="r" style="padding-right:22px">${money(f.v,f.cur)}</td></tr>`;
  } else if(matters===null){
-  rows=`<tr><td colspan="6" style="padding-left:22px" class="quiet">${lang==='bg'?'Зареждаме…':'Loading…'}</td></tr>`;
+  rows=`<tr><td colspan="5" style="padding-left:22px" class="quiet">${lang==='bg'?'Зареждаме…':'Loading…'}</td></tr>`;
  } else if(!matters.length){
-  rows=`<tr><td colspan="6" style="padding-left:22px" class="quiet">${lang==='bg'
+  rows=`<tr><td colspan="5" style="padding-left:22px" class="quiet">${lang==='bg'
      ?'Още няма преписки. Започнете от „Заявяване“.':'No matters yet. Start under “Filing”.'}</td></tr>`;
  } else {
   rows=matters.map(m=>{
@@ -2902,10 +2924,7 @@ function Acct(){
     <td class="num">${m.class_count||'—'}</td>
     <td><span class="tag ${st.cls}">${esc(L(st))}</span>${
        m.open_flags?` <span class="tag a">${m.open_flags} ${lang==='bg'?'за поправка':'to fix'}</span>`:''}</td>
-    <td class="r">${money(fe.v,fe.cur)}</td>
-    <td class="r" style="padding-right:22px">${m.status==='draft'
-      ? `<span class="quiet" style="font-size:13px" title="${lang==='bg'?'Досие се прави след предаване на заявката':'The file is available once the application is handed over'}">—</span>`
-      : `<button class="btn btn-ghost dossbtn" data-dossier="${esc(m.id)}">${lang==='bg'?'Досие':'File'}</button>`}</td></tr>`;
+    <td class="r" style="padding-right:22px">${money(fe.v,fe.cur)}</td></tr>`;
   }).join('');
  }
 
@@ -2920,8 +2939,7 @@ function Acct(){
   </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
-    <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right">${lang==='bg'?'Такса':'Fee'}</th>
-    <th style="text-align:right;padding-right:22px"></th></tr></thead>
+    <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Такса':'Fee'}</th></tr></thead>
    <tbody>${rows}</tbody></table></div></div>
   <div class="grid2">
    <div class="card pad stack" style="gap:12px"><div class="kicker">${lang==='bg'?'Как работи запазването':'How saving works'}</div>
@@ -2947,7 +2965,7 @@ function wire(){
 
  const so=app.querySelector('#signout'); if(so) so.onclick=()=>signOut();
  app.querySelectorAll('[data-dossier]').forEach(b=>b.onclick=()=>openDossier(b.dataset.dossier));
- const dbk=app.querySelector('#doss_back'); if(dbk) dbk.onclick=()=>{dossier=null;go('acct')};
+ const dbk=app.querySelector('#doss_back'); if(dbk) dbk.onclick=()=>{dossier=null;go('office')};
  const ddc=app.querySelector('#doss_doc');  if(ddc) ddc.onclick=()=>dossierDownloadDoc();
  const dim=app.querySelector('#doss_img');  if(dim) dim.onclick=()=>dossierDownloadImage();
  const vl=id=>{const e=app.querySelector('#'+id); return e?e.value:''};
