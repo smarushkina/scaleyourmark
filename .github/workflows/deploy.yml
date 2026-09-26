@@ -9,6 +9,7 @@ on:
     paths:
       - 'index.html'
       - 'robots.txt'
+      - '.htaccess'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -28,7 +29,7 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
-          FTP_DIR: ${{ secrets.FTP_DIR }}   # по избор; празна = коренът след вход
+          FTP_DIR:  ${{ secrets.FTP_DIR }}   # по избор; празна = коренът след вход
         run: |
           set -euo pipefail
 
@@ -54,7 +55,7 @@ jobs:
               echo "Пропуснат (липсва): $f"
               return 0
             fi
-            echo "Качване: $f  →  $FTP_DIR/$f"
+            echo "Качване: $f → $FTP_DIR/$f"
             curl --fail --show-error --silent \
                  --ssl-reqd --netrc \
                  --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 300 \
@@ -63,6 +64,7 @@ jobs:
 
           upload index.html
           upload robots.txt
+          upload .htaccess
 
           rm -f "$HOME/.netrc"
           echo "Готово."
