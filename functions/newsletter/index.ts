@@ -75,14 +75,29 @@ function confirmMail(email: string, token: string, lang: string) {
     : "If this was not you, simply do nothing — the address will not be added."}</p>
   <p style="margin:0;font-size:12px;color:#6A6155">${bg ? "Отписване по всяко време: " : "Unsubscribe at any time: "}<a href="${off}" style="color:#7A5520">${off}</a></p>
 </div>`;
-  return { subject, html };
+  const text = bg
+    ? `Още една стъпка\n\n`
+      + `Някой — вероятно Вие — е заявил месечния бюлетин на ScaleYourMark за ${email}.\n`
+      + `Абонаментът влиза в сила чак след потвърждение:\n${url}\n\n`
+      + `Ако не сте Вие, просто не правете нищо — адресът няма да бъде добавен.\n\n`
+      + `Отписване по всяко време: ${off}\n\n`
+      + `ScaleYourMark · office@scaleyourmark.com · https://scaleyourmark.com`
+    : `One more step\n\n`
+      + `Someone — probably you — asked for the ScaleYourMark monthly briefing for ${email}.\n`
+      + `The subscription starts only after you confirm:\n${url}\n\n`
+      + `If this was not you, simply do nothing — the address will not be added.\n\n`
+      + `Unsubscribe at any time: ${off}\n\n`
+      + `ScaleYourMark · office@scaleyourmark.com · https://scaleyourmark.com`;
+  return { subject, html, text };
 }
 
-async function sendMail(to: string, subject: string, html: string) {
+/* Всяко писмо носи и чист текст: само-HTML писмо получава по-лоша оценка
+   от филтрите и се показва празно в някои програми. */
+async function sendMail(to: string, subject: string, html: string, text: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to: [to], subject, html }),
+    body: JSON.stringify({ from: FROM, to: [to], reply_to: "office@scaleyourmark.com", subject, html, text }),
   });
   if (!res.ok) {
     const out = await res.text().catch(() => "");
@@ -135,7 +150,7 @@ Deno.serve(async (req) => {
 
     try {
       const m = confirmMail(email, token, lang);
-      await sendMail(email, m.subject, m.html);
+      await sendMail(email, m.subject, m.html, m.text);
     } catch (e) {
       return json({ error: "mail", detail: String((e as Error)?.message ?? e) }, 502);
     }
