@@ -2567,10 +2567,13 @@ function Price(){
    <div class="grid2">
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Мониторинг':'Monitoring'}</div>
-     <div class="num" style="font-size:32px;color:var(--gold)">&#8364;9</div>
+     <div class="num" style="font-size:32px;color:var(--gold);line-height:1.1">&#8364;100
+      <span style="font-size:17px;color:var(--ink-3)">${lang==='bg'?'/ месец':'/ month'}</span></div>
+     <div class="num" style="font-size:19px;color:var(--ink-2);line-height:1.2">${lang==='bg'?'или &#8364;1 000':'or &#8364;1,000'}
+      <span style="font-size:15px;color:var(--ink-3)">${lang==='bg'?'/ година':'/ year'}</span></div>
      <p class="quiet">${lang==='bg'
-       ?'на месец, за марка. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
-       :'per month, per mark. We alert you to similar third-party filings while their opposition window is open.'}</p>
+       ?'за марка, без ДДС. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
+       :'per mark, excl. VAT. We alert you to similar third-party filings while their opposition window is open.'}</p>
     </div>
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Други услуги':'Other services'}</div>
