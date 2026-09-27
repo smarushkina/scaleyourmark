@@ -19,6 +19,7 @@ const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY     = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const RESEND_KEY   = Deno.env.get("RESEND_API_KEY")!;
 const FROM         = "ScaleYourMark <office@scaleyourmark.com>";
+const REPLY_TO     = "office@scaleyourmark.com";
 const BUCKET       = "matter-files";
 
 const ALLOWED = ["https://scaleyourmark.com", "https://www.scaleyourmark.com"];
@@ -74,11 +75,14 @@ async function caller(req: Request) {
   } catch { return null; }
 }
 
-async function sendMail(to: string, subject: string, html: string) {
+/* Всяко писмо тръгва и като чист текст. Писмо само с HTML получава по-лоша
+   оценка от филтрите, а част от пощенските програми го показват празно.
+   „Отговори“ сочи към пощата на кантората, не към празен адрес.           */
+async function sendMail(to: string, subject: string, html: string, text: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to: [to], subject, html }),
+    body: JSON.stringify({ from: FROM, to: [to], reply_to: REPLY_TO, subject, html, text }),
   });
   if (!res.ok) throw new Error(`${res.status} ${(await res.text().catch(() => "")).slice(0, 200)}`);
 }
@@ -152,7 +156,14 @@ Deno.serve(async (req) => {
   <p style="margin:0 0 14px;font-size:30px;font-weight:700;letter-spacing:.14em">${esc(code)}</p>
   <p style="margin:0;font-size:13px;color:#6A6155">Валиден 15 минути. Ако не сте поискали подписване, не въвеждайте кода — пълномощното няма да бъде подписано.</p>
 </div>`;
-    try { await sendMail(me.email, "ScaleYourMark — код за подписване на пълномощното", html); }
+    const text = `Код за подписване на пълномощното\n\n`
+      + `Преписка ${matter.ref || ""}.\n\n`
+      + `Вашият код: ${code}\n\n`
+      + `Въведете го в страницата на заявяването, за да положите подписа си.\n`
+      + `Кодът е валиден 15 минути.\n\n`
+      + `Ако не сте поискали подписване, не въвеждайте кода — пълномощното няма да бъде подписано.\n\n`
+      + `ScaleYourMark · office@scaleyourmark.com · https://scaleyourmark.com`;
+    try { await sendMail(me.email, `Код за подписване на пълномощното ${matter.ref || ""}`.trim(), html, text); }
     catch (e) { return json({ error: "mail", detail: String((e as Error)?.message ?? e) }, 502); }
     return json({ ok: true, email: me.email });
   }
@@ -239,7 +250,14 @@ Deno.serve(async (req) => {
     });
 
     try {
-      await sendMail(me.email, `ScaleYourMark — подписано пълномощно ${matter.ref || ""}`,
+      const okText = `Пълномощното е подписано\n\n`
+        + `Преписка: ${matter.ref || ""}\n`
+        + `Подписал: ${name}, ${capacity}\n`
+        + `Дата и час: ${new Date(signedAt).toLocaleString("bg-BG")}\n`
+        + `Отпечатък на документа (SHA-256): ${docHash}\n\n`
+        + `Копие от документа можете да свалите от страницата на заявяването.\n\n`
+        + `ScaleYourMark · office@scaleyourmark.com · https://scaleyourmark.com`;
+      await sendMail(me.email, `Подписано пълномощно ${matter.ref || ""}`.trim(),
         `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#0A1730;line-height:1.55">
   <h2 style="font-size:17px;margin:0 0 12px">Пълномощното е подписано</h2>
   <p style="margin:0 0 8px">Преписка <b>${esc(matter.ref || "")}</b></p>
@@ -247,7 +265,7 @@ Deno.serve(async (req) => {
   <p style="margin:0 0 8px">Дата и час: ${esc(new Date(signedAt).toLocaleString("bg-BG"))}</p>
   <p style="margin:0 0 14px">Отпечатък на документа (SHA-256): <span style="font-family:monospace;font-size:12px">${esc(docHash)}</span></p>
   <p style="margin:0;font-size:13px;color:#6A6155">Копие от документа можете да свалите от страницата на заявяването.</p>
-</div>`);
+</div>`, okText);
     } catch { /* потвърждението не бива да отменя подписа */ }
 
     return json({ ok: true, signed_at: signedAt, hash: docHash });
