@@ -790,7 +790,7 @@ function officialFee(){const n=classCount(),r=ROUTES[state.route];
  if(state.route==='bg_nat')return{cur:'EUR',v:r.base+Math.max(0,n-3)*r.extra+r.cert};
  if(state.route==='eutm')return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
  return{cur:'CHF',v:(state.colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass}}
-const SERVICE={bg_nat:149,eutm:249,madrid:349};
+const SERVICE={bg_nat:295,eutm:395,madrid:395};   // възнаграждение без ДДС
 const SEARCH_FEE=80;   // задълбочено проучване за сходство, по избор
 const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 
@@ -2404,9 +2404,9 @@ function body(k){
   const madrid = state.route==='madrid';
   return `<div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
-   <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга':'service'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
+   <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване':'Search'}</td>
-     <td class="quiet">${lang==='bg'?'услуга':'service'}</td><td class="r">€${SEARCH_FEE.toFixed(2)}</td></tr>`:''}
+     <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r">€${SEARCH_FEE.toFixed(2)}</td></tr>`:''}
    <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r">€${(net*.2).toFixed(2)}</td></tr>
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС':'WIPO fee'}</td>
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
@@ -2521,17 +2521,19 @@ function blockHtml(bl){
 }
 
 function Price(){
- const rows=[['bg_nat',149,{bg:'Само България. До 3 класа в държавната такса.',en:'Bulgaria only. Up to 3 classes inside the official fee.'}],
-             ['eutm',249,{bg:'27 държави членки с едно заявяване.',en:'27 Member States with one filing.'}],
-             ['madrid',349,{bg:'Разширяване към 130+ територии.',en:'Extension to 130+ territories.'}]];
+ /* Сумите се четат от SERVICE, а не се преписват тук — така таблицата и
+    стъпка 8 не могат да се разминат. */
+ const rows=[['bg_nat',{bg:'Само България. До 3 класа в държавната такса.',en:'Bulgaria only. Up to 3 classes inside the official fee.'}],
+             ['eutm',{bg:'27 държави членки с едно заявяване.',en:'27 Member States with one filing.'}],
+             ['madrid',{bg:'Разширяване към 130+ територии.',en:'Extension to 130+ territories.'}]];
  return `${pageHead({bg:'Цени',en:'Pricing'},{bg:'Цени без изненади',en:'Pricing with nothing hidden'},
   {bg:'Фиксирано възнаграждение. Държавната такса се показва отделно и е възстановима до подаването.',
    en:'A fixed fee. The official fee is shown separately and is refundable until filing.'})}
  <section class="sec"><div class="wrap stack" style="gap:24px">
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
     <thead><tr><th style="padding-left:22px">${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Обхват':'Scope'}</th>
-     <th style="text-align:right">${lang==='bg'?'Държавна такса':'Official fee'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</th></tr></thead>
-    <tbody>${rows.map(([k,sv,d])=>{const r=ROUTES[k];return `<tr>
+     <th style="text-align:right">${lang==='bg'?'Държавна такса':'Official fee'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Адв. възнаграждение<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">без ДДС</div>':'Legal fee<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">excl. VAT</div>'}</th></tr></thead>
+    <tbody>${rows.map(([k,d])=>{const r=ROUTES[k], sv=SERVICE[k];return `<tr>
      <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
      <td class="quiet">${esc(L(d))}</td><td class="r">${r.cur==='CHF'?'CHF '+r.base.toFixed(2):'€'+r.base.toFixed(2)}</td>
      <td class="r" style="padding-right:22px">€${sv.toFixed(2)}</td></tr>`}).join('')}
@@ -2540,7 +2542,7 @@ function Price(){
       <td class="quiet">${lang==='bg'
         ?'БПВ, EUIPO и Мадридската система; писмено становище с оценка на риска в 3 работни дни.'
         :'BPO, EUIPO and the Madrid System; a written opinion with a risk assessment in 3 working days.'}</td>
-      <td class="r quiet">—</td><td class="r" style="padding-right:22px">€${SEARCH_FEE.toFixed(2)}</td></tr>
+      <td class="r quiet">&#8212;</td><td class="r" style="padding-right:22px">€${SEARCH_FEE.toFixed(2)}</td></tr>
     </tbody></table></div></div>
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
     <thead><tr><th style="padding-left:22px">${lang==='bg'?'Как расте държавната такса':'How the official fee scales'}</th>
@@ -2557,8 +2559,8 @@ function Price(){
       <td class="r" style="padding-right:22px">+CHF 100</td></tr>
     </tbody></table></div></div>
    <p class="quiet" style="max-width:70ch">${lang==='bg'
-     ?'Държавната такса се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и се потвърждава на стъпка 8 преди плащане. До подаването от адвоката тя е изцяло възстановима. Адвокатското възнаграждение е с ДДС; държавната такса е чужд разход и е без ДДС.'
-     :'The official fee is calculated at step 4, once the classes are settled, and confirmed at step 8 before payment. Until the lawyer files, it is fully refundable. The legal fee carries VAT; the official fee is a disbursement and carries none.'}</p>
+     ?'Всички възнаграждения в таблицата са без ДДС. ДДС се начислява отделно и се вижда в стъпка 8 преди плащането. Държавната такса е чужд разход и не се облага с ДДС; тя се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и до подаването от адвоката е изцяло възстановима.'
+     :'All fees in the table are exclusive of VAT. VAT is added separately and shown at step 8 before payment. The official fee is a disbursement and carries no VAT; it is calculated at step 4, once the classes are settled, and remains fully refundable until the lawyer files.'}</p>
    <div class="grid3">
     ${[[{bg:'Мониторинг',en:'Monitoring'},'€9',{bg:'на месец, за марка. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.',en:'per month, per mark. We alert you to similar third-party filings while their opposition window is open.'}],
        [{bg:'Подновяване',en:'Renewal'},'€99',{bg:'плюс държавна такса. Напомняне 12 и 6 месеца преди изтичане.',en:'plus the official fee. Reminders 12 and 6 months before expiry.'}],
