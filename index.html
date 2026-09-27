@@ -1426,9 +1426,22 @@ function chrome(){
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
 function go(p){ if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
+/* При пре-рисуване на същата стъпка се пази докъде е превъртял човекът.
+   Иначе всяко натискане на бутон го връща в началото на пълномощното. */
+let renderKey='';
 function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct';
  if((page==='acct'||page==='office')&&remote&&auth&&!mattersAsked){loadMatters()}
- chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,blog:Blog,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire()}
+ const key=page+'|'+state.step;
+ const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
+ const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
+ chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,blog:Blog,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
+ renderKey=key;
+ if(keep.same) requestAnimationFrame(()=>{
+   const b=app.querySelector('.stepbody'); if(b&&keep.body) b.scrollTop=keep.body;
+   const h=app.querySelector('#poasheet'); if(h&&keep.sheet) h.scrollTop=keep.sheet;
+   if(keep.win) window.scrollTo({top:keep.win, behavior:'instant'});
+ });
+}
 
 /* ---------- drawer ---------- */
 function openDrawer(n){
@@ -2171,6 +2184,15 @@ function body(k){
  if(k==='engage'){
   const miss=poaReady();
   const signed=!!state.poa_signed_at;
+  /* Предадена преписка вече не се подписва — сървърът я отказва. По-добре
+     да се каже тук, отколкото човекът да натиска напразно. */
+  if(state.status && state.status!=='draft' && !signed) return `
+   <div class="caution"><strong>${lang==='bg'?'Тази заявка вече е предадена':'This application has been handed over'}</strong><br>
+    ${lang==='bg'
+      ?'Пълномощното се подписва преди предаването. За нова марка започнете нова заявка — черновата се пази отделно.'
+      :'The power of attorney is signed before handover. For a new mark, start a new application — the draft is kept separately.'}</div>
+   <button class="btn btn-primary" id="reset" style="margin-top:12px">${
+     lang==='bg'?'Започнете нова заявка':'Start a new application'}</button>`;
   const sheet=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
      <span class="kicker">${lang==='bg'?'Пълномощно — попълнено от стъпки 1–6':'Power of attorney — filled from steps 1–6'}</span>
      <button class="btn btn-quiet" id="poaopen" style="padding:6px 12px;font-size:13px">${
@@ -2698,7 +2720,7 @@ function Mark(){
    през Resend. Ключът стои на сървъра; страницата не вижда нито ключ, нито
    адрес за препращане.                                                    */
 /* Подписване на пълномощното: рисуван подпис + код на имейла. */
-let poaBusy=false, poaMsg=null;
+let poaBusy=false, poaMsg=null, poaFocusCode=false;
 /* Етапът се пази, за да не изчезне полето за кода при презареждане —
    иначе кодът от имейла остава без място, където да бъде въведен. */
 let poaStage = (()=>{ try{ return sessionStorage.getItem('sym_poa_stage')==='code' ? 'code' : 'idle' }catch(e){ return 'idle' } })();
@@ -2753,10 +2775,23 @@ async function poaSendCode(){
   const {data,error}=await sb.functions.invoke('poa',{body:{action:'send_code',matter_id:state.matter_id}});
   if(error) throw error;
   if(data&&data.error) throw new Error(data.error);
-  poaSetStage('code');
+  poaSetStage('code'); poaFocusCode=true;
   poaMsg={type:'ok',text:(lang==='bg'?'Изпратихме код на ':'A code has been sent to ')+((data&&data.email)||auth.email)+(lang==='bg'?'. Валиден е 15 минути.':'. It is valid for 15 minutes.')};
  }catch(e){
-  poaMsg={type:'err',text:lang==='bg'?'Кодът не тръгна. Опитайте пак след минута.':'The code did not go out. Try again in a minute.'};
+  let c=(e&&e.message)||'';
+  if(e&&e.context&&typeof e.context.json==='function'){
+   try{ const j=await e.context.json(); if(j&&j.error) c=j.error }catch(x){}
+  }
+  const T={
+   locked: lang==='bg'?'Тази заявка вече е предадена на адвоката. Пълномощното се подписва преди предаването — започнете нова заявка.'
+                      :'This application has already been handed over. The power of attorney is signed before handover — start a new application.',
+   too_soon: lang==='bg'?'Изчакайте една минута между две заявки за код.':'Please wait a minute between code requests.',
+   too_many: lang==='bg'?'Твърде много заявки за кратко време. Опитайте след час.':'Too many requests in a short time. Try again in an hour.',
+   auth: lang==='bg'?'Влезте отново в профила си и опитайте пак.':'Please sign in again and try once more.',
+   matter: lang==='bg'?'Преписката не е намерена. Върнете се една стъпка назад.':'The matter was not found. Go back one step.',
+   mail: lang==='bg'?'Кодът не можа да бъде изпратен. Опитайте пак след минута.':'The code could not be sent. Try again in a minute.'
+  };
+  poaMsg={type:'err',text:T[c]||(lang==='bg'?'Кодът не тръгна. Опитайте пак след минута.':'The code did not go out. Try again in a minute.')};
  }
  poaBusy=false; render();
 }
@@ -3493,9 +3528,14 @@ function wire(){
  const sc=app.querySelector('#sigclear'); if(sc) sc.onclick=()=>{ if(poaPad) poaPad.clear(); };
  const ps=app.querySelector('#poasend'); if(ps) ps.onclick=()=>poaSendCode();
  const pr=app.querySelector('#poaresend'); if(pr) pr.onclick=()=>{poaSetStage('idle'); poaSendCode()};
- const ph=app.querySelector('#poahave'); if(ph) ph.onclick=()=>{poaSetStage('code'); poaMsg=null; render()};
+ const ph=app.querySelector('#poahave'); if(ph) ph.onclick=()=>{poaSetStage('code'); poaFocusCode=true; poaMsg=null; render()};
  const pb=app.querySelector('#poaback'); if(pb) pb.onclick=()=>{poaSetStage('idle'); poaMsg=null; render()};
  const pg=app.querySelector('#poasign'); if(pg) pg.onclick=()=>poaSign();
+ const pc=app.querySelector('#poacode');
+ if(pc && poaFocusCode){ poaFocusCode=false;
+   requestAnimationFrame(()=>{ try{ pc.focus({preventScroll:true});
+     pc.scrollIntoView({block:'center', behavior:'smooth'}) }catch(e){} }); }
+ if(pc) pc.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); poaSign() } };
  const pd=app.querySelector('#poadl'); if(pd) pd.onclick=()=>poaDownload();
  const po=app.querySelector('#poaopen');
  if(po) po.onclick=()=>{
