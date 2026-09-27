@@ -128,14 +128,14 @@ Deno.serve(async (req) => {
   /* ------------------------------------------------------------- код */
   if (action === "send_code") {
     const recent = await rows(
-      `poa_sign_codes?select=id,created_at&matter_id=eq.${matterId}&order=created_at.desc&limit=5`,
+      `poa_sign_codes?select=id,created_at&matter_id=eq.${matterId}&order=created_at.desc&limit=10`,
     );
     if (recent[0] && Date.now() - Date.parse(recent[0].created_at) < 60 * 1000) {
       return json({ error: "too_soon" }, 429);
     }
     const lastHour = recent.filter((r: { created_at: string }) =>
       Date.now() - Date.parse(r.created_at) < 60 * 60 * 1000).length;
-    if (lastHour >= 5) return json({ error: "too_many" }, 429);
+    if (lastHour >= 10) return json({ error: "too_many" }, 429);
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
     const hash = await sha256hex(matterId + ":" + code);
