@@ -2564,12 +2564,22 @@ function Price(){
    <p class="quiet" style="max-width:70ch">${lang==='bg'
      ?'Всички възнаграждения в таблицата са без ДДС. ДДС се начислява отделно и се вижда в стъпка 8 преди плащането. Държавната такса е чужд разход и не се облага с ДДС; тя се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и до подаването от адвоката е изцяло възстановима.'
      :'All fees in the table are exclusive of VAT. VAT is added separately and shown at step 8 before payment. The official fee is a disbursement and carries no VAT; it is calculated at step 4, once the classes are settled, and remains fully refundable until the lawyer files.'}</p>
-   <div class="grid3">
-    ${[[{bg:'Мониторинг',en:'Monitoring'},'€9',{bg:'на месец, за марка. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.',en:'per month, per mark. We alert you to similar third-party filings while their opposition window is open.'}],
-       [{bg:'Подновяване',en:'Renewal'},'€99',{bg:'плюс държавна такса. Напомняне 12 и 6 месеца преди изтичане.',en:'plus the official fee. Reminders 12 and 6 months before expiry.'}],
-       [{bg:'Отговор на нередовност',en:'Deficiency response'},'€180',{bg:'изготвяне и подаване на становище в срока на ведомството.',en:'drafting and filing observations within the office deadline.'}]]
-      .map(([t,p,d])=>`<div class="card pad stack" style="gap:8px"><div class="kicker">${esc(L(t))}</div>
-        <div class="num" style="font-size:32px;color:var(--gold)">${p}</div><p class="quiet">${esc(L(d))}</p></div>`).join('')}
+   <div class="grid2">
+    <div class="card pad stack" style="gap:8px">
+     <div class="kicker">${lang==='bg'?'Мониторинг':'Monitoring'}</div>
+     <div class="num" style="font-size:32px;color:var(--gold)">&#8364;9</div>
+     <p class="quiet">${lang==='bg'
+       ?'на месец, за марка. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
+       :'per month, per mark. We alert you to similar third-party filings while their opposition window is open.'}</p>
+    </div>
+    <div class="card pad stack" style="gap:8px">
+     <div class="kicker">${lang==='bg'?'Други услуги':'Other services'}</div>
+     <p class="quiet" style="margin:0">${lang==='bg'
+       ?'Работата по вече заявена или регистрирана марка се възлага отделно — подновяване, отговор на нередовност, опозиция, медиация, споразумения. Пишете ни какво Ви е нужно и ще получите оферта и срок.'
+       :'Work on a mark already filed or registered is engaged separately — renewal, deficiency response, opposition, mediation, settlement agreements. Tell us what you need and you will receive a quote and a timeframe.'}</p>
+     <div><button class="btn btn-gold" data-p="contact" style="padding:9px 16px;font-size:14px;margin-top:4px">${
+       lang==='bg'?'Пишете ни':'Write to us'}</button></div>
+    </div>
    </div></div></section>`;
 }
 
