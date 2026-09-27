@@ -85,14 +85,15 @@ button{font:inherit; color:inherit}
 /* --- navy top bar --- */
 header.top{position:sticky; top:0; z-index:45; background:var(--navy); border-bottom:1px solid rgba(255,255,255,.08)}
 .top-in{display:flex; align-items:center; gap:10px; min-height:62px; flex-wrap:nowrap}
+header.top{--logo:38px}
 header.top .brandplate{padding:0}
-header.top .brandlogo{height:32px}
+header.top .brandlogo{height:var(--logo)}
 header.top .lang{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.15)}
 header.top .lang button{color:#CFC5B4}
 header.top .lang button[aria-pressed="true"]{background:var(--gold-bright); color:#0A1730}
-.brand{display:flex; align-items:center; white-space:nowrap}
-.brandplate{display:inline-flex; align-items:center; line-height:0}
-.brandlogo{height:32px; width:auto; display:block}
+.brand{display:flex; align-items:center; white-space:nowrap; flex:0 0 auto}
+.brandplate{display:inline-flex; align-items:center; line-height:0; flex:0 0 auto}
+.brandlogo{height:38px; width:auto; flex:0 0 auto; display:block; object-fit:contain}
 .btn-gold{background:var(--gold-bright); color:#0A1730; box-shadow:var(--lift); font-weight:600}
 .btn-gold:hover{background:#CBA678}
 .goldrule{height:3px; width:52px; border-radius:2px; background:var(--gold-bright)}
@@ -397,9 +398,11 @@ footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-to
 .foot a{display:block; padding:4px 0; font-size:14px; color:#D9D0C2; text-decoration:none}
 .foot a:hover{color:var(--gold-bright)}
 
-@media (max-width:1180px){
+/* По-голямото лого иска повече място в лентата: под 1280 px менюто минава
+   в бургера, за да не прелива редът при влязъл адвокат (един пункт повече). */
+@media (max-width:1279px){
   .top-in{flex-wrap:wrap}
-  header.top .brandlogo{height:32px}
+  header.top{--logo:34px}
   nav.main{gap:2px; padding-left:0; font-size:14px; flex-wrap:wrap; display:none; order:3; width:100%; margin-left:0; flex-direction:column; padding-bottom:10px}
   header.top.open nav.main{display:flex}
   nav.main button{text-align:left; padding:12px}
