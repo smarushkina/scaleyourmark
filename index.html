@@ -640,12 +640,12 @@ const STEPS=[
   need:{bg:['Данни за подписващото лице и представителната власт','Електронен подпис или сканирано подписано пълномощно','Декларация, че подписът е на заявителя'],
         en:['The signatory and their authority to represent','An electronic signature or a scanned signed power of attorney','A declaration that the signature is the applicant’s']},
   man:{bg:['Пълномощното се генерира предварително попълнено с данните от стъпка 5 — не го преписвайте на ръка.',
-           'Подписва се електронно или се сваля, подписва и се качва сканирано. Квалифициран електронен подпис не се изисква.',
+           'Подписва се електронно в платформата или се сваля, подписва и се качва сканирано.',
            'Декларацията, че подписът е на заявителя, се отбелязва тук и се пази по преписката заедно с датата и часа.',
            'За дружество подписва лицето с представителна власт по търговския регистър. При съвместно представителство подписват всички.',
            'Заявители без седалище или реално предприятие в ЕИП задължително се представляват пред EUIPO (чл. 119–120 EUTMR). При този модел това не е пречка — представителството е част от услугата.'],
        en:['The power of attorney is generated pre-filled from step 5 — do not retype it by hand.',
-           'Sign it electronically, or download, sign and upload the scan. A qualified electronic signature is not required.',
+           'Sign it electronically in the platform, or download, sign and upload the scan.',
            'The declaration that the signature is the applicant’s is ticked here and kept on the matter with its date and time.',
            'For a company, the person with authority under the commercial register signs. Where representation is joint, all of them sign.',
            'Applicants with no seat or real establishment in the EEA must be represented before EUIPO (arts. 119–120 EUTMR). On this model that is no obstacle — representation is part of the service.']},
@@ -745,15 +745,19 @@ const POSTS=[
 /* state */
 const KEY='sym_atelier_v1';
 const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,
+  madridCountries:'',
   signatory:'',declared:false,terms:[],done:{},status:'draft',
   sigName:'', sigCapacity:'', sigPng:null, poa_signed_at:null, poa_hash:null,
   matter_id:null, ref:null, signed_at:null,
   applicant:{kind:'legal',name:'',id:'',addr:'',country:'BG'},
-  priority:{claim:'none',number:''}};
+  priority:{claim:'none',number:'',country:''}};
 let state = Object.assign({}, BLANK, load()||{});
 state.applicant = Object.assign({}, BLANK.applicant, state.applicant||{});
 state.priority  = Object.assign({}, BLANK.priority,  state.priority ||{});
 normaliseTerms();
+/* Стара чернова може да носи „комбинирана" марка при маршрут към EUIPO,
+   където такъв вид няма. Привежда се към фигуративна още при зареждането. */
+if(state.route==='eutm' && state.kind==='comb') state.kind='fig';
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function save(){saveLocal(); queueDraft();}
@@ -1194,7 +1198,7 @@ function markKindDb(){
  return (mk==='word' && !mt) ? null : mk;
 }
 function markTextDb(){
- const mt = (state.kind==='word' || state.kind==='comb') ? (state.mark||'').trim() : '';
+ const mt = (state.kind==='word' || state.kind==='comb' || state.kind==='fig') ? (state.mark||'').trim() : '';
  return mt || null;
 }
 
@@ -1244,6 +1248,37 @@ function queueDraft(){
  if(!remote) return;
  if(draftTimer) clearTimeout(draftTimer);
  draftTimer = setTimeout(()=>{draftTimer=null; pushDraft()}, 1200);
+}
+
+/* PDF, MP3 и MP4 не минават през платното и са твърде големи за
+   localStorage. Затова тръгват към хранилището веднага, а в черновата
+   остава само описанието им.                                            */
+async function uploadOtherFile(file){
+ const box=app.querySelector('#imgerr');
+ const say=t=>{if(box)box.textContent=t};
+ if(!remote || !sb || !auth){
+  say(lang==='bg'?'За този вид файл е нужна връзка със сървъра. Влезте в профила си и опитайте пак.'
+                 :'This kind of file needs the server. Sign in and try again.');return}
+ say(lang==='bg'?'Качваме файла…':'Uploading…');
+ try{
+  const id=await ensureMatter(); if(!id) throw new Error(lang==='bg'?'няма преписка':'no matter');
+  const buf=await file.arrayBuffer();
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',buf))]
+               .map(b=>b.toString(16).padStart(2,'0')).join('');
+  const key=id+'/mark-'+hash.slice(0,12)+'.'+(FILE_EXT[file.type]||'bin');
+  const up=await sb.storage.from('matter-files').upload(key,file,{contentType:file.type,upsert:true});
+  if(up.error) throw up.error;
+  const {error}=await sb.from('documents').upsert({
+    matter_id:id, kind:'mark_image', storage_key:key,
+    filename:file.name||('mark.'+(FILE_EXT[file.type]||'bin')), mime_type:file.type,
+    byte_size:file.size, sha256:hash, privileged:false, uploaded_by:auth.id
+  },{onConflict:'matter_id,sha256'});
+  if(error) throw error;
+  state.img={name:file.name,size:file.size,type:file.type,url:null,storage_key:key,uploaded:true};
+  save(); render();
+ }catch(e){
+  say((lang==='bg'?'Файлът не можа да се качи: ':'The file could not be uploaded: ')+((e&&e.message)||e));
+ }
 }
 
 async function uploadMarkImage(id){
@@ -1312,7 +1347,7 @@ async function handover(){
     address:(a.addr||'').trim()||null, position:0});
   if(ap.error) throw ap.error;
 
-  if(state.img && state.img.url) await uploadMarkImage(id);
+  if(state.img && state.img.url && !state.img.uploaded) await uploadMarkImage(id);
 
   /* Подписаното пълномощно се вписва от функцията „poa“ при полагането на
      подписа. Тук то не се пипа — иначе подписът щеше да се загуби. */
@@ -1359,11 +1394,7 @@ async function loadMatters(){
 
 async function resetDraft(){
  const old = state.matter_id;
- state = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,
-          signatory:'',declared:false,terms:[],done:{},status:'draft',
-          matter_id:null, ref:null, signed_at:null,
-          applicant:{kind:'legal',name:'',id:'',addr:'',country:'BG'},
-          priority:{claim:'none',number:''}};
+ state = JSON.parse(JSON.stringify(BLANK));
  saveLocal();
  if(remote && sb && old){
   await sb.from('matters').delete().eq('id', old).is('locked_at', null);
@@ -1947,18 +1978,36 @@ function File_(){
 `;
 }
 
+/* Какъв файл се приема зависи от вида на марката. Изображение се смалява
+   в страницата и пътува като JPEG; звук, движение и PDF се качват както са,
+   затова тръгват към хранилището още при избора им.                       */
+const FILE_OK = {
+ img:['image/jpeg','image/png'],
+ other:['image/jpeg','image/png','application/pdf','audio/mpeg','video/mp4']
+};
+const FILE_CAP = {'image/jpeg':1.5*1048576,'image/png':1.5*1048576,
+                  'application/pdf':2*1048576,'audio/mpeg':2*1048576,'video/mp4':20*1048576};
+const FILE_EXT = {'application/pdf':'pdf','audio/mpeg':'mp3','video/mp4':'mp4'};
+const FILE_TAG = {'application/pdf':'PDF','audio/mpeg':'MP3','video/mp4':'MP4'};
+function fileAllowed(){ return state.kind==='other' ? FILE_OK.other : FILE_OK.img }
+
 function uploader(){
  const f=state.img;
+ const other = state.kind==='other';
  const kb=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':Math.round(n/1024)+' KB';
+ const meta = f ? (f.w&&f.h ? `${kb(f.size)} · ${f.w} × ${f.h} px` : `${kb(f.size)} · ${FILE_TAG[f.type]||''}`) : '';
  return `<div class="field" style="margin-top:14px;margin-bottom:0">
-  <label>${lang==='bg'?'Изображение на марката':'Representation of the mark'}</label>
+  <label>${other?(lang==='bg'?'Файл на марката':'File of the mark'):(lang==='bg'?'Изображение на марката':'Representation of the mark')}</label>
   <div class="drop" id="drop">
    <div>
     <div style="font-weight:600;font-size:14.5px">${f?esc(f.name)
       :(lang==='bg'?'Плъзнете файла тук или го изберете':'Drag the file here, or choose one')}</div>
-    <div class="quiet" style="margin-top:3px">${f?`${kb(f.size)} · ${f.w} × ${f.h} px`
-      :(lang==='bg'?'JPEG, до 1,5 MB. Без рамки и водни знаци; бял фон.'
-                   :'JPEG, up to 1.5 MB. No frames or watermarks; white background.')}</div>
+    <div class="quiet" style="margin-top:3px">${f?meta
+      :(other
+         ?(lang==='bg'?'JPEG или PNG до 1,5 MB; PDF до 2 MB; MP3 до 2 MB за звукова марка; MP4 до 20 MB за марка с движение или мултимедийна.'
+                      :'JPEG or PNG up to 1.5 MB; PDF up to 2 MB; MP3 up to 2 MB for a sound mark; MP4 up to 20 MB for a motion or multimedia mark.')
+         :(lang==='bg'?'JPEG или PNG, до 1,5 MB. Без рамки и водни знаци; бял фон.'
+                      :'JPEG or PNG, up to 1.5 MB. No frames or watermarks; white background.'))}</div>
     <div class="fileline">
      <button class="btn btn-ghost" id="pickimg" type="button">${f?(lang==='bg'?'Замени файла':'Replace file')
                                                                  :(lang==='bg'?'Изберете файл':'Choose file')}</button>
@@ -1967,12 +2016,16 @@ function uploader(){
     <div class="imgerr" id="imgerr"></div>
    </div>
    <div class="thumb">${f&&f.url?`<img src="${f.url}" alt="${esc(f.name)}">`
+     :f?`<span class="num" style="text-align:center;font-size:15px;color:var(--gold)">${esc(FILE_TAG[f.type]||'FILE')}</span>`
      :`<span class="quiet" style="text-align:center;line-height:1.4">${lang==='bg'?'няма<br>файл':'no<br>file'}</span>`}</div>
   </div>
-  <input type="file" id="imgin" accept="image/jpeg" hidden>
-  <span class="hint">${lang==='bg'
+  <input type="file" id="imgin" accept="${fileAllowed().join(',')}" hidden>
+  <span class="hint">${other?(lang==='bg'
+    ?'За звукова марка се подава MP3, за марка с движение или мултимедийна — MP4, за триизмерна — изображение на знака. Файлът се фиксира на датата на подаване.'
+    :'A sound mark takes MP3, a motion or multimedia mark takes MP4, a shape mark takes an image of the sign. The file is frozen on the filing date.')
+   :(lang==='bg'
     ?'Ако не претендирате цвят, качете черно-бяло. Изображението се фиксира на датата на подаване.'
-    :'If you are not claiming colour, upload black and white. The representation is frozen on the filing date.'}</span>
+    :'If you are not claiming colour, upload black and white. The representation is frozen on the filing date.')}</span>
  </div>`;
 }
 
@@ -1980,11 +2033,17 @@ function handleImg(file){
  const box=app.querySelector('#imgerr');
  const say=t=>{if(box)box.textContent=t};
  if(!file)return;
- if(file.type!=='image/jpeg'){
-  say(lang==='bg'?'Приема се само JPEG файл.':'Only a JPEG file is accepted.');return}
- if(file.size>1.5*1024*1024){
-  say(lang==='bg'?'Файлът е над 1,5 MB. Намалете размера и качете отново.':'The file is over 1.5 MB. Reduce it and upload again.');return}
+ const ok=fileAllowed();
+ if(ok.indexOf(file.type)<0){
+  say(lang==='bg'?('Този формат не се приема. Допустими са: '+ok.map(t=>FILE_TAG[t]||t.split('/')[1].toUpperCase()).join(', ')+'.')
+                 :('That format is not accepted. Allowed: '+ok.map(t=>FILE_TAG[t]||t.split('/')[1].toUpperCase()).join(', ')+'.'));return}
+ const cap=FILE_CAP[file.type]||1.5*1048576;
+ if(file.size>cap){
+  const mb=(cap/1048576).toFixed(cap%1048576?1:0).replace('.',lang==='bg'?',':'.');
+  say(lang==='bg'?('Файлът е над '+mb+' MB. Намалете размера и качете отново.')
+                 :('The file is over '+mb+' MB. Reduce it and upload again.'));return}
  say('');
+ if(file.type!=='image/jpeg' && file.type!=='image/png'){ uploadOtherFile(file); return }
  const r=new FileReader();
  r.onload=()=>{
   const im=new Image();
@@ -1995,7 +2054,7 @@ function handleImg(file){
    const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height);
    x.drawImage(im,0,0,c.width,c.height);
    let url=''; try{url=c.toDataURL('image/jpeg',0.85)}catch(e){url=''}
-   state.img={name:file.name,size:file.size,w:im.width,h:im.height,url:url};
+   state.img={name:file.name,size:file.size,type:'image/jpeg',w:im.width,h:im.height,url:url};
    save(); render();
   };
   im.onerror=()=>say(lang==='bg'?'Файлът не може да бъде прочетен като изображение.':'The file could not be read as an image.');
@@ -2003,6 +2062,30 @@ function handleImg(file){
  };
  r.onerror=()=>say(lang==='bg'?'Файлът не може да бъде прочетен.':'The file could not be read.');
  r.readAsDataURL(file);
+}
+
+/* Мадридската регистрация стъпва на базова марка, а таксата на СОИС зависи
+   от посочените държави — и двете трябва да се видят още на стъпка 1. */
+const MADRID_LIST='https://www.wipo.int/documents/d/treaties/docs-en-madrid_marks.pdf';
+const PARIS_LIST='https://www.wipo.int/wipolex/en/treaties/ShowResults?search_what=C&treaty_id=2';
+const WTO_LIST='https://www.wipo.int/en/web/pct-system/paris_wto_pct';
+const A_=(href,text)=>`<a href="${href}" target="_blank" rel="noopener" style="color:var(--gold)">${text} &#8599;</a>`;
+
+function madridBox(){
+ return `
+ <div class="caution" style="margin-top:14px">${lang==='bg'
+   ?'Международната регистрация стъпва върху базова марка: изисква вече подадена или регистрирана национална марка в страна — членка на Мадридската система, и зависи от нея през първите пет години.'
+   :'An international registration builds on a basic mark: it requires a national mark already filed or registered in a Madrid System member country, and depends on it for the first five years.'}</div>
+ <div class="field" style="margin-top:14px;margin-bottom:6px">
+  <label for="mdc">${lang==='bg'?'В кои държави искате закрила?':'In which countries do you want protection?'}</label>
+  <textarea id="mdc" rows="3" placeholder="${lang==='bg'?'Германия&#10;Съединени американски щати&#10;Обединено кралство':'Germany&#10;United States of America&#10;United Kingdom'}">${esc(state.madridCountries||'')}</textarea>
+  <span class="hint">${lang==='bg'
+    ?'Изберете от '+A_(MADRID_LIST,'списъка на страните — членки на Мадридската система')+'. По една държава на ред.'
+    :'Choose from the '+A_(MADRID_LIST,'list of Madrid System members')+'. One country per line.'}</span>
+ </div>
+ <p class="quiet" style="margin:0">${lang==='bg'
+   ?'Таксата на СОИС зависи от посочените държави и се изчислява, след като изпратите заявката. Точната сума ще получите допълнително по имейл, за плащане.'
+   :'The WIPO fee depends on the countries designated and is calculated after you submit the application. You will receive the exact amount by email, for payment.'}</p>`;
 }
 
 function body(k){
@@ -2015,7 +2098,8 @@ function body(k){
      <span class="tick" style="border-radius:6px"></span>
      <span><span class="ot">${lang==='bg'?'Марката е цветна':'The mark is in colour'}</span>
       <span class="os">${lang==='bg'?'Базовата такса става CHF 903 вместо CHF 653.':'The basic fee becomes CHF 903 instead of CHF 653.'}</span></span>
-     <span class="op">WO</span></button>`:''}</div>`;
+     <span class="op">WO</span></button>`:''}</div>
+   ${state.route==='madrid'?madridBox():''}`;
 
  if(k==='search')return `
   <div class="opts two" style="margin-top:16px">
@@ -2055,22 +2139,32 @@ function body(k){
        ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}`;
 
  if(k==='mark'){
-  const kinds=[{id:'word',bg:'Словна марка',en:'Word mark',sb:{bg:'Само текст. Най-широка закрила.',en:'Text only. Broadest protection.'}},
+  const eu = state.route==='eutm';
+  /* EUIPO няма отделен вид „комбинирана марка“: знак с текст и изображение
+     заедно се заявява като фигуративна, а словният елемент се вписва под нея.
+     Затова при марка на ЕС видът отпада, а полето за текста остава.        */
+  let kinds=[{id:'word',bg:'Словна марка',en:'Word mark',sb:{bg:'Само текст. Най-широка закрила.',en:'Text only. Broadest protection.'}},
                {id:'fig',bg:'Фигуративна',en:'Figurative',sb:{bg:'Лого или стилизирано изписване.',en:'A logo or stylised wording.'}},
                {id:'comb',bg:'Комбинирана',en:'Combined',sb:{bg:'Текст и изображение заедно.',en:'Text and image together.'}},
                {id:'other',bg:'Друга (3D, звук, движение)',en:'Other (3D, sound, motion)',sb:{bg:'Изисква специфичен формат на файла.',en:'Requires a specific file format.'}}];
-  const needsText = state.kind==='word' || state.kind==='comb';
+  if(eu) kinds=kinds.filter(x=>x.id!=='comb');
+  const figText = eu && state.kind==='fig';
+  const needsText = state.kind==='word' || state.kind==='comb' || figText;
   const needsFile = state.kind==='fig' || state.kind==='comb' || state.kind==='other';
   return `<div class="opts two">${kinds.map(x=>`<button class="opt" data-kind="${x.id}" data-on="${state.kind===x.id?1:0}">
      <span class="tick"></span><span><span class="ot">${esc(L(x))}</span><span class="os">${esc(L(x.sb))}</span></span><span></span></button>`).join('')}</div>
+   ${eu?`<p class="quiet" style="margin:10px 0 0">${lang==='bg'
+      ?'EUIPO не познава отделен вид „комбинирана марка“. Знак, в който текст и изображение вървят заедно, се заявява като фигуративна марка, а словният елемент се изписва отделно.'
+      :'EUIPO has no separate “combined mark”. A sign where text and image go together is filed as a figurative mark, with the word element entered separately.'}</p>`:''}
    ${(needsText&&needsFile)?'<div class="markgrid">':''}
    ${needsText?`<div class="field" style="margin-top:14px;margin-bottom:0">
-     <label for="mk">${lang==='bg'?'Изписване на марката':'Wording of the mark'}</label>
+     <label for="mk">${figText?(lang==='bg'?'Словен елемент в изображението (ако има)':'Word element in the image (if any)')
+                              :(lang==='bg'?'Изписване на марката':'Wording of the mark')}</label>
      <input type="text" id="mk" value="${esc(state.mark||'')}" placeholder="ORBITA">
      <span class="hint">${lang==='bg'
-       ?(state.kind==='comb'?'Текстовата част от знака, точно както е в изображението. Без ®.'
+       ?((state.kind==='comb'||figText)?'Текстовата част от знака, точно както е в изображението. Без ®.'
                             :'Точно както ще се използва, без ®.')
-       :(state.kind==='comb'?'The word element of the sign, exactly as it appears in the image. No ®.'
+       :((state.kind==='comb'||figText)?'The word element of the sign, exactly as it appears in the image. No ®.'
                             :'Exactly as it will be used, without ®.')}</span></div>`:''}
    ${needsFile?uploader():''}
    ${(needsText&&needsFile)?'</div>':''}
@@ -2136,6 +2230,9 @@ function body(k){
 
  if(k==='applicant'){
   const a=state.applicant, legal=a.kind==='legal';
+  /* ЕГН се иска само от Патентното ведомство. EUIPO и СОИС не го събират,
+     затова полето не се показва при тези два маршрута.                    */
+  const needsId = legal || state.route==='bg_nat';
   const kinds=[['legal',{bg:'Юридическо лице',en:'Legal person'}],
                ['natural',{bg:'Физическо лице',en:'Natural person'}]];
   const countries=[['BG','България'],['DE','Deutschland'],['AE','United Arab Emirates'],['US','United States']];
@@ -2147,8 +2244,8 @@ function body(k){
   <div class="grid2" style="gap:0 20px">
    <div class="field"><label for="an">${legal?(lang==='bg'?'Наименование':'Legal name'):(lang==='bg'?'Име и фамилия':'Full name')}</label>
     <input type="text" id="an" value="${esc(a.name)}" placeholder="${legal?'ОРБИТА ЕООД':'Иван Петров'}"></div>
-   <div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН или номер на документ':'Personal or document number')}</label>
-    <input type="text" id="ae" value="${esc(a.id)}" placeholder="204512345"></div>
+   ${needsId?`<div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН или номер на документ':'Personal or document number')}</label>
+    <input type="text" id="ae" value="${esc(a.id)}" placeholder="204512345"></div>`:''}
    <div class="field"><label for="aa">${lang==='bg'?'Адрес за кореспонденция':'Address for service'}</label>
     <input type="text" id="aa" value="${esc(a.addr)}" placeholder="${lang==='bg'?'гр. София, ул. …':'Sofia, …'}"></div>
    <div class="field"><label for="ac">${lang==='bg'?'Държава на седалището':'Country of seat'}</label>
@@ -2174,8 +2271,18 @@ function body(k){
   return `<div class="opts">${opts.map(([id,t,s])=>
    `<button class="opt" data-prio="${id}" data-on="${p.claim===id?1:0}"><span class="tick"></span>
      <span><span class="ot">${esc(L(t))}</span><span class="os">${esc(L(s))}</span></span><span></span></button>`).join('')}</div>
-  ${p.claim!=='none'?`<div class="field" style="margin-top:18px"><label for="pn">${lang==='bg'?'Номер на по-ранната заявка':'Earlier application number'}</label>
-   <input type="text" id="pn" value="${esc(p.number||'')}" placeholder="BG 2026/0142857"></div>
+  ${p.claim==='convention'?`<p class="quiet" style="margin:14px 0 0">${lang==='bg'
+     ?'Конвенционен приоритет се заявява, когато в последните 6 месеца сте подали идентична марка за идентични стоки и услуги в страна — членка на '+A_(PARIS_LIST,'Парижката конвенция')+'.'
+     :'Convention priority is claimed where, within the last 6 months, you filed an identical mark for identical goods and services in a country party to the '+A_(PARIS_LIST,'Paris Convention')+'.'}</p>`:''}
+  ${p.claim==='seniority'?`<p class="quiet" style="margin:14px 0 0">${lang==='bg'
+     ?'Сеньорност се иска, когато в последните 6 месеца сте подали идентична марка за идентични стоки и услуги в страна — членка на '+A_(PARIS_LIST,'Парижката конвенция')+', или в страна — членка на '+A_(WTO_LIST,'Световната търговска организация')+'.'
+     :'Seniority is claimed where, within the last 6 months, you filed an identical mark for identical goods and services in a country party to the '+A_(PARIS_LIST,'Paris Convention')+', or in a member of the '+A_(WTO_LIST,'World Trade Organization')+'.'}</p>`:''}
+  ${p.claim!=='none'?`<div class="grid2" style="gap:0 18px;margin-top:14px">
+   <div class="field"><label for="pn">${lang==='bg'?'Номер на по-ранната заявка':'Earlier application number'}</label>
+    <input type="text" id="pn" value="${esc(p.number||'')}" placeholder="BG 2026/0142857"></div>
+   <div class="field"><label for="pctry">${lang==='bg'?'Държава':'Country'}</label>
+    <input type="text" id="pctry" value="${esc(p.country||'')}" placeholder="${lang==='bg'?'България':'Bulgaria'}"></div>
+  </div>
   <p class="quiet" style="margin:0">${lang==='bg'
     ?'Приложете и копие от по-ранната заявка — адвокатът ще ви го поиска, ако липсва.'
     :'A copy of the earlier application is also needed — the lawyer will ask for it if missing.'}</p>`:''}`;
@@ -2258,21 +2365,29 @@ function body(k){
        lang==='bg'?'Вече имам код':'I already have a code'}</button>
     </div>`}
   <p class="quiet" style="margin:10px 0 0">${lang==='bg'
-    ?'Прост електронен подпис: подписът, който начертахте, се свързва с този документ и се потвърждава с код, изпратен на имейла ви. КЕП не е необходим. Пазят се документът, отпечатъкът му, датата и часът.'
-    :'A simple electronic signature: the signature you draw is bound to this document and confirmed by a code sent to your email. No qualified certificate is needed. The document, its hash and the timestamp are kept.'}</p>`;
+    ?'Прост електронен подпис: подписът, който начертахте, се свързва с този документ и се потвърждава с код, изпратен на имейла ви. Пазят се документът, отпечатъкът му, датата и часът.'
+    :'A simple electronic signature: the signature you draw is bound to this document and confirmed by a code sent to your email. The document, its hash and the timestamp are kept.'}</p>`;
  }
 
  if(k==='pay'){const f=officialFee(),sv=SERVICE[state.route];
   const net=sv+(state.search==='full'?SEARCH_FEE:0);   // облагаемо с ДДС
+  /* При Мадрид таксата на СОИС зависи от посочените държави и от техните
+     индивидуални такси. Тя не може да се сметне тук, затова не се показва
+     и не влиза в сумата за плащане — изпраща се отделно след прегледа. */
+  const madrid = state.route==='madrid';
   return `<div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
    <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга':'service'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване':'Search'}</td>
      <td class="quiet">${lang==='bg'?'услуга':'service'}</td><td class="r">€${SEARCH_FEE.toFixed(2)}</td></tr>`:''}
    <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r">€${(net*.2).toFixed(2)}</td></tr>
-   <tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
-       <td class="quiet">${lang==='bg'?'чужд разход':'disbursement'}</td><td class="r">${money(f.v,f.cur)}</td></tr>
-   <tr><td style="font-weight:600">${lang==='bg'?'Общо':'Total'}</td><td></td><td class="r" style="font-weight:600">${f.cur==='CHF'?`CHF ${f.v.toFixed(2)} + €${(net*1.2).toFixed(2)}`:money(f.v+net*1.2,'EUR')}</td></tr>
+   ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС':'WIPO fee'}</td>
+       <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
+       <td class="r">&#8212;</td></tr>`
+   :`<tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
+       <td class="quiet">${lang==='bg'?'чужд разход':'disbursement'}</td><td class="r">${money(f.v,f.cur)}</td></tr>`}
+   <tr><td style="font-weight:600">${lang==='bg'?(madrid?'Общо сега':'Общо'):(madrid?'Payable now':'Total')}</td><td></td><td class="r" style="font-weight:600">${
+     madrid?money(net*1.2,'EUR'):money(f.v+net*1.2,'EUR')}</td></tr>
    </tbody></table></div>
   <div class="opts" style="margin-top:0">
    <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">myPOS Checkout</span>
@@ -2281,19 +2396,43 @@ function body(k){
    <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банков превод (SEPA)':'Bank transfer (SEPA)'}</span>
     <span class="os">${lang==='bg'?'Преглед след потвърдено постъпване — обичайно един работен ден.':'Review starts once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
   </div>
-  <div class="caution" style="margin-top:14px">${lang==='bg'
+  <div class="caution" style="margin-top:14px">${madrid?(lang==='bg'
+    ?'Сега заплащате само възнаграждението. Таксата на СОИС зависи от посочените от вас държави и от индивидуалните им такси — тя се изчислява след като заявката бъде обработена от адвоката. Точната сума ще получите по имейл, заедно с указания за плащане.'
+    :'You are paying the fee for the service only. The WIPO fee depends on the countries you designated and their individual fees — it is calculated once the lawyer has processed the application. You will receive the exact amount by email, together with payment instructions.')
+   :(lang==='bg'
     ?'Държавната такса не се превежда на ведомството в момента на плащането — тя се плаща при подаването. Ако при прегледа реша, че марката не следва да се подава, таксата се възстановява изцяло.'
-    :'The official fee is not remitted when you pay — it is paid at filing. If on review I conclude the mark should not be filed, that fee is refunded in full.'}</div>`;
+    :'The official fee is not remitted when you pay — it is paid at filing. If on review I conclude the mark should not be filed, that fee is refunded in full.')}</div>`;
  }
 
  if(k==='handover')return `<div class="rows">
-  ${[[lang==='bg'?'Сега':'Now',lang==='bg'?'Преписката е заключена и е при адвоката. Получавате номер на преписка и потвърждение.':'The matter is locked and with the lawyer. You receive a matter number and confirmation.'],
-     [lang==='bg'?'До 2 работни дни':'Within 2 working days',lang==='bg'?'Личен преглед: отличителност, класове, заявител срещу търговския регистър, пълномощно, приоритет, конфликт на интереси.':'Personal review: distinctiveness, classes, applicant against the commercial register, power of attorney, priority, conflict check.'],
-     [lang==='bg'?'При нужда':'If needed',lang==='bg'?'Връщане за корекция с маркирани полета. Отваря се само това, което трябва да се поправи.':'Returned for correction with the fields flagged. Only what needs fixing reopens.'],
-     [lang==='bg'?'Подаване':'Filing',lang==='bg'?'Адвокатът подава и плаща държавната такса. Получавате входящ номер и дата на заявката.':'The lawyer files and pays the official fee. You receive a file number and the filing date.'],
-     [lang==='bg'?'След това':'Afterwards',lang==='bg'?'Формална експертиза, по същество, публикация, 3 месеца опозиционен срок, регистрация, подновяване на 10-ата година.':'Formalities, substantive examination, publication, 3-month opposition window, registration, renewal at year ten.']]
-    .map(([a,b])=>`<div class="row" style="align-items:start"><span class="num" style="min-width:130px;color:var(--gold);font-size:14px">${a}</span>
-      <span style="flex:1;font-size:15px;color:var(--ink-2)">${b}</span></div>`).join('')}
+  ${[[{bg:'Преглед',en:'Review'},
+      {bg:'Заявката се разглежда от адвоката. Ако са нужни корекции, получавате имейл с това, което трябва да се допълни, и/или адвокатът се свързва с вас до 2 работни дни от изпращането ѝ.',
+       en:'The lawyer reviews the application. If corrections are needed you receive an email setting out what to complete, and/or the lawyer contacts you within 2 working days of your submission.'}],
+     [{bg:'При пълно съответствие',en:'If everything is in order'},
+      {bg:'Получавате имейл, с който се удостоверява, че заявката е обработена и предстои да бъде подадена.',
+       en:'You receive an email confirming that the application has been processed and is about to be filed.'}],
+     [{bg:'Входящ номер',en:'File number'},
+      {bg:'Входящият номер на марката ви се изпраща след подаването ѝ.',
+       en:'The file number of your mark is sent to you once it has been filed.'}],
+     [{bg:'Експертиза',en:'Examination'},
+      {bg:'Марката се разглежда от длъжностно лице във ведомството и по нея се извършва експертиза.',
+       en:'The mark is taken up by an examiner at the office and is examined.'}],
+     [{bg:'Проследяване',en:'Monitoring the file'},
+      {bg:'Следим процеса до регистрацията на марката и ви уведомяваме при всяко ново обстоятелство.',
+       en:'We follow the procedure through to registration and notify you of every new development.'}],
+     [{bg:'След заявяването',en:'After filing'},
+      {bg:'Можете да заявите мониторинг на марката — следене на нови заявки, които могат да влязат в конфликт с нея.',
+       en:'You may order monitoring of the mark — a watch on new applications that could conflict with it.'}]]
+    .map(([a,b])=>`<div class="row" style="align-items:start"><span class="num" style="min-width:130px;color:var(--gold);font-size:14px">${esc(L(a))}</span>
+      <span style="flex:1;font-size:15px;color:var(--ink-2)">${esc(L(b))}</span></div>`).join('')}
+  </div>
+  <div class="sum" style="margin-top:18px">
+   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Мониторинг и други услуги':'Monitoring and other services'}</div>
+   <p class="quiet" style="margin:0 0 12px">${lang==='bg'
+     ?'Мониторинг на марката, помощ при опозиция, медиация и споразумения се възлагат отделно. Пишете ни през формата за контакт и ще получите оферта и срок.'
+     :'Monitoring, assistance in opposition proceedings, mediation and settlement agreements are engaged separately. Write to us through the contact form and you will receive a quote and a timeframe.'}</p>
+   <button class="btn btn-gold" data-p="contact" style="padding:9px 16px;font-size:14px">${
+     lang==='bg'?'Пишете ни':'Write to us'}</button>
   </div>
   <div class="sum" style="margin-top:18px"><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Какво проверявам преди подаване':'What I check before filing'}</div>
    ${CHECKLIST.map(c=>`<div style="display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:14.5px;color:var(--ink-2);padding:4px 0">
@@ -3029,6 +3168,10 @@ function poaFacts(){
   kind:state.kind||'word',
   colour:!!state.colour,
   route:state.route,
+  countries:(state.madridCountries||'').split(/[\n;,]+/).map(x=>x.trim()).filter(Boolean),
+  priorKind:(state.priority&&state.priority.claim)||'none',
+  priorNumber:(state.priority&&state.priority.number||'').trim(),
+  priorCountry:(state.priority&&state.priority.country||'').trim(),
   signName:(state.sigName||'').trim(),
   signCap:(state.sigCapacity||'').trim(),
   ref:state.ref||'',
@@ -3047,10 +3190,10 @@ function poaHtml(opts){
  const markEN = f.markName ? '“'+e(f.markName)+'”' : '(a mark without a word element, as per the image attached)';
  const whoBG = f.legal
    ? `Долуподписаният/ата <b>${e(f.signName||'…')}</b>, в качеството ми на <b>${e(f.signCap||'представляващ')}</b> на <b>${e(f.applicantName||'…')}</b>, ЕИК/рег. № ${e(f.applicantId||'…')}, със седалище и адрес на управление: ${e(f.applicantAddr||'…')} (Дружеството)`
-   : `Долуподписаният/ата <b>${e(f.applicantName||'…')}</b>, ЕГН/№ на документ за самоличност ${e(f.applicantId||'…')}, с адрес: ${e(f.applicantAddr||'…')}`;
+   : `Долуподписаният/ата <b>${e(f.applicantName||'…')}</b>${f.applicantId?', ЕГН/№ на документ за самоличност '+e(f.applicantId):''}, с адрес: ${e(f.applicantAddr||'…')}`;
  const whoEN = f.legal
    ? `The undersigned, <b>${e(f.signName||'…')}</b>, in my capacity as <b>${e(f.signCap||'representative')}</b> of <b>${e(f.applicantName||'…')}</b>, company number ${e(f.applicantId||'…')}, having its registered office at ${e(f.applicantAddr||'…')} (the “Company”)`
-   : `The undersigned, <b>${e(f.applicantName||'…')}</b>, personal identification / identity document number ${e(f.applicantId||'…')}, residing at ${e(f.applicantAddr||'…')}`;
+   : `The undersigned, <b>${e(f.applicantName||'…')}</b>${f.applicantId?', personal identification / identity document number '+e(f.applicantId):''}, residing at ${e(f.applicantAddr||'…')}`;
  const onBehalfBG = f.legal ? 'от името и за сметка на Дружеството' : 'от мое име и за моя сметка';
  const onBehalfEN = f.legal ? 'in the name and on behalf of the Company' : 'in my name and on my behalf';
 
@@ -3072,6 +3215,8 @@ function poaHtml(opts){
  <p>${e(ATTORNEY.name_bg)} — ${e(ATTORNEY.bar_bg)}, e-mail: ${e(ATTORNEY.email)},</p>
  <p>да ме представлява относно регистрацията на следната марка:</p>
  <p><b>${markBG}</b> — ${e(kind.bg)}, индивидуална марка${f.colour?', със заявена претенция за цвят':''}, за стоки и/или услуги от клас ${e(cls)} по Ницската класификация.</p>
+ ${f.route==='madrid'&&f.countries.length?`<p>С посочване на следните договарящи страни: ${e(f.countries.join(', '))}.</p>`:''}
+ ${f.priorKind!=='none'&&(f.priorNumber||f.priorCountry)?`<p>Със заявена претенция за ${f.priorKind==='seniority'?'сеньорност':'конвенционен приоритет'} по по-ранна заявка ${e(f.priorNumber||'—')}${f.priorCountry?', подадена в '+e(f.priorCountry):''}.</p>`:''}
  <p>С правото да подава заявка за регистрация на горепосочената марка ${onBehalfBG} пред ${e(off.bg)}, както и да извършва ${onBehalfBG} всички необходими действия пред ${e(off.bg)} по защита на правата и законните интереси на упълномощителя относно посочения обект на индустриална собственост, да упълномощава трето лице за процесуално представителство, както и да прехвърля изцяло или частично предоставените тук правомощия на трето лице, което има законовото право да ги упражнява.</p>
  <hr>
  <h4>POWER OF ATTORNEY</h4>
@@ -3079,7 +3224,9 @@ function poaHtml(opts){
  <h5>HEREBY AUTHORIZE</h5>
  <p>${e(ATTORNEY.name_en)} — ${e(ATTORNEY.bar_en)}, e-mail: ${e(ATTORNEY.email)},</p>
  <p>to represent me in connection with the registration of the following trade mark:</p>
- <p><b>${markEN}</b> — ${e(kind.en)}, individual trade mark${f.colour?', with a colour claim'.replace('a colour','a colour'):''}, for goods and/or services in class ${e(cls)} of the Nice Classification.</p>
+ <p><b>${markEN}</b> — ${e(kind.en)}, individual trade mark${f.colour?', with a colour claim':''}, for goods and/or services in class ${e(cls)} of the Nice Classification.</p>
+ ${f.route==='madrid'&&f.countries.length?`<p>Designating the following Contracting Parties: ${e(f.countries.join(', '))}.</p>`:''}
+ ${f.priorKind!=='none'&&(f.priorNumber||f.priorCountry)?`<p>Claiming ${f.priorKind==='seniority'?'seniority':'convention priority'} from earlier application ${e(f.priorNumber||'—')}${f.priorCountry?', filed in '+e(f.priorCountry):''}.</p>`:''}
  <p>With the right to file an application for registration of the above-mentioned mark ${onBehalfEN} before ${e(off.en)}, as well as to perform ${onBehalfEN} all necessary actions before ${e(off.en)} protecting the principal’s rights and legitimate interests with regard to the industrial property subject matter specified herein; to authorize a third party to provide procedural representation; and to wholly or partially transfer the powers granted herein to a third party who is legally entitled to exercise them.</p>
  <hr>
  <p><b>Дата / Date:</b> ${e(opts.signedAt?new Date(opts.signedAt).toLocaleDateString('bg-BG'):f.date)}${f.ref?` &nbsp;·&nbsp; <b>Преписка / Matter:</b> ${e(f.ref)}`:''}</p>
@@ -3218,6 +3365,12 @@ async function openDossier(id){
   if(error) throw error;
   if(!data) throw new Error(lang==='bg'?'Преписката не е намерена.':'Matter not found.');
   const d={loading:false, data:data};
+  /* Обобщението не носи полетата, които живеят само в черновата — държавите
+     по Мадрид и държавата на приоритета. Те се четат от step_state.      */
+  try{
+   const q=await sb.from('matters').select('step_state').eq('id',id).single();
+   if(q && q.data && q.data.step_state) data.ss = q.data.step_state;
+  }catch(e){}
   /* Документите се четат от таблицата, а не от обобщението: там стои ключът
      в хранилището, който трябва за подписаната връзка.                     */
   try{
@@ -3260,6 +3413,9 @@ function dossierRows(d){
    kv({bg:'Претенция за цвят',en:'Colour claimed'}, d.colour_claimed?(lang==='bg'?'Да':'Yes'):(lang==='bg'?'Не':'No')),
    kv({bg:'Приоритет',en:'Priority'}, lbl(PRIOR,d.priority_kind)),
    kv({bg:'Номер на приоритета',en:'Priority number'}, d.priority_number),
+   kv({bg:'Държава на приоритета',en:'Priority country'}, d.ss&&d.ss.priority?d.ss.priority.country:''),
+   kv({bg:'Държави по Мадрид',en:'Madrid designations'},
+      d.ss&&d.ss.madridCountries?String(d.ss.madridCountries).split(/[\n;,]+/).map(x=>x.trim()).filter(Boolean).join(', '):''),
    kv({bg:'Проучване',en:'Search'}, lbl(SRCHO,d.search_option))]));
  if(ap) out.push(S({bg:'Заявител',en:'Applicant'},[
    kv({bg:'Наименование',en:'Name'}, ap.legal_name),
@@ -3501,9 +3657,11 @@ function wire(){
  const aa=app.querySelector('#aa');if(aa)aa.oninput=e=>{state.applicant.addr=e.target.value;save()};
  const ac=app.querySelector('#ac');if(ac)ac.onchange=e=>{state.applicant.country=e.target.value;save();render()};
  app.querySelectorAll('[data-prio]').forEach(el=>el.onclick=()=>{
-   state.priority.claim=el.dataset.prio; if(state.priority.claim==='none')state.priority.number='';
+   state.priority.claim=el.dataset.prio;
+   if(state.priority.claim==='none'){state.priority.number='';state.priority.country=''}
    save();render()});
  const pn=app.querySelector('#pn');if(pn)pn.oninput=e=>{state.priority.number=e.target.value;save()};
+ const pct=app.querySelector('#pctry');if(pct)pct.oninput=e=>{state.priority.country=e.target.value;save()};
  const ds=app.querySelector('#dosign');
  if(ds)ds.onclick=()=>{
    if(!(state.signatory||'').trim()){
@@ -3511,7 +3669,12 @@ function wire(){
      render();return}
    state.signed_at=new Date().toISOString(); syncState=null; save(); render()};
  app.querySelectorAll('[data-setstatus]').forEach(b=>b.onclick=()=>{state.status=b.dataset.setstatus;if(state.status==='returned'){state.step=5}save();render()});
- app.querySelectorAll('[data-route]').forEach(el=>el.onclick=()=>{state.route=el.dataset.route;save();render()});
+ app.querySelectorAll('[data-route]').forEach(el=>el.onclick=()=>{state.route=el.dataset.route;
+   // при марка на ЕС „комбинирана“ не съществува — знакът минава към фигуративна
+   if(state.route==='eutm' && state.kind==='comb') state.kind='fig';
+   save();render()});
+ const mdc=app.querySelector('#mdc');
+ if(mdc) mdc.oninput=e=>{state.madridCountries=e.target.value;save()};
  const ct=app.querySelector('#colourtoggle');if(ct)ct.onclick=()=>{state.colour=!state.colour;save();render()};
  app.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{state.kind=el.dataset.kind;save();render()});
  app.querySelectorAll('[data-search]').forEach(el=>el.onclick=()=>{state.search=el.dataset.search;save();render()});
