@@ -791,7 +791,10 @@ function officialFee(){const n=classCount(),r=ROUTES[state.route];
  if(state.route==='eutm')return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
  return{cur:'CHF',v:(state.colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass}}
 const SERVICE={bg_nat:295,eutm:395,madrid:395};   // възнаграждение без ДДС
-const SEARCH_FEE=80;   // задълбочено проучване за сходство, по избор
+const SEARCH_FEE=120;  // професионално проучване и анализ, по избор, без ДДС
+/* Цената се изписва от константата, а не на ръка — двете места в стъпка 2
+   по-рано носеха числото в текста и щяха да останат стари при промяна. */
+const searchFee=()=>'+\u20AC'+SEARCH_FEE.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 
 const app=document.getElementById('app');
@@ -2132,11 +2135,11 @@ function body(k){
   <div class="opts two" style="margin-top:16px">
    <button class="opt" data-search="full" data-on="${state.search==='full'?1:0}">
     <span class="tick"></span>
-    <span><span class="ot">${lang==='bg'?'Проучване за сходни и идентични марки':'Search for identical and similar marks'}</span>
+    <span><span class="ot">${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Professional pre-filing search and analysis of identical and similar marks'}</span>
      <span class="os">${lang==='bg'
        ?'БПВ, EUIPO и Мадридската система. Писмено становище с оценка на риска в 3 работни дни, преди държавната такса.'
        :'BPO, EUIPO and the Madrid System. A written opinion with a risk assessment in 3 working days, before the official fee.'}</span></span>
-    <span class="op">+&#8364;80,00</span></button>
+    <span class="op">${searchFee()}</span></button>
 
    <button class="opt" data-search="none" data-on="${state.search==='none'?1:0}">
     <span class="tick"></span>
@@ -2157,7 +2160,7 @@ function body(k){
   ${state.search==='full'
    ?`<div class="helpbar" style="margin-top:14px"><span class="ht">${lang==='bg'
        ?'Проучването влиза в сметката на стъпка 8.':'The search is added to the invoice at step 8.'}</span>
-      <span class="num">+&#8364;80,00</span></div>`
+      <span class="num">${searchFee()}</span></div>`
    :state.search==='none'
    ?`<div class="caution" style="margin-top:14px">${lang==='bg'
        ?'Изборът да се продължи без проучване се записва по преписката заедно с датата — така и за двете страни остава ясно какво е било известно към момента на подаването.'
@@ -2405,7 +2408,7 @@ function body(k){
   return `<div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
    <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
-   ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване':'Search'}</td>
+   ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване и анализ':'Search and analysis'}</td>
      <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r">€${SEARCH_FEE.toFixed(2)}</td></tr>`:''}
    <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r">€${(net*.2).toFixed(2)}</td></tr>
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС':'WIPO fee'}</td>
@@ -2537,7 +2540,7 @@ function Price(){
      <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
      <td class="quiet">${esc(L(d))}</td><td class="r">${r.cur==='CHF'?'CHF '+r.base.toFixed(2):'€'+r.base.toFixed(2)}</td>
      <td class="r" style="padding-right:22px">€${sv.toFixed(2)}</td></tr>`}).join('')}
-     <tr><td style="padding-left:22px"><strong>${lang==='bg'?'Проучване за сходни и идентични марки':'Search for identical and similar marks'}</strong>
+     <tr><td style="padding-left:22px"><strong>${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Professional pre-filing search and analysis of identical and similar marks'}</strong>
        <div class="quiet">${lang==='bg'?'по избор, на стъпка 2':'optional, at step 2'}</div></td>
       <td class="quiet">${lang==='bg'
         ?'БПВ, EUIPO и Мадридската система; писмено становище с оценка на риска в 3 работни дни.'
