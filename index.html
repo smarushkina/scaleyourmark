@@ -325,11 +325,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 /* help drawer */
 .helpbar{display:flex; gap:10px; align-items:center; justify-content:space-between; background:var(--violet-soft); border-radius:10px; padding:6px 12px; margin-top:0}
 .helpbar .ht{font-size:13.5px; font-weight:600; color:var(--violet-deep)}
-.drawer{position:fixed; inset:0 0 0 auto; width:min(430px,100%); background:var(--surface); border-left:1px solid var(--line);
+.drawer{position:fixed; inset:0 0 0 auto; width:min(580px,100%); background:var(--surface); border-left:1px solid var(--line);
   box-shadow:var(--lift-lg); z-index:60; transform:translateX(102%); transition:transform .28s cubic-bezier(.4,0,.2,1); overflow:auto; padding:26px 24px 60px}
 .drawer.open{transform:none}
 .drawer h4{margin:0; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
 .drawer ul{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:9px; font-size:15px; color:var(--ink-2)}
+.drawer .guidebody{max-width:none}
+.drawer .guidebody ul{margin:0 0 16px}
+.drawer .guidebody ul.gcheck{padding-left:0}
 .drawer .close{position:absolute; top:18px; right:18px; background:var(--raise); border:1px solid var(--line); border-radius:999px; width:34px; height:34px; cursor:pointer}
 .caution{background:var(--amber-soft); border-radius:12px; padding:14px 16px; font-size:14.5px; color:var(--ink-2); line-height:1.55}
 .scrim{position:fixed; inset:0; background:rgba(20,16,27,.38); z-index:55; opacity:0; pointer-events:none; transition:opacity .28s}
@@ -578,14 +581,14 @@ const STEPS=[
  {n:3,key:'mark',t:{bg:'Как изглежда марката?',en:'What does the mark look like?'},
   i:{bg:'Това, което подадете тук, се фиксира завинаги — изображението не се променя след датата на подаване.',
      en:'What you file here is frozen — the representation cannot be amended after the filing date.'},
-  need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: файл JPEG до 1,5 MB','Звукова: MP3 до 2 MB'],
-        en:['Word mark: text only','Figurative or combined: a JPEG file up to 1.5 MB','Sound: MP3 up to 2 MB']},
-  man:{bg:['Файлът за фигуративна или комбинирана марка: JPEG до 1,5 MB, бял фон, препоръчително поне 945 × 945 px. Без рамки, водни знаци и текст, който описва марката. За звукова марка — MP3; за марка с движение или мултимедийна — MP4.',
+  need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: JPEG или PNG до 1,5 MB','Звукова: MP3 до 2 MB; с движение: MP4 до 20 MB'],
+        en:['Word mark: text only','Figurative or combined: JPEG or PNG up to 1.5 MB','Sound: MP3 up to 2 MB; motion: MP4 up to 20 MB']},
+  man:{bg:['Файлът за фигуративна или комбинирана марка: JPEG или PNG до 1,5 MB, бял фон, препоръчително поне 945 × 945 px. Без рамки, водни знаци и текст, който описва марката. За звукова марка — MP3; за марка с движение или мултимедийна — MP4.',
            'Словната марка е най-широка — покрива всяко изписване. Изберете нея, ако логото се променя често.',
            'Фигуративната закриля точно това изображение. Черно-бялото вече не покрива автоматично всички цветове.',
            'Описателни думи се отказват на абсолютно основание — чл. 11 ЗМГО и чл. 7 EUTMR.',
            'Придобитата отличителност се доказва трудно и скъпо. По-добре отличителна марка от самото начало.'],
-       en:['The file for a figurative or combined mark: JPEG up to 1.5 MB, white background, at least 945 × 945 px advisable. No frames, watermarks or text describing the mark. A sound mark takes MP3; a motion or multimedia mark takes MP4.',
+       en:['The file for a figurative or combined mark: JPEG or PNG up to 1.5 MB, white background, at least 945 × 945 px advisable. No frames, watermarks or text describing the mark. A sound mark takes MP3; a motion or multimedia mark takes MP4.',
            'A word mark is broadest — it covers any styling. Choose it if your logo changes often.',
            'A figurative mark protects that exact image. Black and white no longer covers every colour.',
            'Descriptive wording is refused on absolute grounds — art. 11 BG TMA and art. 7 EUTMR.',
@@ -1478,19 +1481,38 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
 }
 
 /* ---------- drawer ---------- */
+/* „Помощ“ отваря самото ръководство към стъпката, не само резюмето.
+   Дотогава панелът показваше трите кратки блока, а дългият текст стоеше
+   само на страница „Ръководства“ — тоест точно там, където човекът не е. */
 function openDrawer(n){
- const s=STEPS[n-1], d=document.getElementById('drawer');
+ const s=STEPS[n-1], g=GUIDE[n], d=document.getElementById('drawer');
  d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
   <div class="kicker">${lang==='bg'?'Ръководство · стъпка':'Manual · step'} ${s.n}</div>
   <h2 style="margin:8px 0 14px">${esc(L(s.t))}</h2>
   <p style="color:var(--ink-2);font-size:15.5px">${esc(L(s.i))}</p>
-  <div style="display:flex;flex-direction:column;gap:20px;margin-top:22px">
+  ${g?`<article class="guidebody" style="margin-top:22px">${g.b.map(blockHtml).join('')}</article>`:''}
+  <div style="display:flex;flex-direction:column;gap:20px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line-2)">
    <div><h4>${lang==='bg'?'Какво ви трябва':'What you need'}</h4><ul>${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
    <div><h4>${lang==='bg'?'Как да решите':'How to decide'}</h4><ul>${L(s.man).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
    <div class="caution"><strong>${lang==='bg'?'Внимавайте':'Watch out'}</strong><br>${esc(L(s.err))}</div>
-  </div>`;
- d.classList.add('open');document.getElementById('scrim').classList.add('on');
+  </div>
+  ${g?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:22px">
+    <button class="btn btn-ghost" id="dfull" style="padding:9px 16px;font-size:14px">${
+      lang==='bg'?'Отворете на цяла страница':'Open as a full page'}</button>
+    <button class="btn btn-quiet" id="dclose2" style="padding:9px 16px;font-size:14px">${
+      lang==='bg'?'Обратно към стъпката':'Back to the step'}</button>
+   </div>`:''}`;
+ d.classList.add('open'); d.scrollTop=0;
+ document.getElementById('scrim').classList.add('on');
  d.querySelector('#dclose').onclick=closeDrawer;
+ const c2=d.querySelector('#dclose2'); if(c2) c2.onclick=closeDrawer;
+ const full=d.querySelector('#dfull');
+ if(full) full.onclick=()=>{closeDrawer(); guideStep=n; page='guides'; render(); window.scrollTo(0,0)};
+ /* Бутоните вътре в ръководството стоят извън #app, затова се закачат тук. */
+ d.querySelectorAll('[data-gact]').forEach(el=>el.onclick=()=>{
+   const a=el.dataset.gact; closeDrawer(); guideStep=0;
+   if(a==='search'){ state.step=2; go('file') } else { go('contact') }
+ });
 }
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('scrim').classList.remove('on')}
 document.getElementById('scrim').onclick=closeDrawer;
