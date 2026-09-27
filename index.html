@@ -2223,10 +2223,18 @@ function body(k){
     <button class="btn btn-primary" id="poasign" ${poaBusy?'disabled':''} style="padding:9px 14px;white-space:nowrap">${
       poaBusy?(lang==='bg'?'Подписваме…':'Signing…'):(lang==='bg'?'Подпишете':'Sign')}</button>
    </div>
-   <button class="btn btn-ghost" id="poaresend" style="margin-top:8px;padding:8px 13px;font-size:13.5px">${
-     lang==='bg'?'Изпратете нов код':'Send a new code'}</button>`
-  :`<button class="btn btn-primary" id="poasend" ${poaBusy?'disabled':''} style="margin-top:12px">${
-     poaBusy?(lang==='bg'?'Изпращаме…':'Sending…'):(lang==='bg'?'Подпишете електронно':'Sign electronically')}</button>`}
+   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+    <button class="btn btn-ghost" id="poaresend" style="padding:8px 13px;font-size:13.5px">${
+      lang==='bg'?'Изпратете нов код':'Send a new code'}</button>
+    <button class="btn btn-quiet" id="poaback" style="padding:8px 13px;font-size:13.5px">${
+      lang==='bg'?'Назад към подписа':'Back to the signature'}</button>
+   </div>`
+  :`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px">
+     <button class="btn btn-primary" id="poasend" ${poaBusy?'disabled':''}>${
+       poaBusy?(lang==='bg'?'Изпращаме…':'Sending…'):(lang==='bg'?'Подпишете електронно':'Sign electronically')}</button>
+     <button class="btn btn-quiet" id="poahave" style="padding:9px 13px;font-size:13.5px">${
+       lang==='bg'?'Вече имам код':'I already have a code'}</button>
+    </div>`}
   <p class="quiet" style="margin:10px 0 0">${lang==='bg'
     ?'Прост електронен подпис: подписът, който начертахте, се свързва с този документ и се потвърждава с код, изпратен на имейла ви. КЕП не е необходим. Пазят се документът, отпечатъкът му, датата и часът.'
     :'A simple electronic signature: the signature you draw is bound to this document and confirmed by a code sent to your email. No qualified certificate is needed. The document, its hash and the timestamp are kept.'}</p>`;
@@ -2690,7 +2698,11 @@ function Mark(){
    през Resend. Ключът стои на сървъра; страницата не вижда нито ключ, нито
    адрес за препращане.                                                    */
 /* Подписване на пълномощното: рисуван подпис + код на имейла. */
-let poaBusy=false, poaMsg=null, poaStage='idle';   // idle | code
+let poaBusy=false, poaMsg=null;
+/* Етапът се пази, за да не изчезне полето за кода при презареждане —
+   иначе кодът от имейла остава без място, където да бъде въведен. */
+let poaStage = (()=>{ try{ return sessionStorage.getItem('sym_poa_stage')==='code' ? 'code' : 'idle' }catch(e){ return 'idle' } })();
+function poaSetStage(v){ poaStage=v; try{ sessionStorage.setItem('sym_poa_stage', v) }catch(e){} }
 let poaPad=null;
 
 function poaReady(){
@@ -2741,7 +2753,7 @@ async function poaSendCode(){
   const {data,error}=await sb.functions.invoke('poa',{body:{action:'send_code',matter_id:state.matter_id}});
   if(error) throw error;
   if(data&&data.error) throw new Error(data.error);
-  poaStage='code';
+  poaSetStage('code');
   poaMsg={type:'ok',text:(lang==='bg'?'Изпратихме код на ':'A code has been sent to ')+((data&&data.email)||auth.email)+(lang==='bg'?'. Валиден е 15 минути.':'. It is valid for 15 minutes.')};
  }catch(e){
   poaMsg={type:'err',text:lang==='bg'?'Кодът не тръгна. Опитайте пак след минута.':'The code did not go out. Try again in a minute.'};
@@ -2770,7 +2782,7 @@ async function poaSign(){
   state.poa_signed_at=data.signed_at; state.poa_hash=data.hash;
   state.signed_at=data.signed_at;
   state.signatory=((state.sigName||'').trim()+(state.sigCapacity?', '+state.sigCapacity.trim():''));
-  saveLocal(); poaStage='idle';
+  saveLocal(); poaSetStage('idle');
   poaMsg={type:'ok',text:lang==='bg'?'Пълномощното е подписано и приложено към преписката.'
                                     :'The power of attorney has been signed and attached to the matter.'};
  }catch(e){
@@ -3480,7 +3492,9 @@ function wire(){
    const sh=app.querySelector('#poasheet'); if(sh) sh.innerHTML=poaHtml({signature:state.sigPng}); };
  const sc=app.querySelector('#sigclear'); if(sc) sc.onclick=()=>{ if(poaPad) poaPad.clear(); };
  const ps=app.querySelector('#poasend'); if(ps) ps.onclick=()=>poaSendCode();
- const pr=app.querySelector('#poaresend'); if(pr) pr.onclick=()=>{poaStage='idle'; poaSendCode()};
+ const pr=app.querySelector('#poaresend'); if(pr) pr.onclick=()=>{poaSetStage('idle'); poaSendCode()};
+ const ph=app.querySelector('#poahave'); if(ph) ph.onclick=()=>{poaSetStage('code'); poaMsg=null; render()};
+ const pb=app.querySelector('#poaback'); if(pb) pb.onclick=()=>{poaSetStage('idle'); poaMsg=null; render()};
  const pg=app.querySelector('#poasign'); if(pg) pg.onclick=()=>poaSign();
  const pd=app.querySelector('#poadl'); if(pd) pd.onclick=()=>poaDownload();
  const po=app.querySelector('#poaopen');
@@ -3491,7 +3505,7 @@ function wire(){
    window.open(u,'_blank','noopener'); setTimeout(()=>URL.revokeObjectURL(u),30000);
  };
  const prd=app.querySelector('#poaredo'); if(prd) prd.onclick=()=>{
-   state.poa_signed_at=null; state.poa_hash=null; poaStage='idle'; poaMsg=null; saveLocal(); render(); };
+   state.poa_signed_at=null; state.poa_hash=null; poaSetStage('idle'); poaMsg=null; saveLocal(); render(); };
  const sg=app.querySelector('#sg');if(sg)sg.oninput=e=>{state.signatory=e.target.value;save()};
  const din=app.querySelector('#imgin'), dz=app.querySelector('#drop');
  if(din){
