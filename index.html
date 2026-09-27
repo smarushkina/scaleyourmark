@@ -2569,8 +2569,10 @@ function Price(){
      <div class="kicker">${lang==='bg'?'Мониторинг':'Monitoring'}</div>
      <div class="num" style="font-size:32px;color:var(--gold);line-height:1.1">&#8364;100
       <span style="font-size:17px;color:var(--ink-3)">${lang==='bg'?'/ месец':'/ month'}</span></div>
-     <div class="num" style="font-size:19px;color:var(--ink-2);line-height:1.2">${lang==='bg'?'или &#8364;1 000':'or &#8364;1,000'}
-      <span style="font-size:15px;color:var(--ink-3)">${lang==='bg'?'/ година':'/ year'}</span></div>
+     <div class="num" style="font-size:19px;color:var(--ink-2);line-height:1.2;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+      <span>${lang==='bg'?'или &#8364;1 000':'or &#8364;1,000'}
+       <span style="font-size:15px;color:var(--ink-3)">${lang==='bg'?'/ година':'/ year'}</span></span>
+      <span class="tag t" style="font-size:12px">${lang==='bg'?'спестявате &#8364;200':'saves &#8364;200'}</span></div>
      <p class="quiet">${lang==='bg'
        ?'за марка, без ДДС. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
        :'per mark, excl. VAT. We alert you to similar third-party filings while their opposition window is open.'}</p>
