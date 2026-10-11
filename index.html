@@ -2495,9 +2495,10 @@ function body(k){
     <button class="btn btn-primary" id="poasign" ${poaBusy?'disabled':''} style="padding:9px 14px;white-space:nowrap">${
       poaBusy?(lang==='bg'?'Подписваме…':'Signing…'):(lang==='bg'?'Подпишете':'Sign')}</button>
    </div>
-   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center">
     <button class="btn btn-ghost" id="poaresend" style="padding:8px 13px;font-size:13.5px">${
       lang==='bg'?'Изпратете нов код':'Send a new code'}</button>
+    <span class="quiet" id="poaleft" style="font-size:13px"></span>
     <button class="btn btn-quiet" id="poaback" style="padding:8px 13px;font-size:13.5px">${
       lang==='bg'?'Назад към подписа':'Back to the signature'}</button>
    </div>`
@@ -3008,6 +3009,10 @@ function Mark(){
 let poaBusy=false, poaMsg=null, poaFocusCode=false;
 /* Етапът се пази, за да не изчезне полето за кода при презареждане —
    иначе кодът от имейла остава без място, където да бъде въведен. */
+let poaCodeAt = 0;     // кога е поискан последният код (само в паметта)
+let poaTick = null;    // таймерът, който обновява отброяването
+const POA_VALID_MS = 15*60*1000;   // колкото дава функцията poa
+const POA_COOLDOWN_MS = 60*1000;   // колкото чака функцията между два кода
 let poaStage = (()=>{ try{ return sessionStorage.getItem('sym_poa_stage')==='code' ? 'code' : 'idle' }catch(e){ return 'idle' } })();
 function poaSetStage(v){ poaStage=v; try{ sessionStorage.setItem('sym_poa_stage', v) }catch(e){} }
 let poaPad=null;
@@ -3061,7 +3066,10 @@ async function poaSendCode(){
   if(error) throw error;
   if(data&&data.error) throw new Error(data.error);
   poaSetStage('code'); poaFocusCode=true;
-  poaMsg={type:'ok',text:(lang==='bg'?'Изпратихме код на ':'A code has been sent to ')+((data&&data.email)||auth.email)+(lang==='bg'?'. Валиден е 15 минути.':'. It is valid for 15 minutes.')};
+  poaCodeAt=Date.now();
+  poaMsg={type:'ok',text:(lang==='bg'
+    ?'Изпратихме код на '+((data&&data.email)||auth.email)+'. Валиден е 15 минути. Ако не дойде до минута, вижте и папката за нежелана поща.'
+    :'A code has been sent to '+((data&&data.email)||auth.email)+'. It is valid for 15 minutes. If it does not arrive within a minute, check your spam folder.')};
  }catch(e){
   let c=(e&&e.message)||'';
   if(e&&e.context&&typeof e.context.json==='function'){
@@ -3107,10 +3115,31 @@ async function poaSign(){
                                     :'The power of attorney has been signed and attached to the matter.'};
  }catch(e){
   const c=(e&&e.message)||'';
-  poaMsg={type:'err',text:/code_expired/.test(c)?(lang==='bg'?'Кодът е изтекъл. Поискайте нов.':'The code has expired. Ask for a new one.')
-    :/code_used/.test(c)?(lang==='bg'?'Кодът вече е използван. Поискайте нов.':'The code has already been used. Ask for a new one.')
-    :/code/.test(c)?(lang==='bg'?'Кодът не съвпада.':'The code does not match.')
-    :(lang==='bg'?'Подписването не мина. Опитайте пак.':'Signing did not go through. Please try again.')};
+  const S={
+   code_expired: lang==='bg'?'Кодът е изтекъл. Натиснете „Изпратете нов код“ — старият вече не важи.'
+                            :'The code has expired. Press “Send a new code” — the old one no longer works.',
+   code_used:    lang==='bg'?'Този код вече е използван веднъж. Поискайте нов.'
+                            :'This code has already been used once. Ask for a new one.',
+   code:         lang==='bg'?'Кодът не съвпада. Проверете дали е от последното писмо — всеки нов код отменя предишния. След пет грешни опита трябва да поискате нов.'
+                            :'The code does not match. Check that it is from the latest email — each new code cancels the previous one. After five wrong attempts you must request a new one.',
+   name:         lang==='bg'?'Името на подписващия е твърде кратко. Напишете пълното име.'
+                            :'The signatory name is too short. Enter the full name.',
+   document:     lang==='bg'?'Пълномощното не можа да се сглоби. Върнете се една стъпка, проверете данните на заявителя и опитайте пак.'
+                            :'The power of attorney could not be assembled. Go back one step, check the applicant details and try again.',
+   signature:    lang==='bg'?'Подписът не е разчетен. Изчистете полето и го начертайте отново, малко по-едро.'
+                            :'The signature was not read. Clear the box and draw it again, a little larger.',
+   store:        lang==='bg'?'Документът не можа да бъде запазен на сървъра. Това е наш проблем — пишете ни на office@scaleyourmark.com и ще го оправим.'
+                            :'The document could not be stored on the server. That is on us — write to office@scaleyourmark.com and we will fix it.',
+   locked:       lang==='bg'?'Заявката вече е предадена на адвоката и пълномощното не може да се подписва повече.'
+                            :'The application has already been handed over and the power of attorney can no longer be signed.',
+   auth:         lang==='bg'?'Влизането изтече. Влезте отново в профила си и повторете — подписът и данните Ви са запазени.'
+                            :'Your session expired. Sign in again and repeat — your signature and data are saved.',
+   matter:       lang==='bg'?'Преписката не е намерена. Върнете се една стъпка назад.'
+                            :'The matter was not found. Go back one step.'
+  };
+  poaMsg={type:'err',text:S[c]||(lang==='bg'
+    ?'Подписването не мина. Опитайте пак, а ако се повтори — пишете ни на office@scaleyourmark.com.'
+    :'Signing did not go through. Try again, and if it repeats write to office@scaleyourmark.com.')};
  }
  poaBusy=false; render();
 }
@@ -3471,8 +3500,8 @@ function peekBody(m){
     ? esc(pr.claim)+(pr.number?' · '+esc(pr.number):'')+(pr.country?' · '+esc(pr.country):'')
     : `<span class="quiet">${lang==='bg'?'не се претендира':'not claimed'}</span>`)}
  ${peekRow(lang==='bg'?'Проучване':'Search', SEARCHLBL[d.search]?esc(L(SEARCHLBL[d.search])):(d.search?esc(d.search):`<span class="quiet">—</span>`))}
- ${peekRow(lang==='bg'?'Подписващ':'Signatory', d.signatory||d.sigName
-    ? esc(d.signatory||d.sigName)
+ ${peekRow(lang==='bg'?'Подписващ':'Signatory', d.sigName||d.signatory
+    ? `${esc(d.sigName||d.signatory)}${d.sigCapacity?`<div class="quiet" style="font-size:13.5px">${lang==='bg'?'в качеството на':'acting as'} ${esc(d.sigCapacity)}</div>`:''}`
     : `<span class="quiet">${lang==='bg'?'още не е посочен':'not named yet'}</span>`)}
  ${peekRow(lang==='bg'?'Пълномощно':'Power of attorney',
     d.poa_signed_at ? `<span class="tag v">${lang==='bg'?'подписано':'signed'}</span> <span class="quiet">${esc(dts(d.poa_signed_at))}</span>`
@@ -3945,7 +3974,24 @@ function wire(){
    const sh=app.querySelector('#poasheet'); if(sh) sh.innerHTML=poaHtml({signature:state.sigPng}); };
  const sc=app.querySelector('#sigclear'); if(sc) sc.onclick=()=>{ if(poaPad) poaPad.clear(); };
  const ps=app.querySelector('#poasend'); if(ps) ps.onclick=()=>poaSendCode();
+ if(poaTick){ clearInterval(poaTick); poaTick=null }
  const pr=app.querySelector('#poaresend'); if(pr) pr.onclick=()=>{poaSetStage('idle'); poaSendCode()};
+ if(pr && app.querySelector('#poaleft')){
+  const left=app.querySelector('#poaleft');
+  const paint=()=>{
+   if(!document.body.contains(left)){ clearInterval(poaTick); poaTick=null; return }
+   if(!poaCodeAt){ left.textContent=''; pr.disabled=false; return }
+   const cool=Math.ceil((POA_COOLDOWN_MS-(Date.now()-poaCodeAt))/1000);
+   const val =Math.ceil((POA_VALID_MS   -(Date.now()-poaCodeAt))/1000);
+   pr.disabled = cool>0;
+   if(cool>0){ left.textContent = lang==='bg' ? ('нов код след '+cool+' сек.') : ('new code in '+cool+'s') }
+   else if(val>0){ const mm=Math.floor(val/60), ss=val%60;
+     left.textContent = lang==='bg' ? ('кодът важи още '+mm+':'+String(ss).padStart(2,'0'))
+                                    : ('code valid for '+mm+':'+String(ss).padStart(2,'0')) }
+   else { left.textContent = lang==='bg' ? 'кодът е изтекъл — поискайте нов' : 'the code has expired — ask for a new one' }
+  };
+  paint(); poaTick=setInterval(paint,1000);
+ }
  const ph=app.querySelector('#poahave'); if(ph) ph.onclick=()=>{poaSetStage('code'); poaFocusCode=true; poaMsg=null; render()};
  const pb=app.querySelector('#poaback'); if(pb) pb.onclick=()=>{poaSetStage('idle'); poaMsg=null; render()};
  const pg=app.querySelector('#poasign'); if(pg) pg.onclick=()=>poaSign();
