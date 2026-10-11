@@ -86,6 +86,7 @@ button{font:inherit; color:inherit}
 header.top{position:sticky; top:0; z-index:45; background:var(--navy); border-bottom:1px solid rgba(255,255,255,.08)}
 .top-in{display:flex; align-items:center; gap:10px; min-height:62px; flex-wrap:nowrap}
 header.top{--logo:38px}
+header.top .wrap{max-width:1320px; padding-inline:18px}
 header.top .brandplate{padding:0}
 header.top .brandlogo{height:var(--logo)}
 header.top .lang{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.15)}
@@ -124,7 +125,7 @@ section.sec.pagehead{padding-block:18px; height:152px; display:flex; align-items
 nav.main{display:flex; gap:0; margin-left:auto; padding-left:24px; flex-wrap:nowrap}
 nav.main button{background:none; border:0; padding:9px 8px; font-size:13px; white-space:nowrap; color:#CFC5B4; cursor:pointer; border-radius:8px}
 nav.main button:hover{background:rgba(255,255,255,.08); color:#fff}
-nav.main button[aria-current="page"]{background:rgba(190,150,102,.18); color:#fff; font-weight:600;
+nav.main button[aria-current="page"]{background:none; color:#fff; font-weight:600;
   box-shadow:inset 0 -2px 0 var(--gold-bright)}
 /* „Заявяване“ е действието, към което води целият сайт. Затова не изглежда
    като останалите връзки, а като бутон. */
@@ -524,7 +525,7 @@ const NAV=[{id:'why',bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
 {id:'about',bg:'За нас',en:'About'},
 {id:'mark',bg:'За търговската марка',en:'About trade marks'},
 {id:'file',bg:'Заявяване',en:'File a mark'},{id:'guides',bg:'Ръководства',en:'Guides'},
-{id:'price',bg:'Цени',en:'Pricing'},{id:'blog',bg:'Блог',en:'Journal'},
+{id:'price',bg:'Цени',en:'Pricing'},
 {id:'contact',bg:'Контакти',en:'Contact'},{id:'acct',bg:'Профил',en:'Account'},{id:'office',bg:'Панел',en:'Queue'}];
 
 const NAVGROUPS=[
@@ -670,10 +671,10 @@ const STEPS=[
            'The official fee has not reached the office at this point — I pay it at filing. Until then a refund is possible.',
            'The EUIPO fee is paid in euro; Madrid in Swiss francs at the WIPO rate.',
            'The invoice splits into two lines: legal fee (with VAT) and official fee (disbursement, no VAT).']},
-  err:{bg:'Честа грешка: плащане на „такса за публикация“ по измамен имейл след публикацията. Нито ведомствата, нито аз изпращаме такива покани за плащане.',
+  err:{bg:'Честа грешка: плащане на „такса за публикация“ по измамен имейл след публикацията. Нито ведомствата, нито кантората изпращат такива покани за плащане.',
        en:'Common mistake: paying a "publication fee" from a scam email after publication. Neither the offices nor I send payment requests of that kind.'}},
  {n:9,key:'handover',t:{bg:'Какво следва?',en:'What happens next?'},
-  i:{bg:'След плащането преписката се заключва и идва при мен. Проверявам я лично, подавам я във ведомството и от този момент следя всички срокове вместо вас.',
+  i:{bg:'След плащането преписката се заключва и постъпва при адвоката. Той я проверява лично, подава я във ведомството и от този момент следи всички срокове вместо Вас.',
      en:'Once paid, the matter locks and comes to me. I review it personally, file it with the office, and from that point I watch every deadline for you.'},
   need:{bg:['Нищо повече от ваша страна, освен ако не поискам корекция','Достъп до посочения имейл','Решение дали включвате мониторинг'],
         en:['Nothing further from you unless I request a correction','Access to the email address you gave','A decision on monitoring']},
@@ -1195,11 +1196,10 @@ function authBox(){
 function authGate(){
  return `<section class="sec"><div class="wrap stack" style="gap:18px">
    <div class="sechead">
-    <span class="kicker">${lang==='bg'?'Нужен е профил':'An account is needed'}</span>
     <h2>${lang==='bg'?'Първо създайте профил':'Create an account first'}</h2>
     <p class="copy">${lang==='bg'
-      ?'Заявката се попълва на девет стъпки и черновата се пази след всяка от тях. За да не се загуби работата ви и за да може адвокатът да се свърже с вас, профилът се създава преди началото.'
-      :'The application runs over nine steps and the draft is saved after each one. So that your work is not lost and the lawyer can reach you, the account is created before you begin.'}</p>
+      ?'Профилът пази работата Ви и дава на адвоката как да се свърже с Вас. Деветте стъпки са описани в <a href="#" data-p="guides" style="color:var(--gold);font-weight:600">ръководствата</a> и може да ги прегледате, преди да започнете.'
+      :'The account keeps your work and gives the lawyer a way to reach you. The nine steps are described in the <a href="#" data-p="guides" style="color:var(--gold);font-weight:600">guides</a> and you can read them before you begin.'}</p>
    </div>
    ${authBox()}
   </div></section>`;
@@ -1554,7 +1554,7 @@ function chrome(){
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Заявяване':'Filing'}</div>
    ${['file','guides','price','acct'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Дружество':'Company'}</div>
-   ${['about','mark','blog','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+   ${['about','mark','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Правни':'Legal'}</div>
    <a href="#">${lang==='bg'?'Общи условия':'Terms'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookies'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
@@ -1569,7 +1569,7 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  const key=page+'|'+state.step;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
- chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,blog:Blog,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
+ chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
  renderKey=key;
  if(keep.same) requestAnimationFrame(()=>{
    const b=app.querySelector('.stepbody'); if(b&&keep.body) b.scrollTop=keep.body;
@@ -2015,35 +2015,41 @@ const GUIDE = {
 };
 
 /* ---------- pages ---------- */
+function rolesSection(){
+ return ` <section class="sec sec-navy"><div class="wrap">
+  <div class="kicker" style="margin-bottom:18px">${lang==='bg'?'Кой какво прави':'Who does what'}</div>
+  <div class="grid3" style="gap:18px;margin-bottom:34px">
+   ${[[{bg:'Вие',en:'You'},{bg:'Попълвате деветте стъпки',en:'Fill in the nine steps'},{bg:'Всяка стъпка идва с ръководство. Спирате и продължавате когато поискате.',en:'Every step comes with a manual. Stop and resume whenever you like.'}],
+      [{bg:'Адвокатът',en:'The lawyer'},{bg:'Преглежда лично в 2 работни дни',en:'Reviews personally within 2 working days'},{bg:'При проблем преписката се връща с маркирани полета и кратко обяснение.',en:'On a problem the matter returns with the fields flagged and a short note.'}],
+      [{bg:'Ведомството',en:'The office'},{bg:'Разглежда подадената заявка',en:'Examines the filed application'},{bg:'Адвокатът подава, плаща таксата и следи всеки срок до регистрацията.',en:'The lawyer files, pays the fee and dockets every deadline to registration.'}]]
+     .map(([who,what,d],i)=>`<div class="card pad stack" style="gap:8px">
+       <span class="kicker" style="color:var(--gold-bright)">${String(i+1).padStart(2,'0')} · ${esc(L(who))}</span>
+       <h3 style="font-size:18px">${esc(L(what))}</h3><p class="quiet">${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>`;
+}
+
 function File_(){
  const s=STEPS[state.step-1], pct=Math.round((state.step-1)/9*100);
  const done=Object.keys(state.done).length;
  if(!auth) return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
   {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
-  {bg:'Девет стъпки. Черновата се пази след всяка от тях.',
-   en:'Nine steps. The draft is saved after each one.'})}${authGate()}`;
+  {bg:'Заявката се попълва в девет стъпки.',
+   en:'The application is completed in nine steps.'})}${rolesSection()}${authGate()}`;
 
  return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
   {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
-  {bg:'Девет стъпки. Черновата се пази след всяка от тях.',
-   en:'Nine steps. The draft is saved after each one.'})}
+  {bg:'Заявката се попълва в девет стъпки.',
+   en:'The application is completed in nine steps.'})}
 
  <section class="sec" style="padding-block:16px"><div class="wrap stack" style="gap:12px">
   <div class="filegrid">
 
    <div class="stack stepcol" style="gap:10px">
-    <div class="stack" style="gap:5px">
-     <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2)">
-      <span>${lang==='bg'?'Стъпка':'Step'} ${s.n} ${lang==='bg'?'от':'of'} 9 · ${esc(L(s.t))}</span>
-      <span class="num">${pct}%</span></div>
-     <div class="meter"><i style="width:${pct}%"></i></div>
-    </div>
-
     <div class="card pad stack stepcard" style="gap:9px;padding:15px">
      <div class="q-head">
       <div><div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${s.n} / 9</div>
        <h2 style="font-size:clamp(19px,2.2vw,23px);margin-top:3px">${esc(L(s.t))}</h2></div>
-      <span class="tag v">${lang==='bg'?'пази се автоматично':'saved automatically'}</span>
      </div>
      <p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(s.i))}</p>
      <div class="stepbody">${body(s.key)}</div>
@@ -2089,17 +2095,7 @@ function File_(){
   </div>
  </div></section>
 
- <section class="sec sec-navy"><div class="wrap">
-  <div class="kicker" style="margin-bottom:18px">${lang==='bg'?'Кой какво прави':'Who does what'}</div>
-  <div class="grid3" style="gap:18px;margin-bottom:34px">
-   ${[[{bg:'Вие',en:'You'},{bg:'Попълвате деветте стъпки',en:'Fill in the nine steps'},{bg:'Всяка стъпка идва с ръководство. Спирате и продължавате когато поискате.',en:'Every step comes with a manual. Stop and resume whenever you like.'}],
-      [{bg:'Адвокатът',en:'The lawyer'},{bg:'Преглежда лично в 2 работни дни',en:'Reviews personally within 2 working days'},{bg:'При проблем преписката се връща с маркирани полета и кратко обяснение.',en:'On a problem the matter returns with the fields flagged and a short note.'}],
-      [{bg:'Ведомството',en:'The office'},{bg:'Разглежда подадената заявка',en:'Examines the filed application'},{bg:'Адвокатът подава, плаща таксата и следи всеки срок до регистрацията.',en:'The lawyer files, pays the fee and dockets every deadline to registration.'}]]
-     .map(([who,what,d],i)=>`<div class="card pad stack" style="gap:8px">
-       <span class="kicker" style="color:var(--gold-bright)">${String(i+1).padStart(2,'0')} · ${esc(L(who))}</span>
-       <h3 style="font-size:18px">${esc(L(what))}</h3><p class="quiet">${esc(L(d))}</p></div>`).join('')}
-  </div>
- </div></section>
+${rolesSection()}
 `;
 }
 
@@ -2629,7 +2625,7 @@ function Price(){
    en:'A fixed fee. The official fee is shown separately and is refundable until filing.'})}
  <section class="sec"><div class="wrap stack" style="gap:24px">
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
-    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Обхват':'Scope'}</th>
+    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Обхват':'Scope'}</th>
      <th style="text-align:right">${lang==='bg'?'Държавна такса':'Official fee'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Адв. възнаграждение<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">без ДДС</div>':'Legal fee<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">excl. VAT</div>'}</th></tr></thead>
     <tbody>${rows.map(([k,d])=>{const r=ROUTES[k], sv=SERVICE[k];return `<tr>
      <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
@@ -2701,20 +2697,6 @@ function Blog(){
     <div style="display:flex;gap:10px;align-items:center"><span class="tag t">${esc(L(p.c))}</span><span class="quiet num">${p.d}</span></div>
     <h3>${esc(L(p.t))}</h3><p class="quiet" style="font-size:15px">${esc(L(p.s))}</p>
     <a href="#" class="blogread" style="color:var(--gold);font-weight:700;text-decoration:none;font-size:14.5px">${lang==='bg'?'Прочети →':'Read →'}</a></article>`).join('')}</div>
-  <div class="card pad stack" id="nlbox" style="gap:14px">
-   <div style="display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap">
-    <div><h3>${lang==='bg'?'Месечен бюлетин':'Monthly briefing'}</h3>
-     <p class="quiet">${lang==='bg'?'Практика на EUIPO и на Патентно ведомство, обобщена за пет минути четене.':'EUIPO and Bulgarian Patent Office practice in a five-minute read.'}</p></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;max-width:420px">
-     <input type="email" id="nl" placeholder="you@company.bg" autocomplete="email" style="flex:1 1 190px;width:auto;min-width:0">
-     <button class="btn btn-primary" id="do_nl" ${nlBusy?'disabled':''} style="flex:0 0 auto">${
-       nlBusy?(lang==='bg'?'Момент…':'One moment…'):(lang==='bg'?'Абонирай':'Subscribe')}</button></div>
-   </div>
-   ${nlMsg?`<div class="${nlMsg.type==='ok'?'helpbar':'caution'}">
-     <span ${nlMsg.type==='ok'?'class="ht"':''}>${esc(nlMsg.text)}</span></div>`:''}
-   <p class="quiet" style="font-size:13.5px;margin:0">${lang==='bg'
-     ?'Изпращаме писмо за потвърждение; абонаментът влиза в сила чак след него. Адресът се използва само за бюлетина и всяко писмо носи връзка за отписване.'
-     :'We send a confirmation email; the subscription starts only after it. The address is used for the briefing alone and every issue carries an unsubscribe link.'}</p></div>
  </div></section>`;
 }
 
@@ -3163,7 +3145,7 @@ async function doNewsletter(){
 /* Отварянето на връзката от писмото потвърждава или отписва адреса. */
 async function runNewsletterLink(){
  if(!NL_LINK) return;
- page='blog'; nlBusy=true; render();
+ page='contact'; nlBusy=true; render();
  /* Връзката със сървъра се вдига успоредно с първото рисуване. */
  for(let i=0;i<40 && (!remote || !sb); i++) await new Promise(r=>setTimeout(r,250));
  if(!remote || !sb){
@@ -3267,7 +3249,23 @@ function Contact(){
      contactBusy?(lang==='bg'?'Изпращаме…':'Sending…'):(lang==='bg'?'Изпрати':'Send')}</button>
    <p class="quiet" style="margin-top:12px">${lang==='bg'?'Данните се обработват съгласно Политиката за поверителност. Не изпращайте поверителни документи през тази форма.'
                                                         :'Data is processed under the Privacy Policy. Do not send confidential documents through this form.'}</p>
-  </div></div></section>`;
+  </div></div></section>
+<section class="sec"><div class="wrap">
+  <div class="card pad stack" id="nlbox" style="gap:14px">
+   <div style="display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap">
+    <div><h3>${lang==='bg'?'Месечен бюлетин':'Monthly briefing'}</h3>
+     <p class="quiet">${lang==='bg'?'Решения на съдилищата, промени в тарифите и практика на ведомствата, веднъж месечно.':'Court rulings, fee changes and office practice, once a month.'}</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%;max-width:420px">
+     <input type="email" id="nl" placeholder="you@company.bg" autocomplete="email" style="flex:1 1 190px;width:auto;min-width:0">
+     <button class="btn btn-primary" id="do_nl" ${nlBusy?'disabled':''} style="flex:0 0 auto">${
+       nlBusy?(lang==='bg'?'Момент…':'One moment…'):(lang==='bg'?'Абонирай':'Subscribe')}</button></div>
+   </div>
+   ${nlMsg?`<div class="${nlMsg.type==='ok'?'helpbar':'caution'}">
+     <span ${nlMsg.type==='ok'?'class="ht"':''}>${esc(nlMsg.text)}</span></div>`:''}
+   <p class="quiet" style="font-size:13.5px;margin:0">${lang==='bg'
+     ?'Изпращаме писмо за потвърждение; абонаментът влиза в сила чак след него. Адресът се използва само за бюлетина и всяко писмо носи връзка за отписване.'
+     :'We send a confirmation email; the subscription starts only after it. The address is used for the briefing alone and every issue carries an unsubscribe link.'}</p></div>
+</div></section>`;
 }
 
 /* ---------- пълномощното -------------------------------------------------
@@ -3440,7 +3438,7 @@ function Office(){
        <div class="num" style="font-size:32px;color:var(--${c==='a'?'amber':'violet'})">${v}</div></div>`).join('')}</div>`})()}
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th style="padding-left:22px">${lang==='bg'?'Преписка':'Matter'}</th>
-   <th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
+   <th>${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
    <th>${lang==='bg'?'Състояние':'Status'}</th><th>${lang==='bg'?'Предадена':'Handed over'}</th>
    <th style="text-align:right;padding-right:22px"></th></tr></thead>
    <tbody>${officeRows()}</tbody></table></div></div>
@@ -3546,7 +3544,7 @@ function dossierRows(d){
  out.push(S({bg:'Преписка',en:'Matter'},[
    kv({bg:'Номер',en:'Reference'}, d.ref),
    kv({bg:'Състояние',en:'Status'}, L(st)),
-   kv({bg:'Маршрут',en:'Route'}, R?L(R):d.route),
+   kv({bg:'Регистрационна процедура',en:'Registration procedure'}, R?L(R):d.route),
    kv({bg:'Ведомство',en:'Office'}, R?L(R.office):''),
    kv({bg:'Предадена на',en:'Handed over'}, dts(d.locked_at)),
    kv({bg:'Срок за преглед',en:'Review due'}, dts(d.sla_due_at))]));
@@ -3736,7 +3734,7 @@ function Acct(){
    <button class="btn btn-ghost" id="signout" style="padding:8px 15px;font-size:13.5px">${lang==='bg'?'Изход':'Sign out'}</button>
   </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
-   <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Маршрут':'Route'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
+   <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
     <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Такса':'Fee'}</th></tr></thead>
    <tbody>${rows}</tbody></table></div></div>
   <div class="grid2">
