@@ -820,6 +820,33 @@ let sb = null;            // клиентът на Supabase
 let remote = false;       // true = истинска автентикация
 let busy = false;
 
+/* ——— Откъде е дошъл посетителят —————————————————————————————
+   Чете се веднъж при зареждане и живее САМО в паметта на страницата.
+   Нищо не се записва в устройството на посетителя, затова не е нужно
+   съгласие по чл. 4а ЗЕТ и сайтът остава без банер. Стойностите стигат
+   до сървъра единствено ако и когато се създаде преписка, и се пазят
+   като част от нея. */
+const ACQ = (function(){
+ const out={source:null,medium:null,campaign:null,referrer:null};
+ const cut=(v,n)=>v?String(v).trim().slice(0,n):null;
+ try{
+  const q=new URLSearchParams(location.search);
+  out.source   = cut(q.get('utm_source'),60);
+  out.medium   = cut(q.get('utm_medium'),60);
+  out.campaign = cut(q.get('utm_campaign'),120);
+  if(!out.source && q.get('gclid')){ out.source='google';   out.medium='cpc' }
+  if(!out.source && q.get('fbclid')){ out.source='facebook'; out.medium='cpc' }
+  if(document.referrer){
+   const here=location.hostname.replace(/^www\./,'');
+   const h=new URL(document.referrer).hostname.replace(/^www\./,'');
+   if(h && h!==here) out.referrer=cut(h,120);
+  }
+  if(!out.source && out.referrer){ out.source=out.referrer; out.medium='referral' }
+  if(!out.source && !out.referrer){ out.source='direct'; out.medium='none' }
+ }catch(e){}
+ return out;
+})();
+
 function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'[]')}catch(e){return []}}
 function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catch(e){}}
 function loadAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
@@ -1199,6 +1226,8 @@ let matters = null;          // преписките на потребителя
    за ведомството носи текста, а знакът пътува като самостоятелен образец. */
 let dossier = null;          // {loading, data, imageUrl, imageName, error}
 let mattersAsked = false;
+let acq = null;              // редове за справката за източниците (само за адвокат)
+let acqAsked = false;
 
 function markKindDb(){
  const mk = MARK_KIND[state.kind] || null;
@@ -1226,9 +1255,16 @@ function syncErr(e){
 async function ensureMatter(){
  if(!remote || !sb || !auth) return null;
  if(state.matter_id) return state.matter_id;
- const {data, error} = await sb.from('matters')
-   .insert({user_id:auth.id, route:state.route, status:'draft', current_step:state.step})
+ const base={user_id:auth.id, route:state.route, status:'draft', current_step:state.step};
+ let {data, error} = await sb.from('matters')
+   .insert(Object.assign({}, base, {src_source:ACQ.source, src_medium:ACQ.medium,
+            src_campaign:ACQ.campaign, src_referrer:ACQ.referrer}))
    .select('id,ref').single();
+ /* Ако колоните за източника още ги няма в базата, преписката пак се създава.
+    Така сайтът не зависи от реда, в който се пуска миграцията. */
+ if(error && /src_(source|medium|campaign|referrer)/.test(error.message||'')){
+   ({data, error} = await sb.from('matters').insert(base).select('id,ref').single());
+ }
  if(error){ syncErr(error); return null }
  state.matter_id = data.id; state.ref = data.ref; saveLocal();
  return data.id;
@@ -1401,6 +1437,64 @@ async function loadMatters(){
  render();
 }
 
+/* Чете се направо от app.matters, а не от изгледа my_matters: политиката
+   за четене е „своите преписки ИЛИ адвокат“, тоест адвокатът вижда всички,
+   а изгледът не носи новите колони. */
+async function loadAcq(){
+ if(!remote || !sb || !auth || !isAdmin()) return;
+ acqAsked = true;
+ const {data,error} = await sb.from('matters')
+   .select('status,route,src_source,src_medium,src_campaign');
+ acq = error ? [] : (data||[]);
+ if(error) syncErr(error);
+ render();
+}
+
+function acqRows(){
+ const cell=t=>`<td colspan="5" style="padding-left:22px" class="quiet">${t}</td>`;
+ if(acq===null) return `<tr>${cell(lang==='bg'?'Зареждаме…':'Loading…')}</tr>`;
+ if(!acq.length) return `<tr>${cell(lang==='bg'?'Още няма преписки.':'No matters yet.')}</tr>`;
+ const g={};
+ acq.forEach(m=>{
+  const src=(m.src_source||(lang==='bg'?'неизвестен':'unknown'));
+  const med=(m.src_medium||'—');
+  const cmp=(m.src_campaign||'—');
+  const k=src+' | '+med+' | '+cmp;
+  if(!g[k]) g[k]={src,med,cmp,all:0,hand:0};
+  g[k].all++;
+  if(m.status && m.status!=='draft') g[k].hand++;
+ });
+ const rows=Object.values(g).sort((a,b)=>b.hand-a.hand || b.all-a.all);
+ const total=acq.length;
+ return rows.map(r=>{
+  const pct=total?Math.round(r.all*100/total):0;
+  const conv=r.all?Math.round(r.hand*100/r.all):0;
+  return `<tr><td style="padding-left:22px"><strong>${esc(r.src)}</strong>${
+     r.med&&r.med!=='—'?`<div class="quiet num">${esc(r.med)}</div>`:''}</td>
+   <td class="quiet">${esc(r.cmp)}</td>
+   <td class="num">${r.all}</td>
+   <td class="num">${r.hand}</td>
+   <td class="num r" style="padding-right:22px">${conv}%<div class="quiet num">${pct}% ${lang==='bg'?'от преписките':'of all matters'}</div></td></tr>`;
+ }).join('');
+}
+
+function acqCard(){
+ if(!isAdmin()) return '';
+ return `<div class="card" style="overflow:hidden">
+  <div class="pad" style="padding-bottom:0">
+   <h3>${lang==='bg'?'Откъде идват заявките':'Where the matters come from'}</h3>
+   <p class="quiet" style="margin:6px 0 0">${lang==='bg'
+     ?'Брои се по данните, записани при създаването на преписката. Без бисквитки и без външен брояч — източникът идва от адреса, с който клиентът е отворил сайта.'
+     :'Counted from the data recorded when the matter was created. No cookies and no third-party counter — the source comes from the address the client opened the site with.'}</p></div>
+  <div class="tblwrap"><table class="tbl"><thead><tr>
+   <th style="padding-left:22px">${lang==='bg'?'Източник':'Source'}</th>
+   <th>${lang==='bg'?'Кампания':'Campaign'}</th>
+   <th>${lang==='bg'?'Преписки':'Matters'}</th>
+   <th>${lang==='bg'?'Предадени':'Handed over'}</th>
+   <th style="text-align:right;padding-right:22px">${lang==='bg'?'Реализация':'Conversion'}</th>
+  </tr></thead><tbody>${acqRows()}</tbody></table></div></div>`;
+}
+
 async function resetDraft(){
  const old = state.matter_id;
  state = JSON.parse(JSON.stringify(BLANK));
@@ -1471,6 +1565,7 @@ function go(p){ if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct
 let renderKey='';
 function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct';
  if((page==='acct'||page==='office')&&remote&&auth&&!mattersAsked){loadMatters()}
+ if(page==='office'&&remote&&auth&&isAdmin()&&!acqAsked){loadAcq()}
  const key=page+'|'+state.step;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
@@ -3349,6 +3444,7 @@ function Office(){
    <th>${lang==='bg'?'Състояние':'Status'}</th><th>${lang==='bg'?'Предадена':'Handed over'}</th>
    <th style="text-align:right;padding-right:22px"></th></tr></thead>
    <tbody>${officeRows()}</tbody></table></div></div>
+  ${acqCard()}
   <div class="grid2">
    <div class="card pad stack" style="gap:12px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
