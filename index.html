@@ -364,6 +364,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px; grid-auto-rows:1fr}
 .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; grid-auto-rows:1fr}
 .rows{display:flex; flex-direction:column; gap:0}
+/* „Какво следва“: етикетът и обяснението в две колони, за да е все едно
+   дълъг или къс е етикетът. Шрифтът е този на сайта, не моноширинният. */
+.row.nextrow{display:grid; grid-template-columns:174px minmax(0,1fr); gap:6px 20px; align-items:start}
+.nextlabel{color:var(--gold); font-size:14.5px; font-weight:600; line-height:1.45; min-width:0; overflow-wrap:break-word}
+.nextbody{font-size:15px; color:var(--ink-2); line-height:1.55; min-width:0}
+@media (max-width:700px){ .row.nextrow{grid-template-columns:1fr; gap:3px} }
 .row{display:flex; justify-content:space-between; gap:4px 16px; padding:13px 0; border-bottom:1px solid var(--line-2); flex-wrap:wrap}
 /* Дълга стойност (имейл) на тесен екран слиза на свой ред, вместо да
    избутва картата настрани. */
@@ -2558,8 +2564,8 @@ function body(k){
      [{bg:'След заявяването',en:'After filing'},
       {bg:'Можете да заявите мониторинг на марката — следене на нови заявки, които могат да влязат в конфликт с нея.',
        en:'You may order monitoring of the mark — a watch on new applications that could conflict with it.'}]]
-    .map(([a,b])=>`<div class="row" style="align-items:start"><span class="num" style="min-width:130px;color:var(--gold);font-size:14px">${esc(L(a))}</span>
-      <span style="flex:1;font-size:15px;color:var(--ink-2)">${esc(L(b))}</span></div>`).join('')}
+    .map(([a,b])=>`<div class="row nextrow"><span class="nextlabel">${esc(L(a))}</span>
+      <span class="nextbody">${esc(L(b))}</span></div>`).join('')}
   </div>
   <div class="sum" style="margin-top:18px">
    <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Мониторинг и други услуги':'Monitoring and other services'}</div>
@@ -3266,10 +3272,25 @@ function Contact(){
    en:'We reply within one working day. For live applications write from your account.'})}
  <section class="sec"><div class="wrap grid2" style="gap:44px">
   <div class="stack" style="gap:18px">
-   <div class="card pad stack" style="gap:6px">
-    <span class="quiet">${lang==='bg'?'Имейл':'Email'}</span>
-    <a class="num" href="mailto:office@scaleyourmark.com"
-       style="color:inherit;text-decoration:none;font-size:16px;overflow-wrap:anywhere">office@scaleyourmark.com</a>
+   <div class="card pad stack" style="gap:12px">
+    <h3>${lang==='bg'?'Пишете ни направо':'Write to us directly'}</h3>
+    <p class="copy" style="margin:0">${lang==='bg'
+      ?'Формата отдясно стига до същата пощенска кутия и обикновено е по-бърза, защото темата е избрана предварително. Ако предпочитате собствената си поща или искате да приложите документ, пишете на адреса отдолу.'
+      :'The form on the right reaches the same mailbox and is usually quicker, because the subject is chosen in advance. If you prefer your own mail client or want to attach a document, write to the address below.'}</p>
+    <div>
+     <span class="quiet" style="font-size:13px;display:block;margin-bottom:2px">${lang==='bg'?'Имейл':'Email'}</span>
+     <a href="mailto:office@scaleyourmark.com" style="color:var(--gold);font-weight:600;font-size:17px;text-decoration:none;overflow-wrap:anywhere">office@scaleyourmark.com</a>
+    </div>
+    <p class="quiet" style="margin:0">${lang==='bg'
+      ?'За заявка, която вече е започната, най-добре пишете от профила си — така съобщението идва заедно с преписката и не се налага да обяснявате коя е.'
+      :'For an application already under way, write from your account — the message then arrives together with the matter and you need not explain which one it is.'}</p>
+   </div>
+   <div class="card pad stack" style="gap:4px">
+    <span class="quiet" style="font-size:13px">${lang==='bg'?'Дружество':'Company'}</span>
+    <strong style="font-size:15.5px">${lang==='bg'?'„СкейлЙорМарк“ ЕООД':'ScaleYourMark EOOD'}</strong>
+    <span class="quiet">${lang==='bg'
+      ?'гр. София, ул. „Добротица Деспот“ № 41, вх. Б, ет. 1'
+      :'Sofia, 41 Dobrotica Despot St, entr. B, fl. 1'}</span>
    </div>
   </div>
   <div class="card pad">
