@@ -1228,6 +1228,8 @@ let dossier = null;          // {loading, data, imageUrl, imageName, error}
 let mattersAsked = false;
 let acq = null;              // редове за справката за източниците (само за адвокат)
 let acqAsked = false;
+let clients = null;          // {matter_id: {name,email,phone}} — само за адвокат
+let clientsAsked = false;
 
 function markKindDb(){
  const mk = MARK_KIND[state.kind] || null;
@@ -1440,6 +1442,25 @@ async function loadMatters(){
 /* Чете се направо от app.matters, а не от изгледа my_matters: политиката
    за четене е „своите преписки ИЛИ адвокат“, тоест адвокатът вижда всички,
    а изгледът не носи новите колони. */
+/* Адвокатът вижда кой стои зад всяка преписка. Двете заявки са отделни,
+   защото изгледът my_matters нарочно не носи user_id, а политиките на
+   app.matters и app.profiles допускат адвоката до всички редове. */
+async function loadClients(){
+ if(!remote || !sb || !auth || !isAdmin()) return;
+ clientsAsked = true;
+ const [m,p] = await Promise.all([
+   sb.from('matters').select('id,user_id'),
+   sb.from('profiles').select('id,email,full_name,phone')
+ ]);
+ if(m.error || p.error){ syncErr(m.error||p.error); clients={}; render(); return }
+ const by={}; (p.data||[]).forEach(x=>by[x.id]=x);
+ const out={};
+ (m.data||[]).forEach(x=>{ const u=by[x.user_id];
+   if(u) out[x.id]={name:u.full_name||'', email:u.email||'', phone:u.phone||''} });
+ clients = out;
+ render();
+}
+
 async function loadAcq(){
  if(!remote || !sb || !auth || !isAdmin()) return;
  acqAsked = true;
@@ -1566,6 +1587,7 @@ let renderKey='';
 function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct';
  if((page==='acct'||page==='office')&&remote&&auth&&!mattersAsked){loadMatters()}
  if(page==='office'&&remote&&auth&&isAdmin()&&!acqAsked){loadAcq()}
+ if(page==='office'&&remote&&auth&&isAdmin()&&!clientsAsked){loadClients()}
  const key=page+'|'+state.step;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
@@ -3395,8 +3417,97 @@ hr{border:0;border-top:1px solid #d9d4c8;margin:20px 0}
 </style></head><body>${poaHtml(opts)}</body></html>`;
 }
 
+function clientCell(m){
+ if(!isAdmin()) return '';
+ if(clients===null) return `<span class="quiet">…</span>`;
+ const c=clients[m.id];
+ if(!c) return `<span class="quiet">—</span>`;
+ return `<div style="min-width:168px"><strong style="font-size:14px">${esc(c.name||'—')}</strong>
+   <div class="quiet" style="font-size:12.5px;word-break:break-all">${esc(c.email||'')}</div>
+   ${c.phone?`<div class="quiet" style="font-size:12.5px">${esc(c.phone)}</div>`:''}</div>`;
+}
+
+/* Какво е попълнил клиентът дотук. Чете се от step_state, който пътува с
+   всеки ред на my_matters — затова не се прави нова заявка към базата. */
+const SEARCHLBL={none:{bg:'не е възложено',en:'not commissioned'},
+ full:{bg:'пълно проучване и анализ',en:'full search and analysis'},
+ risk:{bg:'проверка за риск',en:'risk check'},
+ basic:{bg:'основна проверка',en:'basic check'}};
+const KINDS={word:{bg:'словна',en:'word'},fig:{bg:'фигуративна',en:'figurative'},
+             comb:{bg:'комбинирана',en:'combined'},other:{bg:'друг вид',en:'other'}};
+function peekRow(label,value){
+ if(value===null||value===undefined||value==='') return '';
+ return `<div style="display:grid;grid-template-columns:150px 1fr;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-2)">
+   <span class="quiet" style="font-size:13px">${esc(label)}</span>
+   <span style="font-size:14.5px">${value}</span></div>`;
+}
+function peekBody(m){
+ const d=m.step_state||{};
+ const R=ROUTES[d.route||m.route];
+ const terms=Array.isArray(d.terms)?d.terms.filter(t=>t&&typeof t==='object'):[];
+ const byClass={};
+ terms.forEach(t=>{ (byClass[t.c]=byClass[t.c]||[]).push(t.t) });
+ const cls=Object.keys(byClass).map(Number).sort((a,b)=>a-b);
+ const a=d.applicant||{};
+ const pr=d.priority||{};
+ const steps=d.done||{};
+ const doneList=[1,2,3,4,5,6,7,8,9].map(n=>`<span class="tag ${steps[n]?'v':''}" style="margin:2px 3px 2px 0;${steps[n]?'':'opacity:.45'}">${n}</span>`).join('');
+ return `
+ ${peekRow(lang==='bg'?'Процедура':'Procedure', R?esc(L(R)):esc(d.route||m.route||'—'))}
+ ${peekRow(lang==='bg'?'Вид марка':'Mark type', esc(L(KINDS[d.kind]||{bg:d.kind||'—',en:d.kind||'—'}))+(d.colour?(lang==='bg'?' · претенция за цвят':' · colour claimed'):''))}
+ ${peekRow(lang==='bg'?'Словен елемент':'Word element', d.mark?`<strong>${esc(d.mark)}</strong>`:`<span class="quiet">${lang==='bg'?'няма':'none'}</span>`)}
+ ${d.img?peekRow(lang==='bg'?'Файл':'File', esc(d.img.name||'—')+(d.img.size?` <span class="quiet">(${Math.round(d.img.size/1024)} KB)</span>`:'')):''}
+ ${d.madridCountries?peekRow(lang==='bg'?'Посочени държави':'Designated states', esc(d.madridCountries)):''}
+ ${peekRow(lang==='bg'?'Класове':'Classes', cls.length
+    ? cls.map(c=>`<div style="margin-bottom:6px"><strong>${lang==='bg'?'Клас':'Class'} ${c}</strong>
+        <div class="quiet" style="font-size:13.5px">${esc(byClass[c].join('; '))}</div></div>`).join('')
+    : `<span class="quiet">${lang==='bg'?'още няма избрани':'none chosen yet'}</span>`)}
+ ${peekRow(lang==='bg'?'Заявител':'Applicant', a.name
+    ? `${esc(a.name)}${a.id?` <span class="quiet">· ${esc(a.id)}</span>`:''}
+       ${a.addr?`<div class="quiet" style="font-size:13.5px">${esc(a.addr)}${a.country?', '+esc(a.country):''}</div>`:''}
+       <div class="quiet" style="font-size:13px">${a.kind==='legal'?(lang==='bg'?'юридическо лице':'legal entity'):(lang==='bg'?'физическо лице':'natural person')}</div>`
+    : `<span class="quiet">${lang==='bg'?'още не е попълнен':'not filled in yet'}</span>`)}
+ ${peekRow(lang==='bg'?'По-ранна дата':'Earlier date', pr.claim&&pr.claim!=='none'
+    ? esc(pr.claim)+(pr.number?' · '+esc(pr.number):'')+(pr.country?' · '+esc(pr.country):'')
+    : `<span class="quiet">${lang==='bg'?'не се претендира':'not claimed'}</span>`)}
+ ${peekRow(lang==='bg'?'Проучване':'Search', SEARCHLBL[d.search]?esc(L(SEARCHLBL[d.search])):(d.search?esc(d.search):`<span class="quiet">—</span>`))}
+ ${peekRow(lang==='bg'?'Подписващ':'Signatory', d.signatory||d.sigName
+    ? esc(d.signatory||d.sigName)
+    : `<span class="quiet">${lang==='bg'?'още не е посочен':'not named yet'}</span>`)}
+ ${peekRow(lang==='bg'?'Пълномощно':'Power of attorney',
+    d.poa_signed_at ? `<span class="tag v">${lang==='bg'?'подписано':'signed'}</span> <span class="quiet">${esc(dts(d.poa_signed_at))}</span>`
+    : d.sigPng ? `<span class="tag a">${lang==='bg'?'подписът е положен, кодът не е потвърден':'signature drawn, code not confirmed'}</span>`
+    : `<span class="quiet">${lang==='bg'?'не е подписано':'not signed'}</span>`)}
+ ${peekRow(lang==='bg'?'Декларация':'Declaration', d.declared
+    ? `<span class="tag v">${lang==='bg'?'отметната':'ticked'}</span>`
+    : `<span class="quiet">${lang==='bg'?'не е отметната':'not ticked'}</span>`)}
+ ${peekRow(lang==='bg'?'Готови стъпки':'Steps completed', doneList)}`;
+}
+function openPeek(id){
+ const m=(matters||[]).find(x=>x.id===id); if(!m) return;
+ const c=clients?clients[id]:null;
+ const d=document.getElementById('drawer');
+ const st=STATUS[m.status]||STATUS.draft;
+ d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
+  <div class="kicker">${lang==='bg'?'Съдържание на преписката':'Contents of the matter'}</div>
+  <h2 style="margin:8px 0 6px">${esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)'))}</h2>
+  <div class="quiet num" style="margin-bottom:10px">${esc(m.ref)} · <span class="tag ${st.cls}">${esc(L(st))}</span>${
+    m.status==='draft'?` · ${lang==='bg'?'стъпка':'step'} ${m.current_step||1}/9`:''}</div>
+  ${c?`<div class="card pad" style="margin-bottom:16px">
+     <div class="kicker" style="margin-bottom:6px">${lang==='bg'?'Клиент':'Client'}</div>
+     <strong>${esc(c.name||'—')}</strong>
+     <div style="font-size:14px"><a href="mailto:${esc(c.email)}" style="color:var(--gold)">${esc(c.email)}</a></div>
+     ${c.phone?`<div class="quiet" style="font-size:14px">${esc(c.phone)}</div>`:''}</div>`:''}
+  <div>${peekBody(m)}</div>
+  <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+   <button class="btn btn-ghost" id="dclose2">${lang==='bg'?'Затвори':'Close'}</button></div>`;
+ d.classList.add('open'); d.scrollTop=0;
+ const x=d.querySelector('#dclose'), y=d.querySelector('#dclose2');
+ if(x)x.onclick=closeDrawer; if(y)y.onclick=closeDrawer;
+}
+
 function officeRows(){
- const cell=t=>`<td colspan="6" style="padding-left:22px" class="quiet">${t}</td>`;
+ const cell=t=>`<td colspan="7" style="padding-left:22px" class="quiet">${t}</td>`;
  if(!remote) return `<tr>${cell(lang==='bg'
    ?'Тази страница не вижда сървъра, затова панелът е празен.'
    :'This page cannot see the server, so the panel is empty.')}</tr>`;
@@ -3410,14 +3521,15 @@ function officeRows(){
   return `<tr><td style="padding-left:22px">
     <strong>${esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)'))}</strong>
     <div class="quiet num">${sub}</div></td>
+   <td>${clientCell(m)}</td>
    <td class="num">${ROUTES[m.route]?ROUTES[m.route].code:esc(m.route)}</td>
    <td class="num">${m.class_count||'—'}</td>
    <td><span class="tag ${st.cls}">${esc(L(st))}</span>${
       m.open_flags?` <span class="tag a">${m.open_flags} ${lang==='bg'?'за поправка':'to fix'}</span>`:''}</td>
    <td class="quiet">${m.locked_at?esc(dts(m.locked_at)):'—'}</td>
-   <td class="r" style="padding-right:22px">${m.status==='draft'
-     ? `<span class="quiet" style="font-size:13px" title="${lang==='bg'?'Досие се прави след предаване на заявката':'The file is available once the application is handed over'}">—</span>`
-     : `<button class="btn btn-ghost dossbtn" data-dossier="${esc(m.id)}">${lang==='bg'?'Досие':'File'}</button>`}</td></tr>`;
+   <td class="r" style="padding-right:22px;white-space:nowrap">${m.status==='draft'
+     ? `<button class="btn btn-ghost peekbtn" data-peek="${esc(m.id)}">${lang==='bg'?'Преглед':'Preview'}</button>`
+     : `<button class="btn btn-ghost peekbtn" data-peek="${esc(m.id)}" style="margin-right:6px">${lang==='bg'?'Преглед':'Preview'}</button><button class="btn btn-ghost dossbtn" data-dossier="${esc(m.id)}">${lang==='bg'?'Досие':'File'}</button>`}</td></tr>`;
  }).join('');
 }
 
@@ -3438,6 +3550,7 @@ function Office(){
        <div class="num" style="font-size:32px;color:var(--${c==='a'?'amber':'violet'})">${v}</div></div>`).join('')}</div>`})()}
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th style="padding-left:22px">${lang==='bg'?'Преписка':'Matter'}</th>
+   <th>${lang==='bg'?'Клиент':'Client'}</th>
    <th>${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
    <th>${lang==='bg'?'Състояние':'Status'}</th><th>${lang==='bg'?'Предадена':'Handed over'}</th>
    <th style="text-align:right;padding-right:22px"></th></tr></thead>
@@ -3784,6 +3897,7 @@ function wire(){
    const t=app.querySelector('#do_login')||app.querySelector('#do_register')||app.querySelector('#do_reset')||app.querySelector('#do_otp')||app.querySelector('#do_newpass');
    if(t)t.click();});
  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openDrawer(+b.dataset.open)});
+ app.querySelectorAll('[data-peek]').forEach(b=>b.onclick=e=>{e.stopPropagation();openPeek(b.dataset.peek)});
  app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{state.step=+b.dataset.step;save();render()});
  const prev=app.querySelector('#prev'),next=app.querySelector('#next'),sbtn=app.querySelector('#savebtn'),rs=app.querySelector('#reset');
  if(prev)prev.onclick=()=>{state.step=Math.max(1,state.step-1);save();render()};
