@@ -254,18 +254,9 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 
 /* filing page: form on the left, compact step rail on the right */
 .filegrid{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:26px; align-items:start}
-@media (min-width:1001px){
-  /* Рамката на стъпката стои на екрана: заглавие, напредък и бутоните
-     „Назад / Напред" не изчезват. Само въпросът се движи, когато не се побира. */
-  .filegrid{height:calc(100vh - 246px); min-height:410px}
-  .stepcol{height:100%; min-height:0}
-  .stepcard{flex:1 1 auto; min-height:0; overflow:hidden}
-  .stepbody{flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
-    padding-right:6px; margin-right:-6px}
-  .stepbody::-webkit-scrollbar{width:8px}
-  .stepbody::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px}
-  .rail{max-height:calc(100vh - 246px); overflow-y:auto}
-}
+/* Един скрол — този на страницата. Стъпката расте колкото ѝ трябва и нищо
+   вътре в нея не се движи самостоятелно. Лентата с деветте стъпки остава
+   залепена отстрани, за да не се губи ориентацията. */
 .rail{position:sticky; top:72px; display:flex; flex-direction:column; gap:12px}
 .railcard{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--lift)}
 .railsteps{display:flex; flex-direction:column; gap:1px; margin-top:8px}
@@ -340,7 +331,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .scrim.on{opacity:1; pointer-events:auto}
 
 /* terms */
-.tlist{border:1.5px solid var(--line); border-radius:14px; overflow:hidden; max-height:320px; overflow-y:auto; background:var(--raise)}
+.tlist{border:1.5px solid var(--line); border-radius:14px; overflow:hidden; max-height:430px; overflow-y:auto; background:var(--raise)}
 .trow{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; padding:12px 15px; border-bottom:1px solid var(--line-2); cursor:pointer; font-size:15px}
 .trow:last-child{border-bottom:0}
 .trow:hover{background:var(--surface)}
@@ -431,7 +422,7 @@ footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-to
 .hp{position:absolute!important;left:-9999px!important;top:auto;width:1px;height:1px;overflow:hidden;opacity:0}
 /* Пълномощното на екрана: лист хартия, а не карта от сайта. */
 .sheet{background:#fff; border:1px solid var(--line); border-radius:10px;
-  padding:24px 26px; max-height:340px; overflow:auto;
+  padding:24px 26px;
   font-family:"Times New Roman",Georgia,serif; color:#14181f; font-size:14.5px; line-height:1.55}
 .sheet h4{font-family:inherit; font-size:15.5px; text-align:center; letter-spacing:.06em;
   margin:0 0 14px; font-weight:700}
