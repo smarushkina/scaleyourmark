@@ -364,6 +364,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px; grid-auto-rows:1fr}
 .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; grid-auto-rows:1fr}
 .rows{display:flex; flex-direction:column; gap:0}
+.tbl th.r, .tbl td.r{text-align:right}
+.reqtag{font-size:11.5px; letter-spacing:.04em; color:var(--gold); font-weight:600; text-transform:none; margin-left:6px}
+input.needfix, textarea.needfix{border-color:var(--gold-bright)}
 /* „Какво следва“: етикетът и обяснението в две колони, за да е все едно
    дълъг или къс е етикетът. Шрифтът е този на сайта, не моноширинният. */
 .row.nextrow{display:grid; grid-template-columns:174px minmax(0,1fr); gap:6px 20px; align-items:start}
@@ -758,6 +761,9 @@ const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,sea
 let state = Object.assign({}, BLANK, load()||{});
 state.applicant = Object.assign({}, BLANK.applicant, state.applicant||{});
 state.priority  = Object.assign({}, BLANK.priority,  state.priority ||{});
+/* Стара или повредена чернова може да носи друг вид заявител. Тогава и двата
+   бутона стояха неизбрани, а полето за ЕИК не се показваше изобщо. */
+if(['legal','natural'].indexOf(state.applicant.kind)<0) state.applicant.kind='legal';
 normaliseTerms();
 /* Стара чернова може да носи „комбинирана" марка при маршрут към EUIPO,
    където такъв вид няма. Привежда се към фигуративна още при зареждането. */
@@ -1340,6 +1346,45 @@ async function uploadMarkImage(id){
    byte_size:blob.size, sha256:hash, privileged:false, uploaded_by:auth.id
  }, {onConflict:'matter_id,sha256'});
  if(error) throw error;
+}
+
+/* Какво липсва на една стъпка, за да се мине нататък. Връща имената на
+   полетата на езика на страницата. Назад се ходи свободно — спира се само
+   движението напред, за да не се стига до стъпка 7 с празен заявител. */
+function stepBlockers(n){
+ const m=[], T=(bg,en)=>lang==='bg'?bg:en;
+ if(n===1 && state.route==='madrid' && !(state.madridCountries||'').trim())
+   m.push(T('поне една посочена държава','at least one designated state'));
+ if(n===2 && !state.search)
+   m.push(T('избор дали да възложите проучване','a choice on the search'));
+ if(n===3){
+  if((state.kind==='word'||state.kind==='comb') && !(state.mark||'').trim())
+    m.push(T('изписване на марката','the wording of the mark'));
+  if(state.kind!=='word' && !state.img)
+    m.push(T('файл с изображението на марката','the file with the mark'));
+ }
+ if(n===4 && !state.terms.length)
+   m.push(T('поне една стока или услуга','at least one good or service'));
+ if(n===5){
+  const a=state.applicant||{}, legal=a.kind==='legal';
+  if(!(a.name||'').trim())
+    m.push(legal?T('наименование на заявителя','the applicant name')
+                :T('име и фамилия на заявителя','the applicant full name'));
+  if(legal && !(a.id||'').trim()) m.push(T('ЕИК на заявителя','the company number'));
+  if(!legal && state.route==='bg_nat' && !(a.id||'').trim())
+    m.push(T('ЕГН или номер на документ за самоличност','the personal or document number'));
+  if(!(a.addr||'').trim()) m.push(T('адрес за кореспонденция','the address for service'));
+ }
+ if(n===6){
+  const pr=state.priority||{};
+  if(pr.claim && pr.claim!=='none' && !(pr.number||'').trim())
+    m.push(T('номер на по-ранната заявка','the number of the earlier application'));
+ }
+ if(n===7){
+  if(!(state.sigName||'').trim()) m.push(T('име на подписващия','the signatory name'));
+  if(!state.declared) m.push(T('отметната декларация','the ticked declaration'));
+ }
+ return m;
 }
 
 function handoverBlockers(){
@@ -2129,6 +2174,11 @@ const FILE_CAP = {'image/jpeg':1.5*1048576,'image/png':1.5*1048576,
                   'application/pdf':2*1048576,'audio/mpeg':2*1048576,'video/mp4':20*1048576};
 const FILE_EXT = {'application/pdf':'pdf','audio/mpeg':'mp3','video/mp4':'mp4'};
 const FILE_TAG = {'application/pdf':'PDF','audio/mpeg':'MP3','video/mp4':'MP4'};
+/* Малък етикет до името на полето, когато то още е празно. */
+function req(empty){
+ return empty ? ` <span class="reqtag">${lang==='bg'?'задължително':'required'}</span>` : '';
+}
+
 function fileAllowed(){ return state.kind==='other' ? FILE_OK.other : FILE_OK.img }
 
 function uploader(){
@@ -2382,12 +2432,12 @@ function body(k){
     `<button class="opt" data-akind="${id}" data-on="${a.kind===id?1:0}"><span class="tick"></span>
       <span><span class="ot">${esc(L(t))}</span></span><span></span></button>`).join('')}</div>
   <div class="grid2" style="gap:0 20px">
-   <div class="field"><label for="an">${legal?(lang==='bg'?'Наименование':'Legal name'):(lang==='bg'?'Име и фамилия':'Full name')}</label>
-    <input type="text" id="an" value="${esc(a.name)}" placeholder="${legal?'ОРБИТА ЕООД':'Иван Петров'}"></div>
-   ${needsId?`<div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН или номер на документ':'Personal or document number')}</label>
-    <input type="text" id="ae" value="${esc(a.id)}" placeholder="204512345"></div>`:''}
-   <div class="field"><label for="aa">${lang==='bg'?'Адрес за кореспонденция':'Address for service'}</label>
-    <input type="text" id="aa" value="${esc(a.addr)}" placeholder="${lang==='bg'?'гр. София, ул. …':'Sofia, …'}"></div>
+   <div class="field"><label for="an">${legal?(lang==='bg'?'Наименование':'Legal name'):(lang==='bg'?'Име и фамилия':'Full name')}${req(!(a.name||'').trim())}</label>
+    <input type="text" id="an" class="${(a.name||'').trim()?'':'needfix'}" value="${esc(a.name)}" placeholder="${legal?'ОРБИТА ЕООД':'Иван Петров'}"></div>
+   ${needsId?`<div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН или номер на документ':'Personal or document number')}${req(!(a.id||'').trim())}</label>
+    <input type="text" id="ae" class="${(a.id||'').trim()?'':'needfix'}" value="${esc(a.id)}" placeholder="204512345"></div>`:''}
+   <div class="field"><label for="aa">${lang==='bg'?'Адрес за кореспонденция':'Address for service'}${req(!(a.addr||'').trim())}</label>
+    <input type="text" id="aa" class="${(a.addr||'').trim()?'':'needfix'}" value="${esc(a.addr)}" placeholder="${lang==='bg'?'гр. София, ул. …':'Sofia, …'}"></div>
    <div class="field"><label for="ac">${lang==='bg'?'Държава на седалището':'Country of seat'}</label>
     <select id="ac">${countries.map(([c,n])=>`<option value="${c}" ${a.country===c?'selected':''}>${n}</option>`).join('')}</select></div>
   </div>
@@ -2660,17 +2710,19 @@ function Price(){
     </tbody></table></div></div>
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
     <thead><tr><th style="padding-left:22px">${lang==='bg'?'Как расте държавната такса':'How the official fee scales'}</th>
-     <th>${lang==='bg'?'Първи клас':'First class'}</th><th>${lang==='bg'?'Втори клас':'Second class'}</th>
-     <th style="padding-right:22px">${lang==='bg'?'Всеки следващ':'Each further class'}</th></tr></thead>
+     <th class="r">${lang==='bg'?'Първи клас':'First class'}</th><th class="r">${lang==='bg'?'Втори клас':'Second class'}</th>
+     <th class="r" style="padding-right:22px">${lang==='bg'?'Всеки следващ':'Each further class'}</th></tr></thead>
     <tbody>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.bg_nat))}</strong></td>
       <td colspan="2" class="quiet">${lang==='bg'?'265,87 € покриват до три класа':'€265.87 covers up to three classes'}</td>
-      <td class="r" style="padding-right:22px">+€15.33</td></tr>
+      <td class="r num" style="padding-right:22px">${lang==='bg'?'+15,33 €':'+€15.33'}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.eutm))}</strong></td>
-      <td class="r">€850.00</td><td class="r">+€50.00</td><td class="r" style="padding-right:22px">+€150.00</td></tr>
+      <td class="r num">${lang==='bg'?'850,00 €':'€850.00'}</td>
+      <td class="r num">${lang==='bg'?'+50,00 €':'+€50.00'}</td>
+      <td class="r num" style="padding-right:22px">${lang==='bg'?'+150,00 €':'+€150.00'}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.madrid))}</strong></td>
       <td colspan="2" class="quiet">${lang==='bg'?'CHF 653 черно-бяла, CHF 903 цветна, до три класа; +CHF 100 за посочена държава':'CHF 653 black and white, CHF 903 in colour, up to three classes; +CHF 100 per designated country'}</td>
-      <td class="r" style="padding-right:22px">+CHF 100</td></tr>
+      <td class="r num" style="padding-right:22px">${lang==='bg'?'+100 CHF':'+CHF 100'}</td></tr>
     </tbody></table></div></div>
    <p class="quiet" style="max-width:70ch">${lang==='bg'
      ?'Всички възнаграждения в таблицата са без ДДС. ДДС се начислява отделно и се вижда в стъпка 8 преди плащането. Държавната такса е чужд разход и не се облага с ДДС; тя се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и до подаването от адвоката е изцяло възстановима.'
@@ -3942,7 +3994,18 @@ function wire(){
  app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{state.step=+b.dataset.step;save();render()});
  const prev=app.querySelector('#prev'),next=app.querySelector('#next'),sbtn=app.querySelector('#savebtn'),rs=app.querySelector('#reset');
  if(prev)prev.onclick=()=>{state.step=Math.max(1,state.step-1);save();render()};
- if(next)next.onclick=()=>{state.done[state.step]=true;
+ if(next)next.onclick=()=>{
+   const miss=stepBlockers(state.step);
+   if(miss.length){
+     delete state.done[state.step];
+     syncState={type:'err', text:(lang==='bg'
+       ?'За да продължите, попълнете: '
+       :'To continue, complete: ')+miss.join(', ')+'.'};
+     save(); render();
+     const bad=app.querySelector('.needfix'); if(bad&&bad.scrollIntoView) bad.scrollIntoView({block:'center',behavior:'smooth'});
+     return;
+   }
+   state.done[state.step]=true; syncState=null;
    if(state.step<9){state.step++;save();render()}else{handover()}};
  if(sbtn)sbtn.onclick=()=>{save();if(draftTimer){clearTimeout(draftTimer);draftTimer=null;pushDraft()}go('acct')};
  if(rs)rs.onclick=()=>resetDraft();
