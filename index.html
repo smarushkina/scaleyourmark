@@ -798,8 +798,19 @@ const SERVICE={bg_nat:295,eutm:395,madrid:395};   // възнаграждени�
 const SEARCH_FEE=120;  // професионално проучване и анализ, по избор, без ДДС
 /* Цената се изписва от константата, а не на ръка — двете места в стъпка 2
    по-рано носеха числото в текста и щяха да останат стари при промяна. */
-const searchFee=()=>'+\u20AC'+SEARCH_FEE.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
-const money=(v,c)=>(c==='CHF'?'CHF ':'€')+v.toLocaleString(lang==='bg'?'bg-BG':'en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+/* Една-единствена функция за пари на целия сайт. На български сумата върви
+   преди знака и е разделена с непрекъсваем интервал — 265,87 €; на английски
+   знакът е отпред — €265.87. Иначе двете таблици с цени се разминаваха. */
+function money(v,c,dec){
+ const d = dec===0 ? 0 : 2;
+ const n = Number(v||0).toLocaleString(lang==='bg'?'bg-BG':'en-GB',
+   {minimumFractionDigits:d, maximumFractionDigits:d, useGrouping:'always'});
+ const sym = c==='CHF' ? 'CHF' : '\u20AC';
+ return lang==='bg' ? (n+'\u00A0'+sym)
+                    : (sym==='CHF' ? (sym+'\u00A0'+n) : (sym+n));
+}
+const money0=(v,c)=>money(v,c,0);
+const searchFee=()=>'+'+money(SEARCH_FEE,'EUR');
 
 const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -2571,16 +2582,16 @@ function body(k){
   const madrid = state.route==='madrid';
   return `<div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
-   <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r">€${sv.toFixed(2)}</td></tr>
+   <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(sv,'EUR')}</td></tr>
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване и анализ':'Search and analysis'}</td>
-     <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r">€${SEARCH_FEE.toFixed(2)}</td></tr>`:''}
-   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r">€${(net*.2).toFixed(2)}</td></tr>
+     <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(SEARCH_FEE,'EUR')}</td></tr>`:''}
+   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r num">${money(net*.2,'EUR')}</td></tr>
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС':'WIPO fee'}</td>
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
        <td class="r">&#8212;</td></tr>`
    :`<tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
-       <td class="quiet">${lang==='bg'?'чужд разход':'disbursement'}</td><td class="r">${money(f.v,f.cur)}</td></tr>`}
-   <tr><td style="font-weight:600">${lang==='bg'?(madrid?'Общо сега':'Общо'):(madrid?'Payable now':'Total')}</td><td></td><td class="r" style="font-weight:600">${
+       <td class="quiet">${lang==='bg'?'чужд разход':'disbursement'}</td><td class="r num">${money(f.v,f.cur)}</td></tr>`}
+   <tr><td style="font-weight:600">${lang==='bg'?(madrid?'Общо сега':'Общо'):(madrid?'Payable now':'Total')}</td><td></td><td class="r num" style="font-weight:600">${
      madrid?money(net*1.2,'EUR'):money(f.v+net*1.2,'EUR')}</td></tr>
    </tbody></table></div>
   <div class="opts" style="margin-top:0">
@@ -2702,14 +2713,14 @@ function Price(){
      <th style="text-align:right">${lang==='bg'?'Държавна такса':'Official fee'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Адв. възнаграждение<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">без ДДС</div>':'Legal fee<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">excl. VAT</div>'}</th></tr></thead>
     <tbody>${rows.map(([k,d])=>{const r=ROUTES[k], sv=SERVICE[k];return `<tr>
      <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
-     <td class="quiet">${esc(L(d))}</td><td class="r">${r.cur==='CHF'?'CHF '+r.base.toFixed(2):'€'+r.base.toFixed(2)}</td>
-     <td class="r" style="padding-right:22px">€${sv.toFixed(2)}</td></tr>`}).join('')}
+     <td class="quiet">${esc(L(d))}</td><td class="r num">${money(r.base, r.cur)}</td>
+     <td class="r num" style="padding-right:22px">${money(sv,'EUR')}</td></tr>`}).join('')}
      <tr><td style="padding-left:22px"><strong>${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Professional pre-filing search and analysis of identical and similar marks'}</strong>
        <div class="quiet">${lang==='bg'?'по избор, на стъпка 2':'optional, at step 2'}</div></td>
       <td class="quiet">${lang==='bg'
         ?'БПВ, EUIPO и Мадридската система; писмено становище с оценка на риска в 3 работни дни.'
         :'BPO, EUIPO and the Madrid System; a written opinion with a risk assessment in 3 working days.'}</td>
-      <td class="r quiet">&#8212;</td><td class="r" style="padding-right:22px">€${SEARCH_FEE.toFixed(2)}</td></tr>
+      <td class="r quiet">&#8212;</td><td class="r num" style="padding-right:22px">${money(SEARCH_FEE,'EUR')}</td></tr>
     </tbody></table></div></div>
    <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
     <thead><tr><th style="padding-left:22px">${lang==='bg'?'Как расте държавната такса':'How the official fee scales'}</th>
@@ -2717,15 +2728,17 @@ function Price(){
      <th class="r" style="padding-right:22px">${lang==='bg'?'Всеки следващ':'Each further class'}</th></tr></thead>
     <tbody>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.bg_nat))}</strong></td>
-      <td colspan="2" class="quiet">${lang==='bg'?'265,87 € покриват до три класа':'€265.87 covers up to three classes'}</td>
-      <td class="r num" style="padding-right:22px">${lang==='bg'?'+15,33 €':'+€15.33'}</td></tr>
+      <td colspan="2" class="quiet">${lang==='bg'?money(265.87,'EUR')+' покриват до три класа':money(265.87,'EUR')+' covers up to three classes'}</td>
+      <td class="r num" style="padding-right:22px">+${money(15.33,'EUR')}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.eutm))}</strong></td>
-      <td class="r num">${lang==='bg'?'850,00 €':'€850.00'}</td>
-      <td class="r num">${lang==='bg'?'+50,00 €':'+€50.00'}</td>
-      <td class="r num" style="padding-right:22px">${lang==='bg'?'+150,00 €':'+€150.00'}</td></tr>
+      <td class="r num">${money(850,'EUR')}</td>
+      <td class="r num">+${money(50,'EUR')}</td>
+      <td class="r num" style="padding-right:22px">+${money(150,'EUR')}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.madrid))}</strong></td>
-      <td colspan="2" class="quiet">${lang==='bg'?'CHF 653 черно-бяла, CHF 903 цветна, до три класа; +CHF 100 за посочена държава':'CHF 653 black and white, CHF 903 in colour, up to three classes; +CHF 100 per designated country'}</td>
-      <td class="r num" style="padding-right:22px">${lang==='bg'?'+100 CHF':'+CHF 100'}</td></tr>
+      <td colspan="2" class="quiet">${lang==='bg'
+        ?money0(653,'CHF')+' черно-бяла, '+money0(903,'CHF')+' цветна, до три класа; +'+money0(100,'CHF')+' за посочена държава'
+        :money0(653,'CHF')+' black and white, '+money0(903,'CHF')+' in colour, up to three classes; +'+money0(100,'CHF')+' per designated country'}</td>
+      <td class="r num" style="padding-right:22px">+${money0(100,'CHF')}</td></tr>
     </tbody></table></div></div>
    <p class="quiet" style="max-width:70ch">${lang==='bg'
      ?'Всички възнаграждения в таблицата са без ДДС. ДДС се начислява отделно и се вижда в стъпка 8 преди плащането. Държавната такса е чужд разход и не се облага с ДДС; тя се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и до подаването от адвоката е изцяло възстановима.'
@@ -2733,12 +2746,12 @@ function Price(){
    <div class="grid2">
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Мониторинг':'Monitoring'}</div>
-     <div class="num" style="font-size:32px;color:var(--gold);line-height:1.1">&#8364;100
+     <div class="num" style="font-size:32px;color:var(--gold);line-height:1.1">${money0(100,'EUR')}
       <span style="font-size:17px;color:var(--ink-3)">${lang==='bg'?'/ месец':'/ month'}</span></div>
      <div class="num" style="font-size:19px;color:var(--ink-2);line-height:1.2;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
-      <span>${lang==='bg'?'или &#8364;1 000':'or &#8364;1,000'}
+      <span>${(lang==='bg'?'или ':'or ')+money0(1000,'EUR')}
        <span style="font-size:15px;color:var(--ink-3)">${lang==='bg'?'/ година':'/ year'}</span></span>
-      <span class="tag t" style="font-size:12px">${lang==='bg'?'спестявате &#8364;200':'saves &#8364;200'}</span></div>
+      <span class="tag t" style="font-size:12px">${(lang==='bg'?'спестявате ':'saves ')+money0(200,'EUR')}</span></div>
      <p class="quiet">${lang==='bg'
        ?'за марка, без ДДС. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
        :'per mark, excl. VAT. We alert you to similar third-party filings while their opposition window is open.'}</p>
