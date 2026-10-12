@@ -538,10 +538,10 @@ const ROUTES={
  bg_nat:{code:'BG',bg:'Национална марка (България)',en:'National mark (Bulgaria)',office:{bg:'Патентно ведомство на РБ',en:'Bulgarian Patent Office'},
    cur:'EUR',base:265.87,extra:15.33,incl:3,cert:25.56,
    bg_s:'Закрила само в България. Държавната такса покрива до 3 класа.',en_s:'Protection in Bulgaria only. The official fee covers up to 3 classes.'},
- eutm:{code:'EUTM',bg:'Марка на Европейския съюз',en:'European Union trade mark',office:{bg:'EUIPO, Аликанте',en:'EUIPO, Alicante'},
+ eutm:{code:'EUTM',bg:'Марка на Европейския съюз',en:'European Union trade mark',office:{bg:'СЕСИС (EUIPO), Аликанте',en:'EUIPO, Alicante'},
    cur:'EUR',base:850,second:50,third:150,incl:1,
    bg_s:'Едно заявяване, единна закрила в 27 държави членки.',en_s:'One filing, unitary protection across 27 Member States.'},
- madrid:{code:'WO',bg:'Международна регистрация (Мадрид)',en:'International registration (Madrid)',office:{bg:'СОИС, Женева',en:'WIPO, Geneva'},
+ madrid:{code:'WO',bg:'Международна регистрация (Мадрид)',en:'International registration (Madrid)',office:{bg:'СОИС (WIPO), Женева',en:'WIPO, Geneva'},
    cur:'CHF',base:653,colour:903,party:100,overclass:100,incl:3,
    bg_s:'Надгражда базова марка и се разширява към 130+ територии.',en_s:'Builds on a basic mark and extends to 130+ territories.'}
 };
@@ -567,7 +567,7 @@ const STEPS=[
      en:'EU offices do not refuse of their own motion over earlier third-party rights. Here you decide whether a search is done before the official fee is paid.'},
   need:{bg:['Решение дали възлагате проучване','Класовете, които ви интересуват','Имената на конкурентите ви, ако ги знаете'],
         en:['A decision on whether to engage a search','The classes you care about','Your competitors’ names, if you know them']},
-  man:{bg:['Проучването обхваща БПВ, EUIPO и Мадридската система — идентични и сходни знаци във вашите класове и в съседните.',
+  man:{bg:['Проучването обхваща БПВ, СЕСИС (EUIPO) и Мадридската система — идентични и сходни знаци във вашите класове и в съседните.',
            'Рискът не е само идентичност — сходство до степен на объркване за сходни стоки също блокира марката.',
            'Преценява се фонетично, визуално и смислово сходство; това е правна преценка, не съвпадение на текст.',
            'Становището е оценка на риск, не гаранция за регистрация. Проверяват се и фирмени наименования, домейни и нерегистрирани марки в реално ползване.',
@@ -597,7 +597,7 @@ const STEPS=[
   err:{bg:'Честа грешка: логото се заявява с адрес или слоган в изображението. Всичко в квадратчето става част от марката.',
        en:'Common mistake: filing the logo with an address or strapline in the image. Everything in the box becomes the mark.'}},
  {n:4,key:'goods',t:{bg:'Какво продавате?',en:'What do you sell?'},
-  i:{bg:'Класовете определят и цената, и обхвата. Работим с Хармонизираната база данни — над 70 000 термина, приети автоматично от EUIPO и всички национални ведомства в ЕС.',
+  i:{bg:'Класовете определят и цената, и обхвата. Работим с Хармонизираната база данни — над 70 000 термина, приети автоматично от СЕСИС (EUIPO) и всички национални ведомства в ЕС.',
      en:'Classes drive both price and scope. We work from the Harmonised Database — 70 000+ terms accepted automatically by EUIPO and every EU national office.'},
   need:{bg:['Какво продавате днес','Какво ще продавате след 5 години','Стока, услуга или и двете'],
         en:['What you sell today','What you will sell in five years','Goods, services or both']},
@@ -617,7 +617,7 @@ const STEPS=[
   need:{bg:['ЕИК или ЕГН и точно наименование по регистъра','Адрес за кореспонденция','Ако сте извън ЕИП — представител'],
         en:['Company or personal ID and the exact registered name','Address for service','If you are outside the EEA — a representative']},
   man:{bg:['Дружество или физическо лице? Дружеството е по-чисто за инвеститорска проверка; физическото лице оцелява при ликвидация.',
-           'Заявители без седалище или реално предприятие в ЕИП задължително назначават представител пред EUIPO — чл. 119–120 EUTMR.',
+           'Заявители без седалище или реално предприятие в ЕИП задължително назначават представител пред СЕСИС (EUIPO) — чл. 119–120 EUTMR.',
            'Заявители с реално предприятие в ЕИП могат да подадат сами или чрез служител.',
            'Наименованието трябва да съвпада буква по буква с търговския регистър.'],
        en:['Company or individual? A company is cleaner for investor due diligence; an individual survives a liquidation.',
@@ -650,7 +650,7 @@ const STEPS=[
            'Подписва се електронно в платформата или се сваля, подписва и се качва сканирано.',
            'Декларацията, че подписът е на заявителя, се отбелязва тук и се пази по преписката заедно с датата и часа.',
            'За дружество подписва лицето с представителна власт по търговския регистър. При съвместно представителство подписват всички.',
-           'Заявители без седалище или реално предприятие в ЕИП задължително се представляват пред EUIPO (чл. 119–120 EUTMR). При този модел това не е пречка — представителството е част от услугата.'],
+           'Заявители без седалище или реално предприятие в ЕИП задължително се представляват пред СЕСИС (EUIPO) (чл. 119–120 EUTMR). При този модел това не е пречка — представителството е част от услугата.'],
        en:['The power of attorney is generated pre-filled from step 5 — do not retype it by hand.',
            'Sign it electronically in the platform, or download, sign and upload the scan.',
            'The declaration that the signature is the applicant’s is ticked here and kept on the matter with its date and time.',
@@ -665,7 +665,7 @@ const STEPS=[
         en:['Card or bank transfer','Invoicing details (company and VAT number)','Confirmed contents of the application']},
   man:{bg:['Плащането минава през myPOS Checkout — хоствана страница, 3-D Secure 2, SCA по PSD2.',
            'Държавната такса още не е стигнала до ведомството в този момент — плаща се от мен при подаването. Затова дотогава възстановяване е възможно.',
-           'Таксата на EUIPO се плаща в евро; при Мадрид — в швейцарски франкове по курса на СОИС.',
+           'Таксата на СЕСИС (EUIPO) се плаща в евро; при Мадрид — в швейцарски франкове по курса на СОИС (WIPO).',
            'Фактурата се разделя на два реда: адвокатско възнаграждение (с ДДС) и държавна такса (чужд разход, без ДДС).'],
        en:['Payment runs through myPOS Checkout — hosted page, 3-D Secure 2, PSD2 SCA.',
            'The official fee has not reached the office at this point — I pay it at filing. Until then a refund is possible.',
@@ -681,7 +681,7 @@ const STEPS=[
   man:{bg:['Преглеждам в срок до 2 работни дни: отличителност, класове, заявител срещу търговския регистър, пълномощно и приоритет.',
            'Ако намеря проблем, връщам преписката с маркирани полета и кратко обяснение. Поправяте само маркираното.',
            'След подаването получавате входящ номер и дата на заявката. Оттам започва официалният срок.',
-           'България: формална експертиза ~1 месец, по същество ~2 месеца, публикация, 3 месеца опозиционен срок. EUIPO Fast Track публикува средно за около седмица.'],
+           'България: формална експертиза ~1 месец, по същество ~2 месеца, публикация, 3 месеца опозиционен срок. СЕСИС (EUIPO) Fast Track публикува средно за около седмица.'],
        en:['I review within two working days: distinctiveness, classes, applicant against the commercial register, power of attorney and priority.',
            'If I find a problem I return the matter with the fields flagged and a short explanation. You fix only what is flagged.',
            'After filing you receive a file number and the filing date. The official clock starts there.',
@@ -2288,7 +2288,7 @@ function madridBox(){
     :'Choose from the '+A_(MADRID_LIST,'list of Madrid System members')+'. One country per line.'}</span>
  </div>
  <p class="quiet" style="margin:0">${lang==='bg'
-   ?'Таксата на СОИС зависи от посочените държави и се изчислява, след като изпратите заявката. Точната сума ще получите допълнително по имейл, за плащане.'
+   ?'Таксата на СОИС (WIPO) зависи от посочените държави и се изчислява, след като изпратите заявката. Точната сума ще получите допълнително по имейл, за плащане.'
    :'The WIPO fee depends on the countries designated and is calculated after you submit the application. You will receive the exact amount by email, for payment.'}</p>`;
 }
 
@@ -2311,7 +2311,7 @@ function body(k){
     <span class="tick"></span>
     <span><span class="ot">${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Professional pre-filing search and analysis of identical and similar marks'}</span>
      <span class="os">${lang==='bg'
-       ?'БПВ, EUIPO и Мадридската система. Писмено становище с оценка на риска в 3 работни дни, преди държавната такса.'
+       ?'БПВ, СЕСИС (EUIPO) и Мадридската система. Писмено становище с оценка на риска в 3 работни дни, преди държавната такса.'
        :'BPO, EUIPO and the Madrid System. A written opinion with a risk assessment in 3 working days, before the official fee.'}</span></span>
     <span class="op">${searchFee()}</span></button>
 
@@ -2358,7 +2358,7 @@ function body(k){
   return `<div class="opts two">${kinds.map(x=>`<button class="opt" data-kind="${x.id}" data-on="${state.kind===x.id?1:0}">
      <span class="tick"></span><span><span class="ot">${esc(L(x))}</span><span class="os">${esc(L(x.sb))}</span></span><span></span></button>`).join('')}</div>
    ${eu?`<p class="quiet" style="margin:10px 0 0">${lang==='bg'
-      ?'EUIPO не познава отделен вид „комбинирана марка“. Знак, в който текст и изображение вървят заедно, се заявява като фигуративна марка, а словният елемент се изписва отделно.'
+      ?'СЕСИС (EUIPO) не познава отделен вид „комбинирана марка“. Знак, в който текст и изображение вървят заедно, се заявява като фигуративна марка, а словният елемент се изписва отделно.'
       :'EUIPO has no separate “combined mark”. A sign where text and image go together is filed as a figurative mark, with the word element entered separately.'}</p>`:''}
    ${(needsText&&needsFile)?'<div class="markgrid">':''}
    ${needsText?`<div class="field" style="margin-top:14px;margin-bottom:0">
@@ -2379,7 +2379,7 @@ function body(k){
   const g={}; state.terms.forEach(t=>{(g[t.c]=g[t.c]||[]).push(t)});
   const madrid = state.route==='madrid';
   return `<p class="quiet" style="margin:0 0 10px">${lang==='bg'
-    ? 'Пишете дума и предложенията идват директно от Хармонизираната база данни на EUIPO — същата, която ползват Патентното ведомство и всички европейски служби. Термин оттам се приема без възражение.'
+    ? 'Пишете дума и предложенията идват директно от Хармонизираната база данни на СЕСИС (EUIPO) — същата, която ползват Патентното ведомство и всички европейски служби. Термин оттам се приема без възражение.'
     : 'Type a word and the suggestions come straight from the EUIPO Harmonised Database — the same one the Bulgarian office and every EU office use. A term from there is accepted without objection.'}</p>
 
    <div class="signrow">
@@ -2395,7 +2395,7 @@ function body(k){
      ? 'Щракнете върху ред, за да го добавите. Ако предпочитате да разгледате базата сама, <a href="#" id="hdbgo" style="color:var(--gold)">отворете я в нов раздел ↗</a>.'
      : 'Click a row to add it. If you would rather browse the database yourself, <a href="#" id="hdbgo" style="color:var(--gold)">open it in a new tab ↗</a>.'}
      ${madrid?(lang==='bg'
-        ? ' За международна регистрация проверете и в <a href="https://webaccess.wipo.int/mgs/?lang=bg" target="_blank" rel="noopener" style="color:var(--gold)">Мадридския указател на СОИС</a>.'
+        ? ' За международна регистрация проверете и в <a href="https://webaccess.wipo.int/mgs/?lang=bg" target="_blank" rel="noopener" style="color:var(--gold)">Мадридския указател на СОИС (WIPO)</a>.'
         : ' For an international registration also check the <a href="https://webaccess.wipo.int/mgs/?lang=en" target="_blank" rel="noopener" style="color:var(--gold)">WIPO Madrid Goods &amp; Services Manager</a>.'):''}</p>
 
    <div class="field" style="margin-top:14px">
@@ -2459,7 +2459,7 @@ function body(k){
      ?'За юридическо лице ЕИК е задължителен — по него се проверява представителната власт.'
      :'A legal person needs its company number — authority is verified against it.'}</p>`:''}
   ${outside?`<div class="caution">${lang==='bg'
-    ?'Седалището е извън ЕИП. Назначаването на представител пред EUIPO е задължително (чл. 119–120 EUTMR) и адвокатът ще го включи в преписката.'
+    ?'Седалището е извън ЕИП. Назначаването на представител пред СЕСИС (EUIPO) е задължително (чл. 119–120 EUTMR) и адвокатът ще го включи в преписката.'
     :'The seat is outside the EEA. Appointing a representative before EUIPO is mandatory (arts. 119–120 EUTMR) and the lawyer will add it to the matter.'}</div>`:''}`;
  }
 
@@ -2586,7 +2586,7 @@ function body(k){
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване и анализ':'Search and analysis'}</td>
      <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(SEARCH_FEE,'EUR')}</td></tr>`:''}
    <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r num">${money(net*.2,'EUR')}</td></tr>
-   ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС':'WIPO fee'}</td>
+   ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС (WIPO)':'WIPO fee'}</td>
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
        <td class="r">&#8212;</td></tr>`
    :`<tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
@@ -2602,7 +2602,7 @@ function body(k){
     <span class="os">${lang==='bg'?'Преглед след потвърдено постъпване — обичайно един работен ден.':'Review starts once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
   </div>
   <div class="caution" style="margin-top:14px">${madrid?(lang==='bg'
-    ?'Сега заплащате само възнаграждението. Таксата на СОИС зависи от посочените от вас държави и от индивидуалните им такси — тя се изчислява след като заявката бъде обработена от адвоката. Точната сума ще получите по имейл, заедно с указания за плащане.'
+    ?'Сега заплащате само възнаграждението. Таксата на СОИС (WIPO) зависи от посочените от вас държави и от индивидуалните им такси — тя се изчислява след като заявката бъде обработена от адвоката. Точната сума ще получите по имейл, заедно с указания за плащане.'
     :'You are paying the fee for the service only. The WIPO fee depends on the countries you designated and their individual fees — it is calculated once the lawyer has processed the application. You will receive the exact amount by email, together with payment instructions.')
    :(lang==='bg'
     ?'Държавната такса не се превежда на ведомството в момента на плащането — тя се плаща при подаването. Ако при прегледа реша, че марката не следва да се подава, таксата се възстановява изцяло.'
@@ -2718,7 +2718,7 @@ function Price(){
      <tr><td style="padding-left:22px"><strong>${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Professional pre-filing search and analysis of identical and similar marks'}</strong>
        <div class="quiet">${lang==='bg'?'по избор, на стъпка 2':'optional, at step 2'}</div></td>
       <td class="quiet">${lang==='bg'
-        ?'БПВ, EUIPO и Мадридската система; писмено становище с оценка на риска в 3 работни дни.'
+        ?'БПВ, СЕСИС (EUIPO) и Мадридската система; писмено становище с оценка на риска в 3 работни дни.'
         :'BPO, EUIPO and the Madrid System; a written opinion with a risk assessment in 3 working days.'}</td>
       <td class="r quiet">&#8212;</td><td class="r num" style="padding-right:22px">${money(SEARCH_FEE,'EUR')}</td></tr>
     </tbody></table></div></div>
@@ -2797,7 +2797,7 @@ function About(){
    en:'This service was created by Silviya Marushkina, attorney-at-law.'},
   {bg:'Адвокат с над 10 години професионален опит в предоставянето на правни услуги на български и международни клиенти, с фокус върху интелектуалната собственост, корпоративното и търговското право, инвестиционните сделки и регулаторното съответствие.',
    en:'An attorney-at-law with over ten years of professional experience advising Bulgarian and international clients, focused on intellectual property, corporate and commercial law, investment transactions and regulatory compliance.'},
-  {bg:'Професионалният опит включва консултиране по въпроси, свързани със защита и управление на права върху интелектуална собственост, регистрация и управление на търговски марки на национално, европейско и международно ниво, както и производства по опозиция и заличаване/недействителност пред Българското патентно ведомство и EUIPO.',
+  {bg:'Професионалният опит включва консултиране по въпроси, свързани със защита и управление на права върху интелектуална собственост, регистрация и управление на търговски марки на национално, европейско и международно ниво, както и производства по опозиция и заличаване/недействителност пред Българското патентно ведомство и СЕСИС (EUIPO).',
    en:'That experience covers advice on the protection and management of intellectual property rights; the registration and management of trade marks at national, European and international level; and opposition and revocation or invalidity proceedings before the Bulgarian Patent Office and EUIPO.'},
   {bg:'Опитът включва също разработване на стратегии за защита на авторски права и тяхното правоприлагане, консултиране по въпроси на интелектуалната собственост в рамките на инвестиционни и корпоративни сделки.',
    en:'It also covers building copyright protection and enforcement strategies, and advising on intellectual property questions within investment and corporate transactions.'},
@@ -3412,8 +3412,8 @@ const ATTORNEY = {
 };
 const OFFICE_POA = {
   bg_nat:{bg:'Патентното ведомство на Република България', en:'the Patent Office of the Republic of Bulgaria'},
-  eutm:{bg:'Службата на Европейския съюз за интелектуална собственост (EUIPO)', en:'the European Union Intellectual Property Office (EUIPO)'},
-  madrid:{bg:'Световната организация за интелектуална собственост (СОИС) и Патентното ведомство на Република България като ведомство по произход',
+  eutm:{bg:'Службата на Европейския съюз за интелектуална собственост (СЕСИС (EUIPO))', en:'the European Union Intellectual Property Office (EUIPO)'},
+  madrid:{bg:'Световната организация за интелектуална собственост (СОИС (WIPO)) и Патентното ведомство на Република България като ведомство по произход',
           en:'the World Intellectual Property Organization (WIPO) and the Patent Office of the Republic of Bulgaria as office of origin'}
 };
 const MKIND_POA = {
@@ -3682,7 +3682,7 @@ function Office(){
    </div>
    <div class="card pad stack" style="gap:10px"><h3>${lang==='bg'?'Действия при подаване':'Actions at filing'}</h3>
     <div class="rows">
-     ${[[{bg:'Плащане на държавната такса',en:'Pay the official fee'},{bg:'От текуща сметка в EUIPO; равнява се през Me API.',en:'From the EUIPO current account; reconciled through the Me API.'}],
+     ${[[{bg:'Плащане на държавната такса',en:'Pay the official fee'},{bg:'От текуща сметка в СЕСИС (EUIPO); равнява се през Me API.',en:'From the EUIPO current account; reconciled through the Me API.'}],
         [{bg:'Вписване на входящ номер и дата',en:'Record file number and date'},{bg:'Оттам тръгват всички срокове и уведомления.',en:'Every deadline and alert runs from there.'}],
         [{bg:'Срок за такса — България',en:'Fee deadline — Bulgaria'},{bg:'14 дни от подаването, иначе двоен размер. Следи се автоматично.',en:'14 days from filing, otherwise it doubles. Tracked automatically.'}],
         [{bg:'Архивиране на преписката',en:'Archive the matter'},{bg:'Заявка, пълномощно, декларация, фактура и одитна следа в едно досие.',en:'Application, power of attorney, declaration, invoice and audit trail in one file.'}]]
@@ -4267,7 +4267,7 @@ function paintSugg(){
 
  const chosen=new Set(state.terms.map(t=>String(t.id)));
  const waiting = suggProvisional ? note(lang==='bg'
-   ? 'Стеснено от вече показаното. Уточняваме от базата на EUIPO…'
+   ? 'Стеснено от вече показаното. Уточняваме от базата на СЕСИС (EUIPO)…'
    : 'Narrowed from what was already shown. Checking the EUIPO database…') : '';
  box.innerHTML = waiting + suggRows.map(r=>{
    const id='hdb:'+r.id, on=chosen.has(id);
