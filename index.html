@@ -362,12 +362,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 /* generic bits */
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px; grid-auto-rows:1fr}
-.whylist{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; margin-top:4px}
+.whylist{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; grid-auto-rows:1fr; margin-top:4px}
 .whyitem{background:var(--surface); border:1px solid var(--line); border-top:2px solid var(--gold-bright);
          border-radius:12px; padding:18px 20px 19px}
 .whyitem h3{font-size:17px; font-weight:600; color:var(--ink); line-height:1.3; margin:0 0 7px}
 .whyitem p{font-size:15px; line-height:1.7; color:var(--ink-2); margin:0; text-wrap:pretty}
-@media (max-width:760px){ .whylist{grid-template-columns:1fr; gap:14px} .whyitem{padding:16px 17px 17px} }
+@media (min-width:601px) and (max-width:900px){ .whylist{grid-template-columns:1fr 1fr} }
+@media (max-width:600px){ .whylist{grid-template-columns:1fr; gap:14px} .whyitem{padding:16px 17px 17px} }
 .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; grid-auto-rows:1fr}
 .rows{display:flex; flex-direction:column; gap:0}
 .tbl th.r, .tbl td.r{text-align:right}
@@ -2951,17 +2952,14 @@ function Mark(){
 
  const gives=[
   [{bg:'Изключително право за 10 години',en:'An exclusive right for 10 years'},
-   {bg:'Регистрацията дава изключително право върху марката за 10 години, което може да се подновява неограничено. За разлика от материалните активи марката не се обезценява — с годините натрупва разпознаваемост и пазарна стойност.',
-    en:'Registration gives an exclusive right in the mark for ten years, renewable without limit. Unlike tangible assets a mark does not depreciate — over the years it builds recognition and market value.'}],
+   {bg:'Регистрацията дава изключително право върху марката за 10 години, което може да се подновява неограничено. За разлика от материалните активи марката не се обезценява, а с годините натрупва разпознаваемост и стойност.',
+    en:'Registration gives an exclusive right in the mark for ten years, renewable without limit. Unlike tangible assets a mark does not depreciate — it builds value over the years.'}],
   [{bg:'Основание да спрете имитацията',en:'A basis to stop imitation'},
-   {bg:'Регистрацията ви дава правно основание да спрете използването на същия или сходен знак от трети лица. Платформите и маркетплейсите разглеждат сигнали за нарушение по ускорена процедура именно срещу регистрационен номер.',
-    en:'Registration gives you a legal basis to stop others using the same or a similar sign. Platforms and marketplaces act on infringement reports fast when you cite a registration number.'}],
-  [{bg:'Актив, който може да се прехвърля и лицензира',en:'An asset that can be assigned and licensed'},
-   {bg:'Регистрираната марка е самостоятелен нематериален актив с реална икономическа стойност. Може да се прехвърля, да се лицензира срещу възнаграждение, да служи за обезпечение или да се внесе в капитала на дружество.',
-    en:'A registered mark is a standalone intangible asset with real economic value. It can be assigned, licensed for a fee, used as security or contributed to a company\u2019s capital.'}],
-  [{bg:'Аргумент при проверка, сделка или спор',en:'Leverage in diligence, deals and disputes'},
-   {bg:'При инвеститор, продажба на бизнес или спор за име регистрацията превръща въпроса „на кого принадлежи“ в официално удостоверен факт. Това ускорява проверките и намалява риска от отстъпка в цената.',
-    en:'In an investment, a sale of the business or a dispute over a name, registration turns \u201cwho owns this\u201d into an officially certified fact. That speeds up diligence and cuts the risk of a price discount.'}]
+   {bg:'Регистрацията ви дава правно основание да спрете използването на същия или сходен знак от трети лица. Платформите разглеждат сигнали за нарушение по ускорена процедура именно срещу регистрационен номер.',
+    en:'Registration gives you a legal basis to stop others using the same or a similar sign. Platforms act on infringement reports fast when you can cite a registration number.'}],
+  [{bg:'Актив при сделки и преговори',en:'An asset in deals and negotiations'},
+   {bg:'Марката е самостоятелен актив — може да се прехвърля, да се лицензира срещу възнаграждение или да служи за обезпечение. При инвеститор, продажба или спор за име собствеността е удостоверен факт.',
+    en:'A mark is a standalone asset — it can be assigned, licensed or used as security. In an investment, a sale or a dispute, ownership is a certified fact.'}]
  ];
 
  const before=[
