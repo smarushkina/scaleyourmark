@@ -1389,6 +1389,9 @@ function stepBlockers(n){
 
 function handoverBlockers(){
  const m=[];
+ /* Преди предаване се проверяват и всички предишни стъпки — иначе чернова,
+    започната преди тази проверка, можеше да стигне до края с празни полета. */
+ for(let n=1;n<=7;n++) stepBlockers(n).forEach(x=>m.push(x+(lang==='bg'?' (стъпка ':' (step ')+n+')'));
  if(!state.terms.length) m.push(lang==='bg'?'поне един термин в стъпка 4':'at least one term in step 4');
  if(!state.applicant || !(state.applicant.name||'').trim())
    m.push(lang==='bg'?'заявител в стъпка 5':'an applicant in step 5');
