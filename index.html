@@ -362,6 +362,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 /* generic bits */
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px; grid-auto-rows:1fr}
+.whylist{display:grid; grid-template-columns:1fr 1fr; column-gap:46px; row-gap:24px; align-items:start; margin-top:4px}
+.whyitem{border-top:1px solid var(--line); padding-top:14px}
+.whyitem h3{font-size:15.5px; font-weight:600; color:var(--ink); line-height:1.4; margin:0 0 5px}
+.whyitem p{font-size:14.5px; line-height:1.68; color:var(--ink-2); margin:0}
+@media (max-width:760px){ .whylist{grid-template-columns:1fr; column-gap:0; row-gap:20px} }
 .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; grid-auto-rows:1fr}
 .rows{display:flex; flex-direction:column; gap:0}
 .tbl th.r, .tbl td.r{text-align:right}
@@ -521,7 +526,7 @@ body{overflow-wrap:break-word}
 let lang='bg';
 const L = o => (o && o[lang]!==undefined) ? o[lang] : o;
 
-const NAV=[{id:'why',bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
+const NAV=[{id:'why',bg:'ScaleYourMark',en:'ScaleYourMark'},
 {id:'about',bg:'За нас',en:'About'},
 {id:'mark',bg:'За търговската марка',en:'About trade marks'},
 {id:'file',bg:'Заявяване',en:'File a mark'},{id:'guides',bg:'Ръководства',en:'Guides'},
@@ -2982,10 +2987,10 @@ function Mark(){
   ${twocol(asset)}
   <div style="margin:34px 0 14px"><span class="seclabel">${lang==='bg'?'Защо да регистрирате марката си'
                                                                       :'Why register your mark'}</span></div>
-  <div class="grid2" style="gap:18px;margin-top:0">
-   ${gives.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
-     <h3 style="font-size:17px">${esc(L(t))}</h3>
-     <p class="quiet" style="font-size:14.5px;line-height:1.62">${esc(L(d))}</p></div>`).join('')}
+  <div class="whylist">
+   ${gives.map(([t,d])=>`<div class="whyitem">
+     <h3>${esc(L(t))}</h3>
+     <p>${esc(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
 
