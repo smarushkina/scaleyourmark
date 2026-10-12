@@ -401,6 +401,10 @@ input.needfix, textarea.needfix{border-color:var(--gold-bright)}
 .stepcard .tbl{font-size:14px}
 .tbl td.r{text-align:right; font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
 .tblwrap{overflow-x:auto}
+.feefig{display:block; font-size:14.5px}
+.feenote{display:block; margin-top:4px; font-family:"Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+         font-size:12.5px; line-height:1.5; color:var(--ink-3); white-space:normal; font-variant-numeric:normal;
+         text-transform:none; letter-spacing:0}
 footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-top:0; border-top:3px solid var(--gold-bright)}
 .foot .kicker{color:var(--gold-bright)}
 .foot .quiet{color:#ABA294}
@@ -2735,16 +2739,18 @@ function Price(){
      <th class="r" style="padding-right:22px">${lang==='bg'?'Всеки следващ':'Each further class'}</th></tr></thead>
     <tbody>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.bg_nat))}</strong></td>
-      <td colspan="2" class="quiet">${lang==='bg'?money(265.87,'EUR')+' покриват до три класа':money(265.87,'EUR')+' covers up to three classes'}</td>
+      <td colspan="2" class="r"><span class="feefig">${money(265.87,'EUR')}</span>
+       <span class="feenote">${lang==='bg'?'покриват до три класа':'covers up to three classes'}</span></td>
       <td class="r num" style="padding-right:22px">+${money(15.33,'EUR')}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.eutm))}</strong></td>
       <td class="r num">${money(850,'EUR')}</td>
       <td class="r num">+${money(50,'EUR')}</td>
       <td class="r num" style="padding-right:22px">+${money(150,'EUR')}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.madrid))}</strong></td>
-      <td colspan="2" class="quiet">${lang==='bg'
-        ?money0(653,'CHF')+' черно-бяла, '+money0(903,'CHF')+' цветна, до три класа; +'+money0(100,'CHF')+' за посочена държава'
-        :money0(653,'CHF')+' black and white, '+money0(903,'CHF')+' in colour, up to three classes; +'+money0(100,'CHF')+' per designated country'}</td>
+      <td colspan="2" class="r"><span class="feefig">${money0(653,'CHF')+' / '+money0(903,'CHF')}</span>
+       <span class="feenote">${lang==='bg'
+        ?'черно-бяла / цветна, до три класа<br>+'+money0(100,'CHF')+' за посочена държава'
+        :'black and white / in colour, up to three classes<br>+'+money0(100,'CHF')+' per designated country'}</span></td>
       <td class="r num" style="padding-right:22px">+${money0(100,'CHF')}</td></tr>
     </tbody></table></div></div>
    <p class="quiet" style="max-width:70ch">${lang==='bg'
