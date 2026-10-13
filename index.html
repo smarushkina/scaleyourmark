@@ -1289,9 +1289,18 @@ function syncErr(e){
    + ((e && e.message) || e)};
 }
 
+/* Ид. от localStorage може да сочи към изтрита или чужда преписка — тогава
+   сървърът отговаря „matter“ и човекът остава блокиран. Проверяваме веднъж на
+   сесия и ако записът го няма, започваме нов, вместо да спираме.           */
+let matterOk=false;
 async function ensureMatter(){
  if(!remote || !sb || !auth) return null;
- if(state.matter_id) return state.matter_id;
+ if(state.matter_id && matterOk) return state.matter_id;
+ if(state.matter_id){
+  const {data,error}=await sb.from('matters').select('id,ref').eq('id',state.matter_id).maybeSingle();
+  if(!error && data && data.id){ matterOk=true; if(data.ref) state.ref=data.ref; saveLocal(); return state.matter_id }
+  state.matter_id=null; state.ref=null; saveLocal();
+ }
  const base={user_id:auth.id, route:state.route, status:'draft', current_step:state.step};
  let {data, error} = await sb.from('matters')
    .insert(Object.assign({}, base, {src_source:ACQ.source, src_medium:ACQ.medium,
@@ -1303,7 +1312,7 @@ async function ensureMatter(){
    ({data, error} = await sb.from('matters').insert(base).select('id,ref').single());
  }
  if(error){ syncErr(error); return null }
- state.matter_id = data.id; state.ref = data.ref; saveLocal();
+ state.matter_id = data.id; state.ref = data.ref; matterOk=true; saveLocal();
  return data.id;
 }
 
@@ -1597,6 +1606,7 @@ function acqCard(){
 async function resetDraft(){
  const old = state.matter_id;
  state = JSON.parse(JSON.stringify(BLANK));
+ matterOk=false;
  saveLocal();
  if(remote && sb && old){
   await sb.from('matters').delete().eq('id', old).is('locked_at', null);
@@ -3210,10 +3220,15 @@ async function poaSendCode(){
  if(!remote || !sb || !auth){ poaMsg={type:'err',text:lang==='bg'
    ?'Подписването изисква влизане в профил — там отива и преписката.'
    :'Signing requires an account — that is where the matter is kept.'}; render(); return }
- if(!state.matter_id){ poaMsg={type:'err',text:lang==='bg'?'Преписката още не е записана. Върнете се една стъпка и опитайте пак.':'The matter has not been saved yet. Go back one step and try again.'}; render(); return }
  poaBusy=true; poaMsg=null; render();
  try{
-  const {data,error}=await sb.functions.invoke('poa',{body:{action:'send_code',matter_id:state.matter_id}});
+  /* Преписката се създава или възстановява тук, а черновата се записва, преди
+     да тръгне кодът — така пълномощното се сглобява от текущите данни.     */
+  const mid=await ensureMatter();
+  if(!mid) throw new Error('matter');
+  if(draftTimer){ clearTimeout(draftTimer); draftTimer=null }
+  await pushDraft();
+  const {data,error}=await sb.functions.invoke('poa',{body:{action:'send_code',matter_id:mid}});
   if(error) throw error;
   if(data&&data.error) throw new Error(data.error);
   poaSetStage('code'); poaFocusCode=true;
@@ -3232,9 +3247,10 @@ async function poaSendCode(){
    too_soon: lang==='bg'?'Изчакайте една минута между две заявки за код.':'Please wait a minute between code requests.',
    too_many: lang==='bg'?'Твърде много заявки за кратко време. Опитайте след час.':'Too many requests in a short time. Try again in an hour.',
    auth: lang==='bg'?'Влезте отново в профила си и опитайте пак.':'Please sign in again and try once more.',
-   matter: lang==='bg'?'Преписката не е намерена. Върнете се една стъпка назад.':'The matter was not found. Go back one step.',
+   matter: lang==='bg'?'Преписката беше създадена наново. Натиснете бутона още веднъж.':'The matter has been recreated. Press the button once more.',
    mail: lang==='bg'?'Кодът не можа да бъде изпратен. Опитайте пак след минута.':'The code could not be sent. Try again in a minute.'
   };
+  if(c==='matter'){ matterOk=false; state.matter_id=null; state.ref=null; saveLocal() }
   poaMsg={type:'err',text:T[c]||(lang==='bg'?'Кодът не тръгна. Опитайте пак след минута.':'The code did not go out. Try again in a minute.')};
  }
  poaBusy=false; render();
@@ -3247,8 +3263,10 @@ async function poaSign(){
  poaBusy=true; poaMsg=null; render();
  const html=poaStandalone({signature:state.sigPng, signedAt:new Date().toISOString(), email:auth&&auth.email});
  try{
+  const mid=await ensureMatter();
+  if(!mid) throw new Error('matter');
   const {data,error}=await sb.functions.invoke('poa',{body:{
-    action:'sign', matter_id:state.matter_id, code:code,
+    action:'sign', matter_id:mid, code:code,
     signatory_name:(state.sigName||'').trim(),
     signatory_capacity:(state.sigCapacity||'').trim(),
     poa_html:html, signature_png:state.sigPng }});
@@ -3285,9 +3303,10 @@ async function poaSign(){
                             :'The application has already been handed over and the power of attorney can no longer be signed.',
    auth:         lang==='bg'?'Влизането изтече. Влезте отново в профила си и повторете — подписът и данните Ви са запазени.'
                             :'Your session expired. Sign in again and repeat — your signature and data are saved.',
-   matter:       lang==='bg'?'Преписката не е намерена. Върнете се една стъпка назад.'
-                            :'The matter was not found. Go back one step.'
+   matter:       lang==='bg'?'Преписката беше създадена наново. Поискайте нов код и опитайте пак.'
+                            :'The matter has been recreated. Ask for a new code and try again.'
   };
+  if(c==='matter'){ matterOk=false; state.matter_id=null; state.ref=null; saveLocal(); poaSetStage('idle') }
   poaMsg={type:'err',text:S[c]||(lang==='bg'
     ?'Подписването не мина. Опитайте пак, а ако се повтори — пишете ни на office@scaleyourmark.com.'
     :'Signing did not go through. Try again, and if it repeats write to office@scaleyourmark.com.')};
