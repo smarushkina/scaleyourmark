@@ -678,18 +678,18 @@ const STEPS=[
   err:{bg:'Честа грешка: пълномощно, подписано от лице без представителна власт. Ведомството го връща като нередовност и се губи време.',
        en:'Common mistake: a power of attorney signed by someone without authority to represent. The office returns it as a deficiency and time is lost.'}},
  {n:8,key:'pay',t:{bg:'Плащане',en:'Payment'},
-  i:{bg:'Възнаграждението е услуга и е с ДДС. Държавната такса е чужд разход и се плаща на ведомството при подаването.',
-     en:'The legal fee is a service and carries VAT. The official fee is a disbursement, paid to the office at filing.'},
+  i:{bg:'Възнаграждението е услуга и е с ДДС. Държавната такса е допълнителен разход и се плаща на ведомството при подаването.',
+     en:'The legal fee is a service and carries VAT. The official fee is an additional cost, paid to the office at filing.'},
   need:{bg:['Карта или банков превод','Данни за фактура (ЕИК, ДДС номер)','Потвърдено съдържание на заявката'],
         en:['Card or bank transfer','Invoicing details (company and VAT number)','Confirmed contents of the application']},
   man:{bg:['Плащането минава през myPOS Checkout — хоствана страница, 3-D Secure 2, SCA по PSD2.',
            'Държавната такса още не е стигнала до ведомството в този момент — плаща се от мен при подаването. Затова дотогава възстановяване е възможно.',
            'Таксата на СЕСИС (EUIPO) се плаща в евро; при Мадрид — в швейцарски франкове по курса на СОИС (WIPO).',
-           'Фактурата се разделя на два реда: адвокатско възнаграждение (с ДДС) и държавна такса (чужд разход, без ДДС).'],
+           'Фактурата се разделя на два реда: адвокатско възнаграждение (с ДДС) и държавна такса (допълнителен разход, без ДДС).'],
        en:['Payment runs through myPOS Checkout — hosted page, 3-D Secure 2, PSD2 SCA.',
            'The official fee has not reached the office at this point — I pay it at filing. Until then a refund is possible.',
            'The EUIPO fee is paid in euro; Madrid in Swiss francs at the WIPO rate.',
-           'The invoice splits into two lines: legal fee (with VAT) and official fee (disbursement, no VAT).']},
+           'The invoice splits into two lines: legal fee (with VAT) and official fee (additional cost, no VAT).']},
   err:{bg:'Честа грешка: плащане на „такса за публикация“ по измамен имейл след публикацията. Нито ведомствата, нито кантората изпращат такива покани за плащане.',
        en:'Common mistake: paying a "publication fee" from a scam email after publication. Neither the offices nor I send payment requests of that kind.'}},
  {n:9,key:'handover',t:{bg:'Какво следва?',en:'What happens next?'},
@@ -2543,9 +2543,21 @@ function body(k){
     <button class="btn btn-ghost" id="poaredo">${lang==='bg'?'Подпишете отново':'Sign again'}</button>
    </div>`;
 
+  /* Пълномощното се съставя от стъпки 1–6. Ако там липсва нещо, не стига да
+     се каже — трябва и път обратно, иначе човекът гледа готов документ, който
+     не може да поправи.                                                     */
+  const gaps=[];
+  [3,4,5].forEach(n=>{const b=stepBlockers(n); if(b.length) gaps.push([n,b])});
   return `
-  ${miss.length?`<div class="caution" style="margin-bottom:12px">${lang==='bg'
-     ?'Пълномощното ще се допълни само, щом попълните: ':'The power of attorney fills itself once you complete: '}${esc(miss.join(', '))}.</div>`:''}
+  ${gaps.length?`<div class="caution" style="margin-bottom:12px">
+     <strong>${lang==='bg'?'Пълномощното не е пълно':'The power of attorney is incomplete'}</strong>
+     <div style="margin-top:6px">${gaps.map(([n,b])=>(lang==='bg'?'Стъпка ':'Step ')+n+': '+esc(b.join(', '))).join('<br>')}</div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">
+      ${gaps.map(([n])=>`<button class="btn btn-ghost" data-step="${n}" style="padding:7px 13px;font-size:13.5px">${
+        lang==='bg'?'Попълнете стъпка ':'Complete step '}${n} →</button>`).join('')}
+     </div></div>`
+    :(miss.length?`<div class="caution" style="margin-bottom:12px">${lang==='bg'
+     ?'Пълномощното ще се допълни само, щом попълните: ':'The power of attorney fills itself once you complete: '}${esc(miss.join(', '))}.</div>`:'')}
   ${sheet}
   <div class="grid2" style="gap:0 18px;margin-top:16px">
    <div class="field"><label for="sgn">${lang==='bg'?'Име на подписващия':'Signatory’s name'}</label>
@@ -2609,7 +2621,7 @@ function body(k){
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
        <td class="r">&#8212;</td></tr>`
    :`<tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
-       <td class="quiet">${lang==='bg'?'чужд разход':'disbursement'}</td><td class="r num">${money(f.v,f.cur)}</td></tr>`}
+       <td class="quiet">${lang==='bg'?'допълнителен разход':'additional cost'}</td><td class="r num">${money(f.v,f.cur)}</td></tr>`}
    <tr><td style="font-weight:600">${lang==='bg'?(madrid?'Общо сега':'Общо'):(madrid?'Payable now':'Total')}</td><td></td><td class="r num" style="font-weight:600">${
      madrid?money(net*1.2,'EUR'):money(f.v+net*1.2,'EUR')}</td></tr>
    </tbody></table></div>
@@ -2778,8 +2790,8 @@ function Price(){
       <td class="r num" style="padding-right:22px">+${money0(100,'CHF')}</td></tr>
     </tbody></table></div></div>
    <p class="quiet" style="max-width:70ch">${lang==='bg'
-     ?'Всички възнаграждения в таблицата са без ДДС. ДДС се начислява отделно и се вижда в стъпка 8 преди плащането. Държавната такса е чужд разход и не се облага с ДДС; тя се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и до подаването от адвоката е изцяло възстановима.'
-     :'All fees in the table are exclusive of VAT. VAT is added separately and shown at step 8 before payment. The official fee is a disbursement and carries no VAT; it is calculated at step 4, once the classes are settled, and remains fully refundable until the lawyer files.'}</p>
+     ?'Всички възнаграждения в таблицата са без ДДС. ДДС се начислява отделно и се вижда в стъпка 8 преди плащането. Държавната такса е допълнителен разход и не се облага с ДДС; тя се изчислява при попълване на стъпка 4, когато вече е ясно за кои класове заявявате, и до подаването от адвоката е изцяло възстановима.'
+     :'All fees in the table are exclusive of VAT. VAT is added separately and shown at step 8 before payment. The official fee is an additional cost and carries no VAT; it is calculated at step 4, once the classes are settled, and remains fully refundable until the lawyer files.'}</p>
    <div class="grid2">
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Мониторинг':'Monitoring'}</div>
@@ -3121,6 +3133,25 @@ let poaStage = (()=>{ try{ return sessionStorage.getItem('sym_poa_stage')==='cod
 function poaSetStage(v){ poaStage=v; try{ sessionStorage.setItem('sym_poa_stage', v) }catch(e){} }
 let poaPad=null;
 
+/* След смяна на стъпка браузърът пази старата позиция на скрола, което при
+   дълга стъпка (пълномощното) остава на дъното на следващата. Връщаме го
+   на началото на картата, под лепкавата лента.                            */
+function scrollToStep(){
+ requestAnimationFrame(()=>{
+  try{
+   const el=document.querySelector('.stepcard');
+   const hd=document.querySelector('header.top');
+   const off=(hd?hd.getBoundingClientRect().height:0)+14;
+   const y=el?Math.max(0, el.getBoundingClientRect().top+window.scrollY-off):0;
+   window.scrollTo({top:y, behavior:'smooth'});
+  }catch(e){ window.scrollTo(0,0) }
+ });
+}
+
+function goStep(n){
+ state.step=Math.min(9,Math.max(1,n)); syncState=null; save(); render(); scrollToStep();
+}
+
 function poaReady(){
  const f=poaFacts();
  const need=[];
@@ -3375,19 +3406,18 @@ async function doContact(){
 
 function Contact(){
  return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'},
-  {bg:'Отговаряме в рамките на един работен ден. За текущи заявки пишете от профила си.',
-   en:'We reply within one working day. For live applications write from your account.'})}
+  {bg:'Можете да се свържете с нас по всяко време с въпроси, свързани с регистрацията, защитата и управлението на Вашата търговска марка. Независимо дали се нуждаете от професионална консултация, правно съдействие или подкрепа на конкретен етап от процеса, нашият екип е насреща, за да Ви помогне да намерите правилното решение.',
+   en:'You can contact us at any time with questions about the registration, protection and management of your trade mark. Whether you need professional advice, legal assistance or support at a particular stage of the process, our team is here to help you find the right solution.'})}
  <section class="sec"><div class="wrap grid2" style="gap:44px">
   <div class="stack" style="gap:18px">
    <div class="card pad stack" style="gap:12px">
-    <h3>${lang==='bg'?'Пишете ни направо':'Write to us directly'}</h3>
-    <p class="copy" style="margin:0">${lang==='bg'
-      ?'Формата отдясно стига до същата пощенска кутия и обикновено е по-бърза, защото темата е избрана предварително. Ако предпочитате собствената си поща или искате да приложите документ, пишете на адреса отдолу.'
-      :'The form on the right reaches the same mailbox and is usually quicker, because the subject is chosen in advance. If you prefer your own mail client or want to attach a document, write to the address below.'}</p>
+    <h3>${lang==='bg'?'Пишете ни на:':'Write to us at:'}</h3>
     <div>
-     <span class="quiet" style="font-size:13px;display:block;margin-bottom:2px">${lang==='bg'?'Имейл':'Email'}</span>
      <a href="mailto:office@scaleyourmark.com" style="color:var(--gold);font-weight:600;font-size:17px;text-decoration:none;overflow-wrap:anywhere">office@scaleyourmark.com</a>
     </div>
+    <p class="copy" style="margin:0">${lang==='bg'
+      ?'Формата отдясно стига до същата пощенска кутия и обикновено е по-бърза, защото темата е избрана предварително. Ако предпочитате собствената си поща или искате да приложите документ, пишете направо на адреса.'
+      :'The form on the right reaches the same mailbox and is usually quicker, because the subject is chosen in advance. If you prefer your own mail client or want to attach a document, write to the address directly.'}</p>
     <p class="quiet" style="margin:0">${lang==='bg'
       ?'За заявка, която вече е започната, най-добре пишете от профила си — така съобщението идва заедно с преписката и не се налага да обяснявате коя е.'
       :'For an application already under way, write from your account — the message then arrives together with the matter and you need not explain which one it is.'}</p>
@@ -3396,8 +3426,8 @@ function Contact(){
     <span class="quiet" style="font-size:13px">${lang==='bg'?'Дружество':'Company'}</span>
     <strong style="font-size:15.5px">${lang==='bg'?'„СкейлЙорМарк“ ЕООД':'ScaleYourMark EOOD'}</strong>
     <span class="quiet">${lang==='bg'
-      ?'гр. София, ул. „Добротица Деспот“ № 41, вх. Б, ет. 1'
-      :'Sofia, 41 Dobrotica Despot St, entr. B, fl. 1'}</span>
+      ?'гр. София, ул. „Добротица Деспот“ № 41'
+      :'Sofia, 41 Dobrotica Despot St'}</span>
    </div>
   </div>
   <div class="card pad">
@@ -4046,9 +4076,9 @@ function wire(){
    if(t)t.click();});
  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{e.stopPropagation();openDrawer(+b.dataset.open)});
  app.querySelectorAll('[data-peek]').forEach(b=>b.onclick=e=>{e.stopPropagation();openPeek(b.dataset.peek)});
- app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{state.step=+b.dataset.step;save();render()});
+ app.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>goStep(+b.dataset.step));
  const prev=app.querySelector('#prev'),next=app.querySelector('#next'),sbtn=app.querySelector('#savebtn'),rs=app.querySelector('#reset');
- if(prev)prev.onclick=()=>{state.step=Math.max(1,state.step-1);save();render()};
+ if(prev)prev.onclick=()=>goStep(state.step-1);
  if(next)next.onclick=()=>{
    const miss=stepBlockers(state.step);
    if(miss.length){
@@ -4061,7 +4091,7 @@ function wire(){
      return;
    }
    state.done[state.step]=true; syncState=null;
-   if(state.step<9){state.step++;save();render()}else{handover()}};
+   if(state.step<9){state.step++;save();render();scrollToStep()}else{handover()}};
  if(sbtn)sbtn.onclick=()=>{save();if(draftTimer){clearTimeout(draftTimer);draftTimer=null;pushDraft()}go('acct')};
  if(rs)rs.onclick=()=>resetDraft();
  const ak=app.querySelectorAll('[data-akind]');
