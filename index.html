@@ -4079,19 +4079,16 @@ function Acct(){
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
     <th>${lang==='bg'?'Състояние':'Status'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Такса':'Fee'}</th></tr></thead>
    <tbody>${rows}</tbody></table></div></div>
-  <div class="grid2">
-   <div class="card pad stack" style="gap:12px"><div class="kicker">${lang==='bg'?'Как работи запазването':'How saving works'}</div>
-    <p class="quiet" style="font-size:15px">${remote?(lang==='bg'
-      ?'Всяка стъпка се записва в PostgreSQL срещу вашия профил, с одитна следа. Изображението на марката се качва при предаването. Копие остава и в браузъра, за да не се губи при прекъсване.'
-      :'Every step is written to PostgreSQL against your account, with an audit trail. The mark image is uploaded on handover. A copy also stays in this browser so nothing is lost if the connection drops.')
-     :(lang==='bg'
-      ?'Тази страница не вижда сървъра, затова черновата стои само в браузъра ви и изчезва при изчистване на данните.'
-      :'This page cannot see the server, so the draft lives in this browser only and disappears when site data is cleared.')}</p>
-    <button class="btn btn-ghost" id="reset" style="align-self:start">${lang==='bg'?'Изчисти черновата':'Clear this draft'}</button></div>
-   <div class="card pad stack" style="gap:10px"><div class="kicker">${lang==='bg'?'Документи':'Documents'}</div>
-    <p class="quiet" style="font-size:15px">${lang==='bg'
-      ?'Изображението на марката и пълномощното се прикачват към преписката при предаването и оттам нататък се пазят при адвоката. Фактурата се издава след плащането.'
-      :'The mark image and the power of attorney are attached to the matter on handover and are kept with the lawyer from then on. The invoice is issued after payment.'}</p></div>
+  <div class="card pad stack" style="gap:11px">
+   <div class="kicker">${lang==='bg'?'Документи и следващи стъпки':'Documents and what follows'}</div>
+   <p class="quiet" style="font-size:15px">${lang==='bg'
+     ?'Изображението на марката и пълномощното се прикачват към преписката при предаването и оттам нататък се пазят при адвоката. Фактурата се издава след плащането.'
+     :'The mark image and the power of attorney are attached to the matter on handover and are kept with the lawyer from then on. The invoice is issued after payment.'}</p>
+   <p class="quiet" style="font-size:15px">${lang==='bg'
+     ?'След предаването адвокатът проверява преписката лично и се свързва с вас — за коригиращи действия, ако нещо трябва да се допълни или поправи, или за потвърждение, че заявката ще бъде подадена.'
+     :'After handover the lawyer checks the matter personally and contacts you — either for corrections, if something needs to be completed or amended, or to confirm that the application will be filed.'}</p>
+   <button class="btn btn-quiet" id="reset" style="align-self:start;padding:6px 0">${
+     lang==='bg'?'Изчисти черновата':'Clear this draft'}</button>
   </div></div></section>`;
 }
 
