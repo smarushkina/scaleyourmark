@@ -2586,7 +2586,8 @@ function body(k){
       ?'Декларирам, че подписът е мой и че имам правото да представлявам заявителя.'
       :'I declare that the signature is mine and that I am entitled to represent the applicant.'}</span></span><span></span></button>
   ${poaMsg?`<div class="${poaMsg.type==='ok'?'helpbar':'caution'}" style="margin-top:12px">
-     <span ${poaMsg.type==='ok'?'class="ht"':''}>${esc(poaMsg.text)}</span></div>`:''}
+     <span ${poaMsg.type==='ok'?'class="ht"':''}>${esc(poaMsg.text)}</span>
+     ${poaMsg.type==='err'&&poaDiag?`<div class="hashline" style="margin-top:7px;font-size:11.5px;opacity:.85">${esc(poaDiag)}</div>`:''}</div>`:''}
   ${poaStage==='code'?`
    <div class="signrow" style="margin-top:12px">
     <input type="text" id="poacode" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
@@ -3210,6 +3211,23 @@ function sigPadInit(){
  poaPad={clear:()=>{ x.clearRect(0,0,r.width,r.height); state.sigPng=null; saveLocal(); render(); }};
 }
 
+/* Когато сървърът откаже, съобщението за човека не казва нищо за причината.
+   Този ред я показва, за да може да бъде прочетена и съобщена.            */
+let poaDiag=null;
+async function poaDiagFrom(e, label){
+ let status=(e&&e.context&&e.context.status)||(e&&e.status)||'';
+ let code=(e&&e.message)||'';
+ let body='';
+ if(e&&e.context&&typeof e.context.json==='function'){
+  try{ const j=await e.context.json(); if(j){ if(j.error) code=j.error; body=JSON.stringify(j).slice(0,160) } }catch(x){}
+ }
+ poaDiag=label+' · '+(status||'?')+' · '+(code||'?')
+       +' · преписка '+String(state.matter_id||'—').slice(0,8)
+       +' · профил '+String((auth&&auth.id)||'—').slice(0,8)
+       +(body?' · '+body:'');
+ try{ console.log('[SYM poa]', poaDiag) }catch(x){}
+}
+
 async function poaSendCode(){
  if(poaBusy) return;
  const miss=poaReady();
@@ -3220,7 +3238,7 @@ async function poaSendCode(){
  if(!remote || !sb || !auth){ poaMsg={type:'err',text:lang==='bg'
    ?'Подписването изисква влизане в профил — там отива и преписката.'
    :'Signing requires an account — that is where the matter is kept.'}; render(); return }
- poaBusy=true; poaMsg=null; render();
+ poaBusy=true; poaMsg=null; poaDiag=null; render();
  try{
   /* Преписката се създава или възстановява тук, а черновата се записва, преди
      да тръгне кодът — така пълномощното се сглобява от текущите данни.     */
@@ -3250,6 +3268,7 @@ async function poaSendCode(){
    matter: lang==='bg'?'Преписката беше създадена наново. Натиснете бутона още веднъж.':'The matter has been recreated. Press the button once more.',
    mail: lang==='bg'?'Кодът не можа да бъде изпратен. Опитайте пак след минута.':'The code could not be sent. Try again in a minute.'
   };
+  await poaDiagFrom(e,'send_code');
   if(c==='matter'){ matterOk=false; state.matter_id=null; state.ref=null; saveLocal() }
   poaMsg={type:'err',text:T[c]||(lang==='bg'?'Кодът не тръгна. Опитайте пак след минута.':'The code did not go out. Try again in a minute.')};
  }
@@ -3260,7 +3279,7 @@ async function poaSign(){
  if(poaBusy) return;
  const code=((app.querySelector('#poacode')||{}).value||'').replace(/\D+/g,'');
  if(code.length!==6){ poaMsg={type:'err',text:lang==='bg'?'Кодът е шест цифри.':'The code is six digits.'}; render(); return }
- poaBusy=true; poaMsg=null; render();
+ poaBusy=true; poaMsg=null; poaDiag=null; render();
  const html=poaStandalone({signature:state.sigPng, signedAt:new Date().toISOString(), email:auth&&auth.email});
  try{
   const mid=await ensureMatter();
@@ -3306,6 +3325,7 @@ async function poaSign(){
    matter:       lang==='bg'?'Преписката беше създадена наново. Поискайте нов код и опитайте пак.'
                             :'The matter has been recreated. Ask for a new code and try again.'
   };
+  await poaDiagFrom(e,'sign');
   if(c==='matter'){ matterOk=false; state.matter_id=null; state.ref=null; saveLocal(); poaSetStage('idle') }
   poaMsg={type:'err',text:S[c]||(lang==='bg'
     ?'Подписването не мина. Опитайте пак, а ако се повтори — пишете ни на office@scaleyourmark.com.'
