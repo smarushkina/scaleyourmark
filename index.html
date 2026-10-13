@@ -401,6 +401,13 @@ input.needfix, textarea.needfix{border-color:var(--gold-bright)}
 .stepcard .tbl{font-size:14px}
 .tbl td.r{text-align:right; font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
 .tblwrap{overflow-x:auto}
+.gcard{padding:17px 19px 16px; gap:9px}
+.gtitle{font-size:17px; font-weight:400; line-height:1.3; margin:0}
+.gintro{font-size:14.5px; line-height:1.6; color:var(--ink-3); margin:0}
+.gneed{font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); font-weight:600; margin:3px 0 0}
+.glist{margin:7px 0 0; padding-left:17px; font-size:13.5px; color:var(--ink-2); line-height:1.5;
+       display:flex; flex-direction:column; gap:4px}
+.gread{padding:0; font-size:14px; color:var(--gold); font-weight:500}
 .tbl td.feec{text-align:center; font-family:"DM Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
 .feefig{display:block; font-size:14.5px}
 .feenote{display:block; margin-top:4px; font-family:"Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -2678,19 +2685,35 @@ function Guides(){
  }
  return `${pageHead({bg:'Библиотека',en:'Library'},{bg:'Ръководства по стъпки',en:'Step-by-step manuals'},
   {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The same manuals from inside the wizard, collected for reading before you start.'})}
- <section class="sec"><div class="wrap grid2">
-   ${STEPS.map(s=>`<div class="card pad stack" style="gap:12px">
+ <section class="sec"><div class="wrap grid2" style="gap:18px">
+   ${STEPS.map(s=>`<div class="card gcard stack">
      <div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${String(s.n).padStart(2,'0')}</div>
-     <h3>${esc(L(s.t))}</h3>
-     <p class="quiet" style="font-size:15px">${esc(L(s.i))}</p>
-     <div><h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:6px 0 0">${lang==='bg'?'Какво ви трябва':'What you need'}</h4>
-      <ul style="margin:8px 0 0;padding-left:18px;font-size:14.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px">
-       ${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
-     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:auto">
-      ${GUIDE[s.n]?`<button class="btn btn-gold" data-gstep="${s.n}" style="padding:9px 16px;font-size:14px">${
-         lang==='bg'?'Прочетете ръководството':'Read the manual'}</button>`:''}
+     <h3 class="gtitle">${esc(L(s.t))}</h3>
+     <p class="gintro">${esc(L(s.i))}</p>
+     <div><h4 class="gneed">${lang==='bg'?'Какво ви трябва':'What you need'}</h4>
+      <ul class="glist">${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+     <div style="margin-top:auto">
+      ${GUIDE[s.n]?`<button class="btn btn-quiet gread" data-gstep="${s.n}">${
+         lang==='bg'?'Прочетете ръководството →':'Read the manual →'}</button>`:''}
      </div>
-    </div>`).join('')}</div></section>`;
+    </div>`).join('')}
+   <div class="card gcard stack">
+    <div class="kicker">${lang==='bg'?'След подаването':'After filing'}</div>
+    <h3 class="gtitle">${lang==='bg'?'Допълнителни услуги':'Additional services'}</h3>
+    <p class="gintro">${lang==='bg'
+      ?'Работата по вече заявена или регистрирана марка се възлага отделно от заявяването, с отделна оферта и срок.'
+      :'Work on a mark already filed or registered is engaged separately from the filing, with its own quote and timeframe.'}</p>
+    <div><h4 class="gneed">${lang==='bg'?'Какво включва':'What it covers'}</h4>
+     <ul class="glist">${(lang==='bg'
+       ?['Мониторинг на нови сходни заявки','Отговор при опозиция, отказ или нередовност',
+         'Преговори и споразумения за съвместно съществуване','Прехвърляне, лицензия и подновяване на 10 години']
+       :['Monitoring of new similar filings','Response to an opposition, refusal or deficiency',
+         'Negotiations and coexistence agreements','Assignment, licensing and renewal every ten years']
+      ).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+    <div style="margin-top:auto">
+     <button class="btn btn-quiet gread" data-p="contact">${lang==='bg'?'Пишете ни →':'Write to us →'}</button>
+    </div>
+   </div></div></section>`;
 }
 
 /* Един блок от ръководството. Типът решава вида, не авторът на текста. */
