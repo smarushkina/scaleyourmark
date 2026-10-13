@@ -3406,8 +3406,7 @@ async function doContact(){
 
 function Contact(){
  return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'})}
- <section class="sec"><div class="wrap grid2" style="gap:44px">
-  <div class="stack" style="gap:18px">
+ <section class="sec"><div class="wrap grid2" style="gap:24px;align-items:stretch">
    <div class="card pad stack" style="gap:14px">
     <p class="copy" style="margin:0">${lang==='bg'
       ?'Можете да се свържете с нас по всяко време с въпроси, свързани с регистрацията, защитата и управлението на Вашата търговска марка. Независимо дали се нуждаете от професионална консултация, правно съдействие или подкрепа на конкретен етап от процеса, нашият екип е насреща, за да Ви помогне да намерите правилното решение.'
@@ -3416,15 +3415,14 @@ function Contact(){
      <span class="quiet" style="font-size:13px;display:block;margin-bottom:3px">${lang==='bg'?'Пишете ни на:':'Write to us at:'}</span>
      <a href="mailto:office@scaleyourmark.com" style="color:var(--gold);font-weight:600;font-size:17px;text-decoration:none;overflow-wrap:anywhere">office@scaleyourmark.com</a>
     </div>
+    <div style="margin-top:auto;padding-top:14px;border-top:1px solid var(--line-2)">
+     <span class="quiet" style="font-size:13px;display:block">${lang==='bg'?'Дружество':'Company'}</span>
+     <strong style="font-size:15.5px;display:block;margin-top:2px">${lang==='bg'?'„СкейлЙорМарк“ ЕООД':'ScaleYourMark EOOD'}</strong>
+     <span class="quiet">${lang==='bg'
+       ?'гр. София, ул. „Добротица Деспот“ № 41'
+       :'Sofia, 41 Dobrotica Despot St'}</span>
+    </div>
    </div>
-   <div class="card pad stack" style="gap:4px">
-    <span class="quiet" style="font-size:13px">${lang==='bg'?'Дружество':'Company'}</span>
-    <strong style="font-size:15.5px">${lang==='bg'?'„СкейлЙорМарк“ ЕООД':'ScaleYourMark EOOD'}</strong>
-    <span class="quiet">${lang==='bg'
-      ?'гр. София, ул. „Добротица Деспот“ № 41'
-      :'Sofia, 41 Dobrotica Despot St'}</span>
-   </div>
-  </div>
   <div class="card pad">
    <div class="grid2" style="gap:0 18px">
     <div class="field"><label for="cn">${lang==='bg'?'Име':'Name'}</label><input type="text" id="cn" value="${esc(contactForm.name)}" autocomplete="name"></div>
@@ -3437,12 +3435,12 @@ function Contact(){
       {bg:'Опозиция или отказ',en:'Opposition or refusal'},
       {bg:'Фактура и плащане',en:'Invoice and payment'}]
       .map(o=>`<option ${contactForm.topic===L(o)?'selected':''}>${esc(L(o))}</option>`).join('')}</select></div>
-   <div class="field"><label for="cm">${lang==='bg'?'Съобщение':'Message'}</label><textarea id="cm" rows="5">${esc(contactForm.message)}</textarea></div>
+   <div class="field"><label for="cm">${lang==='bg'?'Съобщение':'Message'}</label><textarea id="cm" rows="3">${esc(contactForm.message)}</textarea></div>
    ${contactMsg?`<div class="${contactMsg.type==='ok'?'helpbar':'caution'}" style="margin-bottom:12px">
      <span ${contactMsg.type==='ok'?'class="ht"':''}>${esc(contactMsg.text)}</span></div>`:''}
    <button class="btn btn-primary" id="do_contact" ${contactBusy?'disabled':''}>${
      contactBusy?(lang==='bg'?'Изпращаме…':'Sending…'):(lang==='bg'?'Изпрати':'Send')}</button>
-   <p class="quiet" style="margin-top:12px">${lang==='bg'?'Данните се обработват съгласно Политиката за поверителност. Не изпращайте поверителни документи през тази форма.'
+   <p class="quiet" style="margin-top:10px;font-size:12.5px">${lang==='bg'?'Данните се обработват съгласно Политиката за поверителност. Не изпращайте поверителни документи през тази форма.'
                                                         :'Data is processed under the Privacy Policy. Do not send confidential documents through this form.'}</p>
   </div></div></section>
 <section class="sec"><div class="wrap">
