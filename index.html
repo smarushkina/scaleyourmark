@@ -1440,7 +1440,8 @@ function handoverBlockers(){
 async function handover(){
  const miss = handoverBlockers();
  if(miss.length){
-  syncState={type:'err', text:(lang==='bg'?'Липсва: ':'Missing: ')+miss.join(', ')};
+  syncState={type:'err', text:(lang==='bg'?'Липсва: ':'Missing: ')+miss.join(', '),
+             jump:stepGaps().map(g=>g[0])};
   render(); return;
  }
  if(!remote){ state.status='received'; save(); go('acct'); return }
@@ -2153,7 +2154,10 @@ function File_(){
      <p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(s.i))}</p>
      <div class="stepbody">${body(s.key)}</div>
      ${syncState?`<div class="${syncState.type==='err'?'caution':'helpbar'}" style="margin:0">
-       <span ${syncState.type==='err'?'':'class="ht"'}>${esc(syncState.text)}</span></div>`:''}
+       <span ${syncState.type==='err'?'':'class="ht"'}>${esc(syncState.text)}</span>
+       ${(syncState.jump||[]).length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+         ${syncState.jump.map(n=>`<button class="btn btn-ghost" data-step="${n}" style="padding:7px 13px;font-size:13.5px">${
+           lang==='bg'?'Попълнете стъпка ':'Complete step '}${n} →</button>`).join('')}</div>`:''}</div>`:''}
      <div class="helpbar">
       <span class="ht">${lang==='bg'?'Не сте сигурни? Отворете ръководството.':'Not sure? Open the manual.'}</span>
       <button class="btn btn-ghost" data-open="${s.n}" style="padding:6px 13px;font-size:13px">${lang==='bg'?'Помощ':'Help'}</button>
@@ -2532,6 +2536,7 @@ function body(k){
    <div class="sheet" id="poasheet">${poaHtml({signature:state.sigPng,
       signedAt:state.poa_signed_at, email:auth&&auth.email, hash:state.poa_hash})}</div>`;
   if(signed) return `
+   ${gapsBox(stepGaps())}
    ${sheet}
    <div class="poadone" style="margin-top:14px">
     <strong>${lang==='bg'?'Подписано':'Signed'}</strong> · ${esc(new Date(state.poa_signed_at).toLocaleString(lang==='bg'?'bg-BG':'en-GB'))}
@@ -2545,19 +2550,9 @@ function body(k){
     <button class="btn btn-ghost" id="poaredo">${lang==='bg'?'Подпишете отново':'Sign again'}</button>
    </div>`;
 
-  /* Пълномощното се съставя от стъпки 1–6. Ако там липсва нещо, не стига да
-     се каже — трябва и път обратно, иначе човекът гледа готов документ, който
-     не може да поправи.                                                     */
-  const gaps=[];
-  [3,4,5].forEach(n=>{const b=stepBlockers(n); if(b.length) gaps.push([n,b])});
+  const gaps=stepGaps();
   return `
-  ${gaps.length?`<div class="caution" style="margin-bottom:12px">
-     <strong>${lang==='bg'?'Пълномощното не е пълно':'The power of attorney is incomplete'}</strong>
-     <div style="margin-top:6px">${gaps.map(([n,b])=>(lang==='bg'?'Стъпка ':'Step ')+n+': '+esc(b.join(', '))).join('<br>')}</div>
-     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">
-      ${gaps.map(([n])=>`<button class="btn btn-ghost" data-step="${n}" style="padding:7px 13px;font-size:13.5px">${
-        lang==='bg'?'Попълнете стъпка ':'Complete step '}${n} →</button>`).join('')}
-     </div></div>`
+  ${gaps.length?gapsBox(gaps)
     :(miss.length?`<div class="caution" style="margin-bottom:12px">${lang==='bg'
      ?'Пълномощното ще се допълни само, щом попълните: ':'The power of attorney fills itself once you complete: '}${esc(miss.join(', '))}.</div>`:'')}
   ${sheet}
@@ -3152,6 +3147,25 @@ function scrollToStep(){
 
 function goStep(n){
  state.step=Math.min(9,Math.max(1,n)); syncState=null; save(); render(); scrollToStep();
+}
+
+/* Какво липсва по стъпки 1–6 и път обратно към всяка. Нужен е навсякъде на
+   стъпка 7 — и преди подписа, и след него, защото иначе човек стои пред готов
+   документ, който не може да поправи.                                       */
+function stepGaps(){
+ const g=[];
+ for(let n=1;n<=6;n++){ const b=stepBlockers(n); if(b.length) g.push([n,b]) }
+ return g;
+}
+function gapsBox(g){
+ if(!g.length) return '';
+ return `<div class="caution" style="margin-bottom:12px">
+   <strong>${lang==='bg'?'Липсват данни от предишни стъпки':'Data is missing from earlier steps'}</strong>
+   <div style="margin-top:6px">${g.map(([n,b])=>(lang==='bg'?'Стъпка ':'Step ')+n+': '+esc(b.join(', '))).join('<br>')}</div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">
+    ${g.map(([n])=>`<button class="btn btn-ghost" data-step="${n}" style="padding:7px 13px;font-size:13.5px">${
+      lang==='bg'?'Попълнете стъпка ':'Complete step '}${n} →</button>`).join('')}
+   </div></div>`;
 }
 
 function poaReady(){
