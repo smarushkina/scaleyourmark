@@ -3405,22 +3405,17 @@ async function doContact(){
 }
 
 function Contact(){
- return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'},
-  {bg:'Можете да се свържете с нас по всяко време с въпроси, свързани с регистрацията, защитата и управлението на Вашата търговска марка. Независимо дали се нуждаете от професионална консултация, правно съдействие или подкрепа на конкретен етап от процеса, нашият екип е насреща, за да Ви помогне да намерите правилното решение.',
-   en:'You can contact us at any time with questions about the registration, protection and management of your trade mark. Whether you need professional advice, legal assistance or support at a particular stage of the process, our team is here to help you find the right solution.'})}
+ return `${pageHead({bg:'Контакти',en:'Contact'},{bg:'Свържете се с нас',en:'Get in touch'})}
  <section class="sec"><div class="wrap grid2" style="gap:44px">
   <div class="stack" style="gap:18px">
-   <div class="card pad stack" style="gap:12px">
-    <h3>${lang==='bg'?'Пишете ни на:':'Write to us at:'}</h3>
+   <div class="card pad stack" style="gap:14px">
+    <p class="copy" style="margin:0">${lang==='bg'
+      ?'Можете да се свържете с нас по всяко време с въпроси, свързани с регистрацията, защитата и управлението на Вашата търговска марка. Независимо дали се нуждаете от професионална консултация, правно съдействие или подкрепа на конкретен етап от процеса, нашият екип е насреща, за да Ви помогне да намерите правилното решение.'
+      :'You can contact us at any time with questions about the registration, protection and management of your trade mark. Whether you need professional advice, legal assistance or support at a particular stage of the process, our team is here to help you find the right solution.'}</p>
     <div>
+     <span class="quiet" style="font-size:13px;display:block;margin-bottom:3px">${lang==='bg'?'Пишете ни на:':'Write to us at:'}</span>
      <a href="mailto:office@scaleyourmark.com" style="color:var(--gold);font-weight:600;font-size:17px;text-decoration:none;overflow-wrap:anywhere">office@scaleyourmark.com</a>
     </div>
-    <p class="copy" style="margin:0">${lang==='bg'
-      ?'Формата отдясно стига до същата пощенска кутия и обикновено е по-бърза, защото темата е избрана предварително. Ако предпочитате собствената си поща или искате да приложите документ, пишете направо на адреса.'
-      :'The form on the right reaches the same mailbox and is usually quicker, because the subject is chosen in advance. If you prefer your own mail client or want to attach a document, write to the address directly.'}</p>
-    <p class="quiet" style="margin:0">${lang==='bg'
-      ?'За заявка, която вече е започната, най-добре пишете от профила си — така съобщението идва заедно с преписката и не се налага да обяснявате коя е.'
-      :'For an application already under way, write from your account — the message then arrives together with the matter and you need not explain which one it is.'}</p>
    </div>
    <div class="card pad stack" style="gap:4px">
     <span class="quiet" style="font-size:13px">${lang==='bg'?'Дружество':'Company'}</span>
