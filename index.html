@@ -167,10 +167,18 @@ nav.main button.cta[aria-current="page"]{background:var(--gold-bright); color:va
 section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .lede{font-size:16.5px; line-height:1.6; color:var(--ink-2); max-width:62ch}
 .copy{font-size:15px; line-height:1.7; color:var(--ink-2); max-width:68ch; text-wrap:pretty}
-.twocol{display:grid; grid-template-columns:1fr 1fr; gap:0 48px; align-items:start}
-.twocol .copy{max-width:none; margin:0 0 18px}
-.twocol > div > .copy:last-child{margin-bottom:0}
-@media (max-width:820px){ .twocol{grid-template-columns:1fr} }
+.pwwrap{position:relative}
+.pwwrap input{width:100%; padding-right:46px}
+.pweye{position:absolute; right:6px; top:50%; transform:translateY(-50%); display:flex; align-items:center;
+  justify-content:center; width:36px; height:36px; padding:0; border:0; border-radius:8px; background:transparent;
+  color:var(--ink-2); cursor:pointer}
+.pweye:hover{color:var(--ink); background:rgba(0,0,0,.05)}
+.pweye:focus-visible{outline:2px solid var(--gold-bright); outline-offset:1px}
+/* двете колони: абзаците вървят по колони, но всеки ред започва на едно ниво с другата колона */
+.twocol{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(var(--rows,1),auto);
+  grid-auto-flow:column; gap:18px 48px; align-items:start}
+.twocol .copy{max-width:none; margin:0}
+@media (max-width:820px){ .twocol{grid-template-columns:1fr; grid-template-rows:none; grid-auto-flow:row} }
 /* „Why ScaleYourMark“ на английски — абзаците подравнени двустранно */
 .why-en .copy{text-align:justify; hyphens:auto; -webkit-hyphens:auto; text-wrap:wrap}
 /* Всички абзаци на сайта — подравнени двустранно. :where() държи правилото слабо,
@@ -553,9 +561,9 @@ let lang='bg';
 const L = o => (o && o[lang]!==undefined) ? o[lang] : o;
 
 const NAV=[{id:'why',bg:'ScaleYourMark',en:'ScaleYourMark'},
-{id:'about',bg:'За нас',en:'About'},
+{id:'about',bg:'За нас',en:'About us'},
 {id:'mark',bg:'За търговската марка',en:'About trademarks'},
-{id:'file',bg:'Заявяване',en:'File a mark'},{id:'guides',bg:'Ръководства',en:'Guides'},
+{id:'file',bg:'Заявяване',en:'File a mark'},{id:'guides',bg:'Ръководства',en:'Guidelines'},
 {id:'price',bg:'Цени',en:'Pricing'},
 {id:'contact',bg:'Контакти',en:'Contact'},{id:'acct',bg:'Профил',en:'Account'},{id:'office',bg:'Панел',en:'Dashboard'}];
 
@@ -904,6 +912,21 @@ let recovering = false;         // отворена е връзката за н�
 let resetEmail = '';            // адресът, на който е изпратен кодът за нова парола
 try{ resetEmail = sessionStorage.getItem('sym_reset_email') || '' }catch(e){}
 let authMsg = null;             // {type:'err'|'ok', text}
+let pwNotice = null;            // съобщение „Паролата е сменена“ след вход с кода
+let otpActive = false;
+/* Око в полетата за парола — показва и скрива въведеното. */
+const EYE_ON ='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1"/><path d="M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-pweye]'); if(!b) return;
+ const i=b.parentNode.querySelector('input'); if(!i) return;
+ const show=i.type==='password';
+ i.type=show?'text':'password';
+ b.setAttribute('aria-pressed',show?'true':'false');
+ b.setAttribute('aria-label',show?(lang==='bg'?'Скрий паролата':'Hide password'):(lang==='bg'?'Покажи паролата':'Show password'));
+ b.innerHTML=show?EYE_OFF:EYE_ON;
+ i.focus();
+});          // тече смяна на парола с код — събитието PASSWORD_RECOVERY не бива да иска парола втори път
 
 function isAdmin(){return !!(auth && auth.admin)}
 
@@ -931,7 +954,7 @@ async function initAuth(){
   sb.auth.onAuthStateChange((evt, session)=>{
    setTimeout(async ()=>{
     await adoptSession(session);
-    if(evt==='PASSWORD_RECOVERY'){
+    if(evt==='PASSWORD_RECOVERY' && !otpActive){
      recovering=true; authTab='newpass';
      authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
      page='acct';
@@ -1119,23 +1142,20 @@ async function doOtp(f){
   authMsg={type:'err',text:lang==='bg'?'Паролата трябва да е поне 8 знака.':'The password must be at least 8 characters.'};
   render(); return;
  }
- if(f.pass!==f.pass2){
-  authMsg={type:'err',text:lang==='bg'?'Двете полета не съвпадат.':'The two fields do not match.'};
-  render(); return;
- }
  if(!remote){ authTab='login'; render(); return }
- busy=true; render();
+ busy=true; otpActive=true; render();
  try{
   const {error:e1}=await sb.auth.verifyOtp({email:resetEmail, token:code, type:'recovery'});
   if(e1) throw e1;
   const {error:e2}=await sb.auth.updateUser({password:f.pass});
   if(e2) throw e2;
-  recovering=false;
-  authMsg={type:'ok',text:lang==='bg'?'Паролата е сменена. Влязохте в профила си.'
-                                     :'The password has been changed. You are signed in.'};
-  authTab='login';
+  recovering=false; authTab='login'; authMsg=null;
+  try{ const {data}=await sb.auth.getSession(); await adoptSession(data?data.session:null) }catch(e){}
+  pwNotice={bg:'Паролата е сменена успешно. Влязохте в профила си.',
+            en:'Your password has been changed successfully. You are now signed in.'};
  }catch(e){ authMsg={type:'err',text:authErr(e)} }
  busy=false; render();
+ setTimeout(()=>{ otpActive=false; recovering=false; if(authTab==='newpass') authTab='login'; render() }, 1500);
 }
 
 async function doNewPass(f){
@@ -1144,17 +1164,14 @@ async function doNewPass(f){
   authMsg={type:'err',text:lang==='bg'?'Паролата трябва да е поне 8 знака.':'The password must be at least 8 characters.'};
   render(); return;
  }
- if(f.pass!==f.pass2){
-  authMsg={type:'err',text:lang==='bg'?'Двете полета не съвпадат.':'The two fields do not match.'};
-  render(); return;
- }
  if(!remote){ authTab='login'; render(); return }
  busy=true; render();
  try{
   const {error}=await sb.auth.updateUser({password:f.pass});
   if(error) throw error;
-  recovering=false;
-  authMsg={type:'ok',text:lang==='bg'?'Паролата е сменена.':'The password has been changed.'};
+  recovering=false; authMsg=null;
+  authMsg={type:'ok',text:lang==='bg'?'Паролата е сменена успешно.':'Your password has been changed successfully.'};
+  pwNotice={bg:'Паролата е сменена успешно.',en:'Your password has been changed successfully.'};
   authTab='login';
  }catch(e){ authMsg={type:'err',text:authErr(e)} }
  busy=false; render();
@@ -1172,7 +1189,9 @@ function authBox(){
 
  const F=(id,label,type,ph,extra)=>`<div class="field">
    <label for="${id}">${esc(label)}</label>
-   <input type="${type}" id="${id}" placeholder="${esc(ph||'')}" ${extra||''}>
+   ${type==='password'
+     ? `<div class="pwwrap"><input type="password" id="${id}" placeholder="${esc(ph||'')}" ${extra||''}><button type="button" class="pweye" data-pweye aria-pressed="false" aria-label="${lang==='bg'?'Покажи паролата':'Show password'}">${EYE_ON}</button></div>`
+     : `<input type="${type}" id="${id}" placeholder="${esc(ph||'')}" ${extra||''}>`}
   </div>`;
 
  let body='';
@@ -1197,19 +1216,13 @@ function authBox(){
  } else if(authTab==='otp'){
   body=`${F('o_code',lang==='bg'?'Код от имейла':'Code from the email','text','12345678',
         'required inputmode="numeric" autocomplete="one-time-code" maxlength="10"')}
-   <div class="grid2" style="gap:14px">
-    ${F('o_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
-    ${F('o_pass2',lang==='bg'?'Потвърдете паролата':'Confirm password','password','','required')}
-   </div>
+   ${F('o_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required autocomplete="new-password"')}
    <button class="btn btn-primary" id="do_otp" style="align-self:start">${lang==='bg'?'Запазете новата парола':'Save the new password'}</button>
    <p class="quiet" style="margin-top:10px">${lang==='bg'
      ?('Изпратихме кода на '+(resetEmail||'вашия имейл')+'. Въведете всички цифри от писмото. Валиден е 60 минути; всяка нова заявка обезсилва предишния код. Ако го няма, проверете папката за нежелана поща.')
      :('We sent the code to '+(resetEmail||'your email')+'. Enter every digit from the email. It is valid for 60 minutes; each new request voids the previous code. If it has not arrived, check the spam folder.')}</p>`;
  } else if(authTab==='newpass'){
-  body=`<div class="grid2" style="gap:14px">
-    ${F('n_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required')}
-    ${F('n_pass2',lang==='bg'?'Потвърдете паролата':'Confirm password','password','','required')}
-   </div>
+  body=`${F('n_pass',lang==='bg'?'Нова парола':'New password','password',lang==='bg'?'поне 8 знака':'at least 8 characters','required autocomplete="new-password"')}
    <button class="btn btn-primary" id="do_newpass" style="align-self:start">${lang==='bg'?'Запазете новата парола':'Save the new password'}</button>
    <p class="quiet" style="margin-top:10px">${lang==='bg'
      ?'Връзката от имейла ви е отворила профила. Изберете парола и влезте с нея.'
@@ -1631,9 +1644,8 @@ function brand(s){
 }
 function twocol(arr){
  const t=arr.map(x=>L(x));
- const half=Math.ceil(t.length/2);          // еднакъв брой абзаци във всяка колона
- const col=xs=>xs.map(x=>`<p class="copy">${brand(x)}</p>`).join('');
- return `<div class="twocol"><div>${col(t.slice(0,half))}</div><div>${col(t.slice(half))}</div></div>`;
+ const rows=Math.ceil(t.length/2);          // еднакъв брой абзаци във всяка колона, редовете на едно ниво
+ return `<div class="twocol" style="--rows:${rows}">${t.map(x=>`<p class="copy">${brand(x)}</p>`).join('')}</div>`;
 }
 
 function pageHead(k,t,l,extra){
@@ -1678,7 +1690,7 @@ function chrome(){
    <a href="#">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
-function go(p){ if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
+function go(p){ pwNotice=null; if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
 /* При пре-рисуване на същата стъпка се пази докъде е превъртял човекът.
    Иначе всяко натискане на бутон го връща в началото на пълномощното. */
 let renderKey='';
@@ -1686,11 +1698,17 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  if((page==='acct'||page==='office')&&remote&&auth&&!mattersAsked){loadMatters()}
  if(page==='office'&&remote&&auth&&isAdmin()&&!acqAsked){loadAcq()}
  if(page==='office'&&remote&&auth&&isAdmin()&&!clientsAsked){loadClients()}
- const key=page+'|'+state.step;
+ const key=page+'|'+state.step+'|'+guideStep;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
  chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
  renderKey=key;
+ /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
+ if(!keep.same){
+   window.scrollTo({top:0, behavior:'instant'});
+   const b=app.querySelector('.stepbody'); if(b) b.scrollTop=0;
+   const h=app.querySelector('#poasheet'); if(h) h.scrollTop=0;
+ }
  if(keep.same) requestAnimationFrame(()=>{
    const b=app.querySelector('.stepbody'); if(b&&keep.body) b.scrollTop=keep.body;
    const h=app.querySelector('#poasheet'); if(h&&keep.sheet) h.scrollTop=keep.sheet;
@@ -2701,7 +2719,7 @@ function Guides(){
   return `${pageHead({bg:'Ръководство · стъпка '+guideStep,en:'Manual · step '+guideStep}, s.t, s.i)}
    <section class="sec"><div class="wrap">
     <button class="btn btn-quiet" data-gback="1" style="padding:6px 0;font-size:14px;margin-bottom:18px">${
-      lang==='bg'?'← Всички ръководства':'← All guides'}</button>
+      lang==='bg'?'← Всички ръководства':'← All guidelines'}</button>
     <article class="guidebody">${g.b.map(blockHtml).join('')}</article>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid var(--line-2)">
      ${guideStep>1?`<button class="btn btn-ghost" data-gstep="${guideStep-1}" style="padding:9px 16px;font-size:14px">${
@@ -2713,7 +2731,7 @@ function Guides(){
     </div>
    </div></section>`;
  }
- return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства по стъпки',en:'Step-by-step guides'},
+ return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства по стъпки',en:'Step-by-step guidelines'},
   {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The guidance from each step of the application, brought together so you can read it before you begin.'})}
  <section class="sec"><div class="wrap grid2" style="gap:18px">
    ${STEPS.map(s=>`<div class="card gcard stack">
@@ -2724,7 +2742,7 @@ function Guides(){
       <ul class="glist">${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
      <div style="margin-top:auto">
       ${GUIDE[s.n]?`<button class="btn btn-quiet gread" data-gstep="${s.n}">${
-         lang==='bg'?'Прочетете ръководството →':'Read the guide →'}</button>`:''}
+         lang==='bg'?'Прочетете ръководството →':'Read the guidelines →'}</button>`:''}
      </div>
     </div>`).join('')}
    <div class="card gcard stack">
@@ -2873,7 +2891,7 @@ function About(){
  ];
 
 
- return `${pageHead({bg:'За нас',en:'About'},
+ return `${pageHead({bg:'За нас',en:'About us'},
   {bg:'Създадено от адвокат',en:'Created by an attorney-at-law'},
   {bg:'Адвокат с над 10 години опит в защитата на интелектуалната собственост, с фокус върху търговските марки.',
    en:'An attorney-at-law with more than ten years of experience in intellectual property, specialising in trademarks.'})}
@@ -2978,59 +2996,59 @@ function Why(){
 function Mark(){
  const split=[
   {bg:'Услугата е разработена така, че да съчетава достъпност, яснота и професионална правна подкрепа, без компромис с удобството на процеса или качеството на правната преценка.',
-   en:'The service is designed to combine accessibility, clarity and professional legal support, without compromising either the ease of the process or the quality of the legal assessment.'},
+   en:'The service is designed to combine accessibility, clarity and professional legal support, without compromising either the convenience of the process or the quality of the legal assessment.'},
   {bg:'Вие предоставяте необходимата информация за своя бизнес и преминавате през процедурата стъпка по стъпка. На всеки етап получавате ясни указания относно необходимите действия, тяхното значение и правните последици от съответния избор.',
-   en:'You provide the information required about your business and complete the procedure step by step. At each stage, you receive clear guidance on the action required, why it matters and the legal implications of each choice.'},
+   en:'You provide the necessary information about your business and proceed through the process step by step. At every stage, you receive clear guidance on the actions required, their significance and the legal consequences of each decision.'},
   {bg:'Правният анализ и подаването на заявката се извършват от адвокат, който преценява отличителния характер на марката, обхвата на стоките и услугите, представителната власт, приложимите срокове и комуникацията с компетентното ведомство.',
-   en:'The legal analysis and the filing of the application are handled by an attorney-at-law, who assesses the distinctiveness of the mark, the scope of the goods and services, the authority to act on your behalf, the applicable deadlines and all communication with the competent office.'},
+   en:'The legal assessment and filing of the application are handled by a lawyer who evaluates the distinctiveness of the trademark, the scope of the goods and services, the authority to act on the applicant’s behalf, the applicable deadlines and communications with the competent trademark office.'},
   {bg:'Така получавате удобството и прозрачността на дигитализирания процес, съчетани с професионалната правна преценка и отговорността на адвокатското представителство. Резултатът е услуга, която прави регистрацията по-достъпна, без да прави компромис с правната сигурност.',
-   en:'You benefit from the convenience and transparency of a digital process, combined with the professional judgement and accountability that come with representation by an attorney-at-law. The result is a service that makes registration more accessible without compromising legal certainty.'}
+   en:'This gives you the convenience and transparency of a digital process, combined with professional legal judgement and the accountability of legal representation. The result is a service that makes trademark registration more accessible without compromising legal certainty.'}
  ];
 
  const who=[
-  [{bg:'Нов бранд на пазара',en:'Launching a new brand'},
+  [{bg:'Нов бранд на пазара',en:'New Brands Entering the Market'},
    {bg:'За предприемачи и малки компании, които предстои да изведат ново име или бранд на пазара и искат да го защитят още в началото.',
-    en:'For entrepreneurs and small businesses preparing to bring a new name or brand to market who want to secure protection from the outset.'}],
-  [{bg:'Утвърдена марка без регистрация',en:'Established but unregistered brands'},
+    en:'For entrepreneurs and small businesses preparing to launch a new name or brand and looking to protect it from the outset.'}],
+  [{bg:'Утвърдена марка без регистрация',en:'Established Brands Without Registration'},
    {bg:'За марки, които от години използват своето име или лого без регистрация и не искат да оставят защитата на бранда си на случайността, особено при появата на конкурент със сходно име или знак.',
-    en:'For businesses that have used their name or logo for years without registration and do not want to leave the protection of their brand to chance, particularly when a competitor emerges with a similar name or sign.'}],
-  [{bg:'Творци и свободни професии',en:'Creatives and independent professionals'},
+    en:'For businesses that have been using their name or logo for years without registering it and no longer want to leave their brand’s protection to chance, particularly when a competitor emerges with a similar name or sign.'}],
+  [{bg:'Творци и свободни професии',en:'Creators and Freelancers'},
    {bg:'За творци и лица, упражняващи свободни професии, за които собственото име, псевдонимът или професионалният бранд е неразделна част от тяхната дейност и репутация.',
-    en:'For creatives and independent professionals whose name, pseudonym or professional brand is an integral part of their work and reputation.'}]
+    en:'For creators and self-employed professionals whose name, pseudonym or professional brand is an integral part of their work and reputation.'}]
  ];
 
  const asset=[
   {bg:'Търговската марка е знакът, чрез който клиентите разпознават вашия бизнес и го отличават от останалите. Това може да бъде име, лого или съчетание от двете.',
-   en:'A trademark is the sign by which customers identify your business and distinguish it from others. It may be a name, a logo or a combination of both.'},
+   en:'A trademark is the sign that enables customers to recognise your business and distinguish it from others. It may be a name, a logo, or a combination of the two.'},
   {bg:'Регистрацията превръща това разпознаване в изключително право — признато и защитимо пред ведомството и пред съда.',
    en:'Registration turns that recognition into an exclusive right, recognised and enforceable before the trademark office and the courts.'},
   {bg:'Тя ви дава правна защита и възможност да забраните на трети лица да използват същия или сходен знак за идентични или сходни стоки и услуги.',
-   en:'It gives you legal protection and the right to prevent third parties from using an identical or similar sign for identical or similar goods and services.'},
+   en:'It provides legal protection and allows you to prevent third parties from using identical or similar signs for identical or similar goods and services.'},
   {bg:'Без регистрация имате име, което използвате. С регистрация имате право върху актив, който притежавате.',
-   en:'Without registration, you have a name you use. With registration, you hold a right in an asset you own.'}
+   en:'Without registration, you have a name you use. With registration, you have a right to an asset you own.'}
  ];
 
  const gives=[
-  [{bg:'Изключително право за 10 години',en:'Exclusive rights for ten years'},
+  [{bg:'Изключително право за 10 години',en:'Exclusive Rights for 10 Years'},
    {bg:'Регистрацията на търговска марка ви осигурява изключително право върху нея за срок от 10 години на територията, за която е регистрирана. Срокът може да бъде подновяван неограничен брой пъти за нови 10-годишни периоди, което ви позволява да запазите правната защита на марката си в дългосрочен план.',
-    en:'Registering your trademark gives you exclusive rights in it for ten years in the territory where it is registered. Registration can be renewed indefinitely for further ten-year periods, allowing you to maintain protection over the long term.'}],
-  [{bg:'Основание да спрете имитацията',en:'Legal grounds to stop imitation'},
+    en:'Trademark registration grants you exclusive rights to your trademark for a period of 10 years in the territory in which it is registered. The registration can be renewed indefinitely for successive 10-year periods, allowing you to maintain legal protection for your trademark over the long term.'}],
+  [{bg:'Основание да спрете имитацията',en:'A Legal Basis for Stopping Imitation'},
    {bg:'Регистрацията на търговска марка ви предоставя правни средства за защита срещу неправомерно използване, копиране и имитация на вашата марка. Тя ви дава възможност да търсите прекратяване на нарушенията и да защитавате отличителността, репутацията и пазарната идентичност на бизнеса си.',
-    en:'A registered trademark gives you legal remedies against unauthorised use, copying and imitation of your mark. It allows you to take action to stop infringements and to protect the distinctiveness, reputation and market identity of your business.'}],
-  [{bg:'Актив при сделки и преговори',en:'A valuable asset in transactions'},
+    en:'Trademark registration provides legal remedies against the unauthorised use, copying and imitation of your mark. It enables you to seek an end to infringement and protect your business’s distinctiveness, reputation and market identity.'}],
+  [{bg:'Актив при сделки и преговори',en:'An Asset in Transactions and Negotiations'},
    {bg:'Регистрираната търговска марка повишава стойността на интелектуалната собственост на вашия бизнес и може да бъде съществено предимство при преговори с партньори, инвеститори и потенциални купувачи. Тя създава възможности за лицензиране, прехвърляне на права и развитие на нови търговски партньорства.',
-    en:'A registered trademark increases the value of your business’s intellectual property and can be a significant advantage in negotiations with partners, investors and prospective buyers. It also creates opportunities for licensing, assignment and new commercial partnerships.'}]
+    en:'A registered trademark increases the value of your business’s intellectual property and can be a significant advantage when negotiating with partners, investors and potential buyers. It creates opportunities for licensing, the transfer of rights and the development of new business partnerships.'}]
  ];
 
  const before=[
   {bg:'Процедурата по регистрация на търговска марка не е сложна сама по себе си. Тя обаче изисква прецизност, тъй като още в началото се вземат решения, които определят обхвата и ефективността на правната защита.',
-   en:'The trademark registration procedure is not complicated in itself. It does, however, require precision, because the decisions that determine the scope and effectiveness of legal protection are made at the very outset.'},
+   en:'The trademark registration process is not inherently complicated. However, it requires precision, as decisions made at the outset determine the scope and effectiveness of your legal protection.'},
   {bg:'Необходимо е да се определи територията на защита, точният знак, стоките и услугите, за които ще се заяви регистрацията, както и лицето, на чието име ще бъде регистрирана марката. Всеки от тези елементи има значение за бъдещите права на притежателя.',
-   en:'You need to define the territory of protection, the exact sign, the goods and services to be covered by the application and the person or entity in whose name the trademark will be registered. Each of these elements has a bearing on the owner’s future rights.'},
+   en:'You need to determine the territory in which protection is sought, the exact sign to be registered, the goods and services covered by the application, and the person or entity in whose name the trademark will be registered. Each of these elements affects the rights you will hold in the future.'},
   {bg:'След подаването на заявката възможностите за промени са ограничени. По правило не могат да се добавят нови стоки и услуги извън първоначално заявените, да се заменя съществено самият знак или да се променя със задна дата датата на подаване.',
-   en:'Once the application has been filed, the scope for amendment is limited. As a rule, goods and services cannot be added beyond those originally claimed, the sign itself cannot be materially altered and the filing date cannot be changed retrospectively.'},
+   en:'Once the application has been filed, the scope for amendments is limited. As a rule, new goods and services cannot be added beyond those originally specified, the mark itself cannot be materially altered, and the filing date cannot be changed retrospectively.'},
   {bg:'Именно в тези първоначални решения се крият най-съществените рискове. Неправилният избор може да ограничи защитата и да доведе до допълнителни разходи. Затова успешната регистрация започва не с попълването на формуляра, а с добре обмислена правна стратегия.',
-   en:'It is these initial decisions that carry the most significant risks. The wrong choice can limit protection and lead to additional costs. A successful registration therefore begins not with completing the form, but with a well-considered legal strategy.'}
+   en:'These initial decisions are where the most significant risks lie. A wrong choice may limit the scope of protection and lead to additional costs. That is why successful trademark registration begins not with filling in a form, but with a well-considered legal strategy.'}
  ];
 
  return `${pageHead({bg:'За търговската марка',en:'About trademarks'},
@@ -3040,16 +3058,16 @@ function Mark(){
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
-   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Какво е марката':'What is a trademark?'}</span></div>
-   <h2>${lang==='bg'?'Знакът, по който ви разпознават':'The sign that identifies your business'}</h2>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Какво е марката':'What Is a Trademark'}</span></div>
+   <h2>${lang==='bg'?'Знакът, по който ви разпознават':'The Sign That Makes You Recognisable'}</h2>
   </div>
   ${twocol(asset)}
  </div></section>
 
  <section class="sec"><div class="wrap">
   <div class="sechead">
-   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Ползите от регистрацията':'Benefits of registration'}</span></div>
-   <h2>${lang==='bg'?'Защо да регистрирате марката си':'Why register your trademark?'}</h2>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Ползите от регистрацията':'The Benefits of Registration'}</span></div>
+   <h2>${lang==='bg'?'Защо да регистрирате марката си':'Why Register Your Trademark'}</h2>
   </div>
   <div class="whylist">
    ${gives.map(([t,d])=>`<div class="whyitem">
@@ -3060,35 +3078,35 @@ function Mark(){
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
-   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Къде се решава всичко':'Where the key choices are made'}</span></div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Къде се решава всичко':'Where It All Comes Down to'}</span></div>
    <h2>${lang==='bg'?'Най-важните решения се вземат преди подаването'
-                    :'The most important decisions are made before filing'}</h2>
+                    :'The Most Important Decisions Are Made Before Filing'}</h2>
   </div>
   ${twocol(before)}
  </div></section>
 
  <section class="sec"><div class="wrap">
   <div class="sechead">
-   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Територия на защита':'Territory of protection'}</span></div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Територия на защита':'Territory of Protection'}</span></div>
    <h2>${lang==='bg'?'Защита там, където развивате бизнеса си'
-                    :'Protection where your business operates'}</h2>
+                    :'Protection Where You Do Business'}</h2>
   </div>
   ${twocol([
    {bg:'Една и съща услуга може да бъде приложена към различни режими на защита в зависимост от пазара, на който оперирате или планирате да развивате дейността си.',
-    en:'The service covers different systems of protection, depending on the markets in which you operate or plan to expand.'},
+    en:'The same service can be applied under different protection systems, depending on the markets in which you operate or plan to expand your business.'},
    {bg:'Изборът на правилната територия е част от стратегията за защита на марката и трябва да бъде съобразен с настоящите и бъдещите ви бизнес планове.',
-    en:'Choosing the right territory is part of your trademark protection strategy and should reflect both your current and future business plans.'}
+    en:'Choosing the right territory is an integral part of your trademark protection strategy and should reflect both your current and future business plans.'}
   ])}
   <div class="grid3" style="gap:18px;margin-top:26px">
-   ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National registration'},
+   ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National Registration'},
        {bg:'Когато защитата е необходима само на територията на страната. Заявява се пред Патентното ведомство на Република България.',
-        en:'When protection is required in Bulgaria only. The application is filed with the Patent Office of the Republic of Bulgaria.'}],
-      [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union trade mark'},
+        en:'When protection is required only within Bulgaria. The application is filed with the Bulgarian Patent Office.'}],
+      [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union Trade Mark'},
        {bg:'Когато бизнесът ви има или предстои да има присъствие в повече държави членки. Едно заявяване, единна закрила в 27 държави.',
-        en:'When your business operates, or plans to operate, in several Member States. A single application provides unitary protection across all 27 Member States.'}],
+        en:'When your business already operates, or plans to operate, in multiple EU Member States. One application provides unitary protection across all 27 Member States.'}],
       [{bg:'Международно',en:'International'},{bg:'Мадридска система',en:'The Madrid System'},
        {bg:'За защита на определени международни пазари. Надгражда базова марка и се разширява към избрани територии.',
-        en:'For protection in selected international markets. It builds on a basic mark and extends protection to the territories you designate.'}]]
+        en:'For protection in selected international markets. The system builds on a basic trademark application or registration and allows protection to be extended to designated territories.'}]]
      .map(([k,t,d])=>`<div class="card pad stack goldtop" style="gap:7px">
        <span class="kicker">${esc(L(k))}</span>
        <h3 style="font-size:17px">${esc(L(t))}</h3>
@@ -3098,17 +3116,17 @@ function Mark(){
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
-   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Как е разделена работата':'How we work together'}</span></div>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'Как е разделена работата':'How the Work Is Divided'}</span></div>
    <h2>${lang==='bg'?'Вие познавате бизнеса си. Ние поемаме правната част.'
-                    :'You know your business. We take care of the legal side.'}</h2>
+                    :'You Know Your Business. We Handle the Legal Side.'}</h2>
   </div>
   ${twocol(split)}
  </div></section>
 
  <section class="sec"><div class="wrap">
   <div class="sechead">
-   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'За кого е':'Who it is for'}</span></div>
-   <h2>${lang==='bg'?'За кого е предназначена услугата?':'Who is the service designed for?'}</h2>
+   <div style="margin-bottom:13px"><span class="seclabel">${lang==='bg'?'За кого е':'Who Is It For'}</span></div>
+   <h2>${lang==='bg'?'За кого е предназначена услугата':'Who Is This Service Designed For'}</h2>
   </div>
   <div class="grid3" style="gap:18px">
    ${who.map(([t,d])=>`<div class="card pad stack goldtop" style="gap:8px">
@@ -3157,11 +3175,8 @@ let poaPad=null;
 function scrollToStep(){
  requestAnimationFrame(()=>{
   try{
-   const el=document.querySelector('.stepcard');
-   const hd=document.querySelector('header.top');
-   const off=(hd?hd.getBoundingClientRect().height:0)+14;
-   const y=el?Math.max(0, el.getBoundingClientRect().top+window.scrollY-off):0;
-   window.scrollTo({top:y, behavior:'smooth'});
+   window.scrollTo({top:0, behavior:'instant'});
+   const b=document.querySelector('.stepbody'); if(b) b.scrollTop=0;
   }catch(e){ window.scrollTo(0,0) }
  });
 }
@@ -4046,6 +4061,7 @@ function Acct(){
     en:'Your account keeps the draft and is how the lawyer reaches you.'})}
   <section class="sec"><div class="wrap">${authBox()}</div></section>`;
 
+ const pwBar = pwNotice ? `<div class="helpbar" style="margin-bottom:18px"><span class="ht">${esc(L(pwNotice))}</span></div>` : '';
  const cell=(t,sub)=>`<td style="padding-left:22px"><strong>${t}</strong>${sub?`<div class="quiet">${sub}</div>`:''}</td>`;
  let rows;
  if(!remote){
@@ -4080,6 +4096,7 @@ function Acct(){
   {bg:'Всяка преписка с текущото си състояние, следващия срок и документите по нея.',
    en:'Every matter with its current status, the next deadline and its documents.'})}
  <section class="sec"><div class="wrap stack" style="gap:22px">
+  ${pwBar}
   <div class="whobar">
    <div><strong>${esc(auth.name)}</strong>${auth.admin?` <span class="tag v">${lang==='bg'?'администратор':'administrator'}</span>`:''}
     <div class="quiet">${esc(auth.email)}${auth.phone?' · '+esc(auth.phone):''}</div></div>
@@ -4125,9 +4142,9 @@ function wire(){
  const bx=app.querySelector('#do_reset');
  if(bx) bx.onclick=()=>doReset({email:vl('x_email')});
  const bo=app.querySelector('#do_otp');
- if(bo) bo.onclick=()=>doOtp({code:vl('o_code'),pass:vl('o_pass'),pass2:vl('o_pass2')});
+ if(bo) bo.onclick=()=>doOtp({code:vl('o_code'),pass:vl('o_pass')});
  const bn=app.querySelector('#do_newpass');
- if(bn) bn.onclick=()=>doNewPass({pass:vl('n_pass'),pass2:vl('n_pass2')});
+ if(bn) bn.onclick=()=>doNewPass({pass:vl('n_pass')});
  app.querySelectorAll('.card input').forEach(i=>i.onkeydown=e=>{
    if(e.key!=='Enter')return; e.preventDefault();
    const t=app.querySelector('#do_login')||app.querySelector('#do_register')||app.querySelector('#do_reset')||app.querySelector('#do_otp')||app.querySelector('#do_newpass');
