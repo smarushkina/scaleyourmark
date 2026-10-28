@@ -1493,6 +1493,7 @@ function stepBlockers(n){
  if(n===7){
   if(!sigNameEff()) m.push(sigMissingText());
   if(!state.declared) m.push(T('отметната декларация','the ticked declaration'));
+  if(!state.poa_signed_at) m.push(T('електронно подписано пълномощно','an electronically signed power of attorney'));
  }
  return m;
 }
@@ -3491,7 +3492,16 @@ function scrollToStep(){
 }
 
 function goStep(n){
- state.step=Math.min(9,Math.max(1,n)); syncState=null; save(); render(); scrollToStep();
+ n=Math.min(9,Math.max(1,n));
+ /* Към плащането (стъпка 8) и нататък — само с електронно подписано пълномощно. */
+ if(n>=8 && (state.status||'draft')==='draft' && !state.poa_signed_at){
+   state.step=7;
+   syncState={type:'err',text:lang==='bg'
+     ?'За да продължите към плащането, първо подпишете пълномощното електронно на тази стъпка.'
+     :'To continue to payment, please first sign the power of attorney electronically on this step.'};
+   save(); render(); scrollToStep(); return;
+ }
+ state.step=n; syncState=null; save(); render(); scrollToStep();
 }
 
 /* Какво липсва по стъпки 1–6 и път обратно към всяка. Нужен е навсякъде на
