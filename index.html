@@ -1711,9 +1711,6 @@ function openSearchDrawer(){
    <div class="ws-price" style="margin-top:0;padding-top:0;border-top:0"><span>${B?'Професионално проучване и анализ':'Professional clearance search and analysis'}</span><strong class="num">${price}</strong></div>
    <button class="btn btn-primary" id="dorder" style="width:100%;justify-content:center">${
      chosen?(B?'✓ Проучването е избрано':'✓ Search selected'):(B?'Поръчайте проучване':'Order a clearance search')}</button>
-   <p class="quiet" style="font-size:12.5px;margin:8px 0 0;text-align:left">${B
-     ?'Проучването влиза в сметката на стъпка 8. Ако то покаже сериозен риск, ще имате време да промените знака, преди да платите държавната такса.'
-     :'The search is added to the invoice at step 8. If it reveals a serious risk, you will have time to adjust the sign before paying the official fee.'}</p>
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;padding-top:18px;border-top:1px solid var(--line-2)">
    <button class="btn btn-quiet" id="dclose2" style="padding:9px 16px;font-size:14px">${B?'Обратно към стъпката':'Back to the step'}</button>
@@ -2543,16 +2540,9 @@ function body(k){
     <span></span></button>
   </div>
 
-  <div class="sum">
-   <div class="kicker" style="margin-bottom:8px">${lang==='bg'?'Защо това е отделна стъпка':'Why this is a step of its own'}</div>
-   <p style="font-size:14.5px;color:var(--ink-2);line-height:1.6;margin:0">${lang==='bg'
-     ?'Опозиция се печели и срещу различно изписан знак, ако звучи или изглежда подобно за сходни стоки. При успешна опозиция държавната такса не се връща.'
-     :'An opposition succeeds against a differently spelled sign too, if it sounds or looks alike for similar goods. On a successful opposition the official fee is not refunded.'}</p>
-  </div>
-
   ${state.search==='full'
    ?`<div class="helpbar" style="margin-top:14px"><span class="ht">${lang==='bg'
-       ?'Проучването влиза в сметката на стъпка 8.':'The search is added to the invoice at step 8.'}</span>
+       ?'Проучването влиза в цената, посочена в стъпка 8.':'The search is included in the price shown at step 8.'}</span>
       <span class="num">${searchFee()}</span></div>`
    :state.search==='none'
    ?`<div class="caution" style="margin-top:14px">${lang==='bg'
