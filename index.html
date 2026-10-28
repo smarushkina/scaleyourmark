@@ -1491,7 +1491,7 @@ function stepBlockers(n){
     m.push(T('номер на по-ранната заявка','the number of the earlier application'));
  }
  if(n===7){
-  if(!(state.sigName||'').trim()) m.push(T('име на подписващия','the signatory name'));
+  if(!sigNameEff()) m.push(T('име на подписващия','the signatory name'));
   if(!state.declared) m.push(T('отметната декларация','the ticked declaration'));
  }
  return m;
@@ -1505,7 +1505,7 @@ function handoverBlockers(){
  if(!state.terms.length) m.push(lang==='bg'?'поне един термин в стъпка 4':'at least one term in step 4');
  if(!state.applicant || !(state.applicant.name||'').trim())
    m.push(lang==='bg'?'заявител в стъпка 5':'an applicant in step 5');
- if(!(state.sigName||state.signatory||'').trim())
+ if(!(sigNameEff()||state.signatory||'').trim())
    m.push(lang==='bg'?'име на подписващия в стъпка 7':'the signatory in step 7');
  if(!state.declared) m.push(lang==='bg'?'декларацията в стъпка 7':'the declaration in step 7');
  if(!state.poa_signed_at)
@@ -1706,6 +1706,13 @@ const MONITOR_GUIDE=[
        en:'Trademark watching is a separate service and is not required in order to file. Filing an opposition, where needed, is engaged separately.'}]
 ];
 let monitorMsg=null;   // съобщение в панела след поръчка
+/* Кой подписва пълномощното. Физическото лице подписва само за себе си —
+   име и качество не се питат отделно. */
+const isLegalApplicant=()=>((state.applicant&&state.applicant.kind)||'legal')==='legal';
+function sigNameEff(){ return isLegalApplicant()
+   ? ((state.sigName||'').trim() || ((state.applicant&&state.applicant.rep)||'').trim())
+   : ((state.applicant&&state.applicant.name)||'').trim(); }
+function sigCapEff(){ return isLegalApplicant() ? (state.sigCapacity||'').trim() : ''; }
 function monitorPlanCards(cur,after){
  const B=lang==='bg';
  return `<div class="mon-plans">${['m6','y1'].map(k=>{const p=MONITOR[k], on=cur===k;
@@ -2884,12 +2891,14 @@ function body(k){
     :(miss.length?`<div class="caution" style="margin-bottom:12px">${lang==='bg'
      ?'Пълномощното ще се допълни само, щом попълните: ':'The power of attorney fills itself once you complete: '}${esc(miss.join(', '))}.</div>`:'')}
   ${sheet}
-  <div class="grid2" style="gap:0 18px;margin-top:16px">
+  ${isLegalApplicant()?`<div class="grid2" style="gap:0 18px;margin-top:16px">
    <div class="field"><label for="sgn">${lang==='bg'?'Име на подписващия':'Signatory’s name'}</label>
     <input type="text" id="sgn" value="${esc(state.sigName||'')}" placeholder="${lang==='bg'?'Иван Петров':'Ivan Petrov'}"></div>
    <div class="field"><label for="sgc">${lang==='bg'?'Качество':'Capacity'}</label>
     <input type="text" id="sgc" value="${esc(state.sigCapacity||'')}" placeholder="${lang==='bg'?'управител':'manager'}"></div>
-  </div>
+  </div>`:`<p class="quiet" style="margin:16px 0 0;text-align:left">${lang==='bg'
+     ?'Пълномощното се подписва лично от заявителя'+(sigNameEff()?': <b>'+esc(sigNameEff())+'</b>':'')+'.'
+     :'The power of attorney is signed by the applicant personally'+(sigNameEff()?': <b>'+esc(sigNameEff())+'</b>':'')+'.'}</p>`}
   <div class="sigwrap">
    <div class="stack" style="gap:6px">
     <span class="quiet">${lang==='bg'?'Подпис — начертайте с мишката или с пръст':'Signature — draw with the mouse or your finger'}</span>
@@ -2900,9 +2909,10 @@ function body(k){
   <button class="opt" data-declare="1" data-on="${state.declared?1:0}" style="margin-top:12px">
    <span class="tick" style="border-radius:6px"></span>
    <span><span class="ot">${lang==='bg'?'Декларация':'Declaration'}</span>
-    <span class="os">${lang==='bg'
-      ?'Декларирам, че подписът е мой и че имам правото да представлявам заявителя.'
-      :'I declare that the signature is mine and that I am entitled to represent the applicant.'}</span></span><span></span></button>
+    <span class="os">${isLegalApplicant()
+      ?(lang==='bg'?'Декларирам, че подписът е мой и че имам правото да представлявам заявителя.'
+                   :'I declare that the signature is mine and that I am entitled to represent the applicant.')
+      :(lang==='bg'?'Декларирам, че подписът е мой.':'I declare that the signature is mine.')}</span></span><span></span></button>
   ${poaMsg?`<div class="${poaMsg.type==='ok'?'helpbar':'caution'}" style="margin-top:12px">
      <span ${poaMsg.type==='ok'?'class="ht"':''}>${esc(poaMsg.text)}</span>
      ${poaMsg.type==='err'&&poaDiag?`<div class="hashline" style="margin-top:7px;font-size:11.5px;opacity:.85">${esc(poaDiag)}</div>`:''}</div>`:''}
@@ -3555,7 +3565,7 @@ async function poaSendCode(){
  if(poaBusy) return;
  const miss=poaReady();
  if(miss.length){ poaMsg={type:'err',text:(lang==='bg'?'Първо попълнете: ':'First complete: ')+miss.join(', ')}; render(); return }
- if(!(state.sigName||'').trim()){ poaMsg={type:'err',text:lang==='bg'?'Напишете името на подписващия.':'Enter the signatory’s name.'}; render(); return }
+ if(!sigNameEff()){ poaMsg={type:'err',text:lang==='bg'?'Напишете името на подписващия.':'Enter the signatory’s name.'}; render(); return }
  if(!state.sigPng){ poaMsg={type:'err',text:lang==='bg'?'Положете подпис в полето.':'Draw your signature in the box.'}; render(); return }
  if(!state.declared){ poaMsg={type:'err',text:lang==='bg'?'Отбележете декларацията.':'Tick the declaration.'}; render(); return }
  if(!remote || !sb || !auth){ poaMsg={type:'err',text:lang==='bg'
@@ -3609,8 +3619,8 @@ async function poaSign(){
   if(!mid) throw new Error('matter');
   const {data,error}=await sb.functions.invoke('poa',{body:{
     action:'sign', matter_id:mid, code:code,
-    signatory_name:(state.sigName||'').trim(),
-    signatory_capacity:(state.sigCapacity||'').trim(),
+    signatory_name:sigNameEff(),
+    signatory_capacity:sigCapEff(),
     poa_html:html, signature_png:state.sigPng }});
   if(error){
    let c=null;
@@ -3620,7 +3630,7 @@ async function poaSign(){
   if(data&&data.error) throw new Error(data.error);
   state.poa_signed_at=data.signed_at; state.poa_hash=data.hash;
   state.signed_at=data.signed_at;
-  state.signatory=((state.sigName||'').trim()+(state.sigCapacity?', '+state.sigCapacity.trim():''));
+  state.signatory=sigNameEff()+(sigCapEff()?', '+sigCapEff():'');
   saveLocal(); poaSetStage('idle');
   poaMsg={type:'ok',text:lang==='bg'?'Пълномощното е подписано и приложено към преписката.'
                                     :'The power of attorney has been signed and attached to the matter.'};
@@ -3886,8 +3896,8 @@ function poaFacts(){
   priorKind:(state.priority&&state.priority.claim)||'none',
   priorNumber:(state.priority&&state.priority.number||'').trim(),
   priorCountry:(state.priority&&state.priority.country||'').trim(),
-  signName:(state.sigName||'').trim() || (legal?(a.rep||'').trim():''),
-  signCap:(state.sigCapacity||'').trim(),
+  signName:sigNameEff(),
+  signCap:sigCapEff(),
   ref:state.ref||'',
   date:new Date().toLocaleDateString('bg-BG')
  };
@@ -4386,8 +4396,8 @@ function Acct(){
      ? (lang==='bg'?'чернова, стъпка ':'draft, step ')+(m.current_step||1)+'/9 · '+esc(m.ref)
        +`<div style="margin-top:7px"><button class="btn btn-quiet" data-resume="${esc(m.id)}" style="padding:5px 12px;font-size:12.5px">${
           open?(lang==='bg'?'Продължете (текуща) →':'Continue (current) →'):(lang==='bg'?'Продължете →':'Continue →')}</button></div>`
-     : esc(m.ref)+`<div style="margin-top:7px"><button class="btn btn-quiet" data-monafter="1" data-ref="${esc(m.ref)}" data-mark="${esc(m.mark_text||'')}" style="padding:5px 12px;font-size:12.5px">${
-          lang==='bg'?'+ Мониторинг':'+ Trademark watching'}</button></div>`;
+     : esc(m.ref)+`<div style="margin-top:7px"><button class="btn btn-gold" data-monafter="1" data-ref="${esc(m.ref)}" data-mark="${esc(m.mark_text||'')}" style="padding:5px 12px;font-size:12.5px">${
+          lang==='bg'?'+ Заявете мониторинг':'+ Order trademark watching'}</button></div>`;
    return `<tr>${cell(esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)')), sub)}
     <td class="num">${ROUTES[m.route]?ROUTES[m.route].code:esc(m.route)}</td>
     <td class="num">${m.class_count||'—'}</td>
@@ -4409,7 +4419,9 @@ function Acct(){
   </div>
   <div class="acctbar">
    <h2 style="margin:0;font-size:clamp(20px,2.2vw,24px)">${lang==='bg'?'Моите заявки':'My applications'}</h2>
-   <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button>
+   <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-gold" data-monafter="1">${lang==='bg'?'Мониторинг на марка':'Trademark watching'}</button>
+    <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button></div>
   </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
