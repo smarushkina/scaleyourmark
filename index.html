@@ -2759,21 +2759,18 @@ function body(k){
         : ' For an international registration also check the <a href="https://webaccess.wipo.int/mgs/?lang=en" target="_blank" rel="noopener" style="color:var(--gold)">WIPO Madrid Goods &amp; Services Manager</a>.'):''}</p>
 
    <div class="field" style="margin-top:14px">
-    <label for="ft">${lang==='bg'?'Или опишете със свои думи':'Or describe it in your own words'}</label>
+    <label for="ft">${lang==='bg'?'Или опишете със свои думи и посочете клас към всяка стока или услуга':'Or describe it in your own words and state the class for each item of goods or services'}</label>
     <textarea id="ft" rows="3" placeholder="${lang==='bg'
-      ? 'Един ред = една стока или услуга. Може с номер на класа отпред:\n25 облекло\n42 разработване на софтуер по поръчка'
-      : 'One line = one item. You may prefix the class number:\n25 clothing\n42 bespoke software development'}"></textarea>
+      ? 'Един ред = една стока или услуга, с номер на класа отпред, например:\n25 облекло\n42 разработване на софтуер по поръчка'
+      : 'One line = one item, with the class number first, for example:\n25 clothing\n42 bespoke software development'}"></textarea>
    </div>
    <div class="signrow">
-    <select id="fc" aria-label="${lang==='bg'?'Клас по подразбиране':'Default class'}" style="max-width:150px">
-     ${Array.from({length:45},(_,n)=>n+1).map(n=>`<option value="${n}" ${n===25?'selected':''}>${lang==='bg'?'Клас':'Class'} ${n}</option>`).join('')}
-    </select>
     <button class="btn btn-ghost" id="addfree" style="padding:9px 14px;white-space:nowrap">${
       lang==='bg'?'Добавете към спецификацията':'Add to the specification'}</button>
    </div>
    <p class="quiet" style="margin:7px 0 0">${lang==='bg'
-     ? 'Класът отляво важи за редовете без номер. Собственият текст не е хармонизиран — минава през преглед от адвоката и подлежи на експертиза във ведомството. Затова, когато има подходящ термин в базата, той е по-сигурният избор.'
-     : 'The class on the left applies to lines without a number. Your own wording is not harmonised — it is reviewed by the lawyer and examined by the office. So where the database has a suitable term, that is the safer choice.'}</p>
+     ? 'Собственият текст не е хармонизиран — минава през преглед от адвоката и подлежи на експертиза във ведомството. Затова, когато има подходящ термин в базата, той е по-сигурният избор.'
+     : 'Your own wording is not harmonised — it is reviewed by the lawyer and examined by the office. So where the database has a suitable term, that is the safer choice.'}</p>
 
    <div class="sum" style="margin-top:16px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px">
@@ -4644,8 +4641,15 @@ function wire(){
  }
  const addf=app.querySelector('#addfree');
  if(addf)addf.onclick=()=>{
-   const el=app.querySelector('#ft'), cl=app.querySelector('#fc');
-   const added=addSpecLines((el&&el.value)||'', +((cl&&cl.value)||25));
+   const el=app.querySelector('#ft');
+   /* Класът се пише в началото на всеки ред — отделно поле за клас няма. */
+   const noClass=String((el&&el.value)||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean)
+     .filter(x=>{const m=x.match(/^(\d{1,2})[\.\)\s\t:-]+(.+)$/); return !(m && +m[1]>=1 && +m[1]<=45)});
+   if(noClass.length){ syncState={type:'err',text:(lang==='bg'
+      ?'Посочете клас (от 1 до 45) в началото на всеки ред. Без клас: '
+      :'Please state the class (1 to 45) at the start of each line. Missing a class: ')+noClass.slice(0,3).map(x=>'„'+x+'“').join(', ')+(noClass.length>3?' …':'')};
+     render(); const e2=app.querySelector('#ft'); if(e2) e2.value=(el&&el.value)||''; return }
+   const added=addSpecLines((el&&el.value)||'', 0);
    if(!added){syncState={type:'err',text:lang==='bg'
       ?'Напишете поне един ред.':'Write at least one line.'}; render(); return}
    if(el)el.value=''; syncState=null; save(); render();
