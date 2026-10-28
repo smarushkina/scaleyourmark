@@ -1781,7 +1781,7 @@ async function orderMonitorAfter(k, opt){
  }
 }
 /* Видим блок „Мониторинг“ за стъпки 2 и 9. */
-function monitorBlock(){
+function monitorBlock(inPay){
  const B=lang==='bg', p=state.monitor&&MONITOR[state.monitor];
  return `<div class="monbox">
   <div class="monhead">
@@ -1802,7 +1802,9 @@ function monitorBlock(){
    <button class="opt" data-monitor="none" data-on="${state.monitor==='none'?1:0}"><span class="tick"></span>
      <span><span class="ot">${B?'Не сега':'Not now'}</span><span class="os">${B?'Може да се заяви и по-късно.':'You can order it later.'}</span></span><span></span></button>
   </div>
-  ${p?`<div class="helpbar" style="margin-top:12px"><span class="ht">${B?'Мониторингът влиза в цената, посочена в стъпка 8.':'Trademark watching is included in the price shown at step 8.'}</span>
+  ${p?`<div class="helpbar" style="margin-top:12px"><span class="ht">${inPay
+     ?(B?'Мониторингът е добавен към крайната цена.':'Trademark watching has been added to the total.')
+     :(B?'Мониторингът влиза в цената, посочена в стъпка 8.':'Trademark watching is included in the price shown at step 8.')}</span>
      <span class="num">+${money(p.fee,'EUR')}</span></div>`:''}
  </div>`;
 }
@@ -2950,7 +2952,8 @@ function body(k){
      индивидуални такси. Тя не може да се сметне тук, затова не се показва
      и не влиза в сумата за плащане — изпраща се отделно след прегледа. */
   const madrid = state.route==='madrid';
-  return `<div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
+   return `${monitorBlock(true).replace('class="monbox"','class="monbox" style="margin:0 0 18px"')}
+   <div class="paygrid"><div class="tblwrap"><table class="tbl"><thead><tr>
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
    <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(sv,'EUR')}</td></tr>
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване и анализ':'Clearance search and opinion'}</td>
@@ -3003,12 +3006,6 @@ function body(k){
     .map(([a,b])=>`<div class="row nextrow"><span class="nextlabel">${esc(L(a))}</span>
       <span class="nextbody">${esc(L(b))}</span></div>`).join('')}
   </div>
-   ${state.status==='draft'||!state.status ? monitorBlock() : `<div class="monbox">
-     <div class="kicker">${lang==='bg'?'Мониторинг на марката':'Trademark watching'}</div>
-     <p style="margin:6px 0 12px;text-align:left">${lang==='bg'?'Заявката е подадена. Заявете мониторинг, за да разберете навреме за нови сходни марки.':'Your application has been filed. Order trademark watching to learn of new similar marks in time.'}</p>
-     ${state.monitor&&MONITOR[state.monitor]
-       ?`<div class="helpbar"><span class="ht">${lang==='bg'?'✓ Мониторингът е заявен':'✓ Trademark watching ordered'} · ${esc(L(MONITOR[state.monitor]))}</span></div>`
-       :`<button class="btn btn-primary" data-monafter="1">${lang==='bg'?'Заявете мониторинг':'Order trademark watching'}</button>`}</div>`}
    <div class="sum" style="margin-top:18px">
     <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Други услуги':'Other services'}</div>
     <p class="quiet" style="margin:0 0 12px">${lang==='bg'
