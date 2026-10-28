@@ -2298,7 +2298,7 @@ function rolesSection(){
  return ` <section class="sec sec-navy"><div class="wrap">
   <div class="kicker" style="margin-bottom:18px">${lang==='bg'?'Кой какво прави':'Who does what'}</div>
   <div class="grid3" style="gap:18px;margin-bottom:34px">
-   ${[[{bg:'Вие',en:'You'},{bg:'Попълвате деветте стъпки',en:'Fill in the nine steps'},{bg:'Всяка стъпка идва с ръководство. Спирате и продължавате когато поискате.',en:'Every step comes with guidelines. Stop and resume whenever you like.'}],
+   ${[[{bg:'Вие',en:'You'},{bg:'Попълвате деветте стъпки',en:'Fill in the nine steps'},{bg:'Всяка стъпка идва с ръководство. Спирате и продължавате когато поискате.',en:'Every step comes with Guidelines. Stop and resume whenever you like.'}],
       [{bg:'Адвокатът',en:'The lawyer'},{bg:'Преглежда лично в 2 работни дни',en:'Reviews personally within 2 working days'},{bg:'При проблем преписката се връща с маркирани полета и кратко обяснение.',en:'On a problem the matter returns with the fields flagged and a short note.'}],
       [{bg:'Ведомството',en:'The office'},{bg:'Разглежда подадената заявка',en:'Examines the filed application'},{bg:'Адвокатът подава, плаща таксата и следи всеки срок до регистрацията.',en:'The lawyer files, pays the fee and dockets every deadline to registration.'}]]
      .map(([who,what,d],i)=>`<div class="card pad stack" style="gap:8px">
@@ -2345,7 +2345,7 @@ function File_(){
          ${syncState.jump.map(n=>`<button class="btn btn-ghost" data-step="${n}" style="padding:7px 13px;font-size:13.5px">${
            lang==='bg'?'Попълнете стъпка ':'Complete step '}${n} →</button>`).join('')}</div>`:''}</div>`:''}
      <div class="helpbar">
-      <span class="ht">${lang==='bg'?'Не сте сигурни? Отворете ръководството.':'Not sure? Open the guidelines.'}</span>
+      <span class="ht">${lang==='bg'?'Не сте сигурни? Отворете ръководството.':'Not sure? Open the Guidelines.'}</span>
       <button class="btn btn-ghost" data-open="${s.n}" style="padding:6px 13px;font-size:13px">${lang==='bg'?'Помощ':'Help'}</button>
      </div>
      <div style="display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line-2);padding-top:10px;flex-wrap:wrap">
@@ -2378,7 +2378,7 @@ function File_(){
       :'The term runs from the filing date, not from registration — which is why filing early buys both time and priority over later applicants.'}</div>
     <p class="quiet" style="padding:0 4px">${lang==='bg'
       ?'Знакът „?“ отваря ръководството към стъпката: какво се иска, как да решите и коя е най-честата грешка.'
-      :'The “?” opens that step’s guidelines: what is required, how to decide, and the most common mistake.'}</p>
+      :'The “?” opens that step’s Guidelines: what is required, how to decide, and the most common mistake.'}</p>
    </aside>
 
   </div>
@@ -2868,7 +2868,7 @@ function Guides(){
   return `${pageHead({bg:'Ръководство · стъпка '+guideStep,en:'Guidelines · step '+guideStep}, s.t, s.i)}
    <section class="sec"><div class="wrap">
     <button class="btn btn-quiet" data-gback="1" style="padding:6px 0;font-size:14px;margin-bottom:18px">${
-      lang==='bg'?'← Всички ръководства':'← All guidelines'}</button>
+      lang==='bg'?'← Всички ръководства':'← All Guidelines'}</button>
     <article class="guidebody">${g.b.map(blockHtml).join('')}</article>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid var(--line-2)">
      ${guideStep>1?`<button class="btn btn-ghost" data-gstep="${guideStep-1}" style="padding:9px 16px;font-size:14px">${
@@ -2880,7 +2880,7 @@ function Guides(){
     </div>
    </div></section>`;
  }
- return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства по стъпки',en:'Step-by-step guidelines'},
+ return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства по стъпки',en:'Step-by-step Guidelines'},
   {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The guidance from each step of the application, brought together so you can read it before you begin.'})}
  <section class="sec"><div class="wrap grid2" style="gap:18px">
    ${STEPS.map(s=>`<div class="card gcard stack">
@@ -2891,7 +2891,7 @@ function Guides(){
       <ul class="glist">${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
      <div style="margin-top:auto">
       ${GUIDE[s.n]?`<button class="btn btn-quiet gread" data-gstep="${s.n}">${
-         lang==='bg'?'Прочетете ръководството →':'Read the guidelines →'}</button>`:''}
+         lang==='bg'?'Прочетете ръководството →':'Read the Guidelines →'}</button>`:''}
      </div>
     </div>`).join('')}
    <div class="card gcard stack">
