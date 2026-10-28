@@ -174,6 +174,10 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
   color:var(--ink-2); cursor:pointer}
 .pweye:hover{color:var(--ink); background:rgba(0,0,0,.05)}
 .pweye:focus-visible{outline:2px solid var(--gold-bright); outline-offset:1px}
+.acctbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+.newmarkbar{display:flex; justify-content:space-between; align-items:center; gap:14px 22px; flex-wrap:wrap;
+  padding:16px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--line);
+  border-left:4px solid var(--gold-bright); box-shadow:var(--lift)}
 /* двете колони: абзаците вървят по колони, но всеки ред започва на едно ниво с другата колона */
 .twocol{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(var(--rows,1),auto);
   grid-auto-flow:column; gap:18px 48px; align-items:start}
@@ -795,7 +799,7 @@ const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,sea
   signatory:'',declared:false,terms:[],done:{},status:'draft',
   sigName:'', sigCapacity:'', sigPng:null, poa_signed_at:null, poa_hash:null,
   matter_id:null, ref:null, signed_at:null,
-  applicant:{kind:'legal',name:'',id:'',addr:'',country:'BG'},
+  applicant:{kind:'legal',name:'',id:'',rep:'',addr:'',country:'BG'},
   priority:{claim:'none',number:'',country:''}};
 let state = Object.assign({}, BLANK, load()||{});
 state.applicant = Object.assign({}, BLANK.applicant, state.applicant||{});
@@ -1435,6 +1439,7 @@ function stepBlockers(n){
     m.push(legal?T('наименование на заявителя','the applicant name')
                 :T('име и фамилия на заявителя','the applicant full name'));
   if(legal && !(a.id||'').trim()) m.push(T('ЕИК на заявителя','the company number'));
+   if(legal && !(a.rep||'').trim()) m.push(T('управител / законен представител','the managing director / legal representative'));
   if(!legal && state.route==='bg_nat' && !(a.id||'').trim())
     m.push(T('ЕГН или номер на документ за самоличност','the personal or document number'));
   if(!(a.addr||'').trim()) m.push(T('адрес за кореспонденция','the address for service'));
@@ -1624,6 +1629,48 @@ function acqCard(){
    <th>${lang==='bg'?'Предадени':'Handed over'}</th>
    <th style="text-align:right;padding-right:22px">${lang==='bg'?'Реализация':'Conversion'}</th>
   </tr></thead><tbody>${acqRows()}</tbody></table></div></div>`;
+}
+
+/* „Заяви нова марка“ — нова, празна заявка в същия профил.
+   Досегашната чернова НЕ се изтрива: първо се записва на сървъра и остава в
+   „Моите заявки“, откъдето може да се продължи. Предадените не се пипат.   */
+function draftHasContent(){
+ return !!(state.mark || state.img || (state.terms&&state.terms.length) ||
+   (state.applicant&&state.applicant.name) || state.step>1);
+}
+async function startNewMark(){
+ if(draftTimer){ clearTimeout(draftTimer); draftTimer=null; }
+ const cur=state.status==='draft' && draftHasContent();
+ if(cur && remote && sb && auth){
+   try{ await pushDraft() }catch(e){}
+ } else if(cur && !auth){
+   const ok=confirm(lang==='bg'
+     ?'Текущата чернова не е записана в профил и ще бъде заменена с нова заявка. Продължавате ли?'
+     :'Your current draft is not saved to an account and will be replaced by a new application. Continue?');
+   if(!ok) return;
+ }
+ state=JSON.parse(JSON.stringify(BLANK));
+ matterOk=false; syncState=null; saveLocal();
+ mattersAsked=false; matters=null;
+ go('file');
+}
+async function resumeMatter(id){
+ if(!(remote && sb && auth)) return;
+ if(state.matter_id===id && state.status==='draft'){ go('file'); return; }
+ if(draftTimer){ clearTimeout(draftTimer); draftTimer=null; }
+ if(state.status==='draft' && draftHasContent()){ try{ await pushDraft() }catch(e){} }
+ const {data,error}=await sb.from('matters').select('id,ref,status,step_state').eq('id',id).maybeSingle();
+ if(error || !data){ syncState={type:'err',text:(lang==='bg'?'Черновата не можа да се отвори: ':'The draft could not be opened: ')+((error&&error.message)||'')}; render(); return; }
+ if(data.status!=='draft'){ go('acct'); return; }
+ const st=JSON.parse(JSON.stringify(BLANK));
+ Object.assign(st, data.step_state||{});
+ st.applicant=Object.assign({}, BLANK.applicant, st.applicant||{});
+ st.priority =Object.assign({}, BLANK.priority,  st.priority ||{});
+ st.matter_id=data.id; st.ref=data.ref; st.status='draft';
+ if(st.img && !st.img.url) st.img=null;     // изображението не се пази в черновата — качва се отново
+ state=st; normaliseTerms(); matterOk=true; syncState=null; saveLocal();
+ mattersAsked=false; matters=null;
+ go('file');
 }
 
 async function resetDraft(){
@@ -2183,6 +2230,13 @@ function File_(){
    en:'The application is completed in nine steps.'})}
 
  <section class="sec" style="padding-block:16px"><div class="wrap stack" style="gap:12px">
+  ${state.status && state.status!=='draft' ? `<div class="newmarkbar">
+    <div><strong>${lang==='bg'?'Заявката '+esc(state.ref||'')+' е предадена на адвоката.':'Application '+esc(state.ref||'')+' has been handed over to the attorney.'}</strong>
+     <div class="quiet" style="margin-top:3px">${lang==='bg'
+       ?'Можете да я следите в „Профил“. За друга марка започнете нова заявка — стъпките започват отначало.'
+       :'You can follow it under “Account”. To file another trademark, start a new application — the steps begin again.'}</div></div>
+    <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button>
+   </div>` : ''}
   <div class="filegrid">
 
    <div class="stack stepcol" style="gap:10px">
@@ -2510,11 +2564,16 @@ function body(k){
   <div class="opts two" style="margin-bottom:12px">${kinds.map(([id,t])=>
     `<button class="opt" data-akind="${id}" data-on="${a.kind===id?1:0}"><span class="tick"></span>
       <span><span class="ot">${esc(L(t))}</span></span><span></span></button>`).join('')}</div>
-  <div class="grid2" style="gap:0 20px">
+  <div class="grid2" style="gap:0 20px;grid-auto-rows:auto;align-items:start">
    <div class="field"><label for="an">${legal?(lang==='bg'?'Наименование':'Legal name'):(lang==='bg'?'Име и фамилия':'Full name')}${req(!(a.name||'').trim())}</label>
     <input type="text" id="an" class="${(a.name||'').trim()?'':'needfix'}" value="${esc(a.name)}" placeholder="${legal?'ОРБИТА ЕООД':'Иван Петров'}"></div>
    ${needsId?`<div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН или номер на документ':'Personal or document number')}${req(!(a.id||'').trim())}</label>
     <input type="text" id="ae" class="${(a.id||'').trim()?'':'needfix'}" value="${esc(a.id)}" placeholder="204512345"></div>`:''}
+    ${legal?`<div class="field"><label for="arep">${lang==='bg'?'Управител / законен представител':'Managing director / legal representative'}${req(!(a.rep||'').trim())}</label>
+     <input type="text" id="arep" class="${(a.rep||'').trim()?'':'needfix'}" value="${esc(a.rep||'')}" placeholder="${lang==='bg'?'Иван Петров Иванов':'Ivan Petrov Ivanov'}" autocomplete="name">
+     <div class="quiet" style="font-size:12.5px;margin-top:5px">${lang==='bg'
+       ?'Трите имена на лицето, което представлява дружеството. Вписват се в пълномощното.'
+       :'Full name of the person who represents the company. It will appear in the power of attorney.'}</div></div>`:''}
    <div class="field"><label for="aa">${lang==='bg'?'Адрес за кореспонденция':'Address for service'}${req(!(a.addr||'').trim())}</label>
     <input type="text" id="aa" class="${(a.addr||'').trim()?'':'needfix'}" value="${esc(a.addr)}" placeholder="${lang==='bg'?'гр. София, ул. …':'Sofia, …'}"></div>
    <div class="field"><label for="ac">${lang==='bg'?'Държава на седалището':'Country of seat'}</label>
@@ -3588,7 +3647,7 @@ function poaFacts(){
   priorKind:(state.priority&&state.priority.claim)||'none',
   priorNumber:(state.priority&&state.priority.number||'').trim(),
   priorCountry:(state.priority&&state.priority.country||'').trim(),
-  signName:(state.sigName||'').trim(),
+  signName:(state.sigName||'').trim() || (legal?(a.rep||'').trim():''),
   signCap:(state.sigCapacity||'').trim(),
   ref:state.ref||'',
   date:new Date().toLocaleDateString('bg-BG')
@@ -3719,7 +3778,8 @@ function peekBody(m){
  ${peekRow(lang==='bg'?'Заявител':'Applicant', a.name
     ? `${esc(a.name)}${a.id?` <span class="quiet">· ${esc(a.id)}</span>`:''}
        ${a.addr?`<div class="quiet" style="font-size:13.5px">${esc(a.addr)}${a.country?', '+esc(a.country):''}</div>`:''}
-       <div class="quiet" style="font-size:13px">${a.kind==='legal'?(lang==='bg'?'юридическо лице':'legal entity'):(lang==='bg'?'физическо лице':'natural person')}</div>`
+       ${a.kind==='legal'&&a.rep?`<div class="quiet" style="font-size:13.5px">${lang==='bg'?'Управител / законен представител':'Legal representative'}: ${esc(a.rep)}</div>`:''}
+        <div class="quiet" style="font-size:13px">${a.kind==='legal'?(lang==='bg'?'юридическо лице':'legal entity'):(lang==='bg'?'физическо лице':'natural person')}</div>`
     : `<span class="quiet">${lang==='bg'?'още не е попълнен':'not filled in yet'}</span>`)}
  ${peekRow(lang==='bg'?'По-ранна дата':'Earlier date', pr.claim&&pr.claim!=='none'
     ? esc(pr.claim)+(pr.number?' · '+esc(pr.number):'')+(pr.country?' · '+esc(pr.country):'')
@@ -4080,8 +4140,11 @@ function Acct(){
   rows=matters.map(m=>{
    const fe=feeOf(m.route, m.class_count, m.colour_claimed);
    const st=STATUS[m.status]||STATUS.draft;
+   const open=m.status==='draft' && state.matter_id===m.id;
    const sub=m.status==='draft'
      ? (lang==='bg'?'чернова, стъпка ':'draft, step ')+(m.current_step||1)+'/9 · '+esc(m.ref)
+       +`<div style="margin-top:7px"><button class="btn btn-quiet" data-resume="${esc(m.id)}" style="padding:5px 12px;font-size:12.5px">${
+          open?(lang==='bg'?'Продължете (текуща) →':'Continue (current) →'):(lang==='bg'?'Продължете →':'Continue →')}</button></div>`
      : esc(m.ref);
    return `<tr>${cell(esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)')), sub)}
     <td class="num">${ROUTES[m.route]?ROUTES[m.route].code:esc(m.route)}</td>
@@ -4101,6 +4164,10 @@ function Acct(){
    <div><strong>${esc(auth.name)}</strong>${auth.admin?` <span class="tag v">${lang==='bg'?'администратор':'administrator'}</span>`:''}
     <div class="quiet">${esc(auth.email)}${auth.phone?' · '+esc(auth.phone):''}</div></div>
    <button class="btn btn-ghost" id="signout" style="padding:8px 15px;font-size:13.5px">${lang==='bg'?'Изход':'Sign out'}</button>
+  </div>
+  <div class="acctbar">
+   <h2 style="margin:0;font-size:clamp(20px,2.2vw,24px)">${lang==='bg'?'Моите заявки':'My applications'}</h2>
+   <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button>
   </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
    <thead><tr><th style="padding-left:22px">${lang==='bg'?'Марка':'Mark'}</th><th>${lang==='bg'?'Процедура':'Procedure'}</th><th>${lang==='bg'?'Класове':'Classes'}</th>
@@ -4168,12 +4235,26 @@ function wire(){
    state.done[state.step]=true; syncState=null;
    if(state.step<9){state.step++;save();render();scrollToStep()}else{handover()}};
  if(sbtn)sbtn.onclick=()=>{save();if(draftTimer){clearTimeout(draftTimer);draftTimer=null;pushDraft()}go('acct')};
- if(rs)rs.onclick=()=>resetDraft();
+ if(rs)rs.onclick=()=>startNewMark();
+ const nm=app.querySelector('#newmark'); if(nm) nm.onclick=()=>startNewMark();
+ app.querySelectorAll('[data-resume]').forEach(b=>b.onclick=()=>resumeMatter(b.dataset.resume));
  const ak=app.querySelectorAll('[data-akind]');
  ak.forEach(el=>el.onclick=()=>{state.applicant.kind=el.dataset.akind;save();render()});
  const an=app.querySelector('#an');if(an)an.oninput=e=>{state.applicant.name=e.target.value;save()};
  const ae=app.querySelector('#ae');if(ae)ae.oninput=e=>{state.applicant.id=e.target.value;save()};
  const aa=app.querySelector('#aa');if(aa)aa.oninput=e=>{state.applicant.addr=e.target.value;save()};
+ /* Управителят от стъпка 5 става подписващ в пълномощното, докато на стъпка 7
+    не се впише друго лице. */
+ const ar=app.querySelector('#arep');if(ar)ar.oninput=e=>{
+   const prev=(state.applicant.rep||'').trim(), v=e.target.value;
+   state.applicant.rep=v;
+   if(!(state.sigName||'').trim() || (state.sigName||'').trim()===prev){
+     state.sigName=v.trim();
+     if(!(state.sigCapacity||'').trim()) state.sigCapacity=lang==='bg'?'законен представител':'legal representative';
+     state.signatory=(state.sigName||'')+((state.sigCapacity||'')?', '+state.sigCapacity:'');
+   }
+   e.target.classList.toggle('needfix',!v.trim());
+   save()};
  const ac=app.querySelector('#ac');if(ac)ac.onchange=e=>{state.applicant.country=e.target.value;save();render()};
  app.querySelectorAll('[data-prio]').forEach(el=>el.onclick=()=>{
    state.priority.claim=el.dataset.prio;
