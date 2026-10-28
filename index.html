@@ -174,6 +174,33 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
   color:var(--ink-2); cursor:pointer}
 .pweye:hover{color:var(--ink); background:rgba(0,0,0,.05)}
 .pweye:focus-visible{outline:2px solid var(--gold-bright); outline-offset:1px}
+.whybtn{display:flex; align-items:center; gap:12px; width:100%; margin-top:14px; padding:14px 18px;
+  border-radius:14px; border:1px solid var(--gold-bright); background:var(--surface); color:var(--ink);
+  font-weight:600; font-size:15px; text-align:left; cursor:pointer; box-shadow:var(--lift)}
+.whybtn:hover{background:var(--warm, var(--surface)); border-color:var(--gold)}
+.whyico{flex:none; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:var(--gold-bright); color:#fff; font-weight:700; font-size:14px}
+.whychev{margin-left:auto; font-size:20px; line-height:1; color:var(--gold)}
+.whysearch{margin-top:12px; padding:22px; border-radius:16px; background:var(--surface); border:1px solid var(--line);
+  box-shadow:var(--lift)}
+.ws-lead{margin:0 0 16px; font-size:15.5px; line-height:1.65; color:var(--ink)}
+.ws-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px}
+.ws-card{padding:14px 16px; border-radius:12px; border:1px solid var(--line); border-top:3px solid var(--gold-bright)}
+.ws-card h4{margin:0 0 6px; font-size:15px; line-height:1.3}
+.ws-card p{margin:0; font-size:13.5px; line-height:1.6; color:var(--ink-2); text-align:left}
+.ws-lead,.ws-note,.ws-offer p{text-align:left}
+.ws-two{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start}
+.ws-list{margin:0; padding-left:18px; font-size:14px; line-height:1.6; color:var(--ink-2)}
+.ws-list li{margin-bottom:4px}
+.ws-list.ok{list-style:none; padding-left:0}
+.ws-list.ok li{position:relative; padding-left:22px}
+.ws-list.ok li::before{content:"✓"; position:absolute; left:0; color:var(--gold); font-weight:700}
+.ws-offer{padding:16px; border-radius:12px; border:1px solid var(--gold-bright)}
+.ws-price{display:flex; justify-content:space-between; align-items:baseline; margin:12px 0; padding-top:10px;
+  border-top:1px solid var(--line); font-size:14px}
+.ws-price strong{font-size:20px}
+.ws-note{margin:16px 0 0; font-size:12.5px}
+@media (max-width:820px){ .ws-grid,.ws-two{grid-template-columns:1fr} .whysearch{padding:16px} }
 .acctbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
 .newmarkbar{display:flex; justify-content:space-between; align-items:center; gap:14px 22px; flex-wrap:wrap;
   padding:16px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--line);
@@ -1631,6 +1658,74 @@ function acqCard(){
   </tr></thead><tbody>${acqRows()}</tbody></table></div></div>`;
 }
 
+/* „Защо е важно проучването?“ — текст в страничния панел, като ръководствата,
+   с бутон за поръчка накрая. */
+const SEARCH_GUIDE=[
+ ['lead',{bg:'Преди да заявите търговската си марка, е важно да проверите дали вече не съществуват по-ранни права, които са идентични или сходни с Вашия знак. Това е една от най-важните стъпки в целия процес, защото рискът, който не е открит преди подаването, обикновено излиза наяве едва когато е най-скъпо да се реагира.',
+          en:'Before you file your trademark, it is important to check whether there are earlier rights that are identical or similar to your sign. This is one of the most important steps in the whole process, because a risk that is not identified before filing usually comes to light only when it is most expensive to deal with.'}],
+ ['h',{bg:'Ведомството няма да провери това вместо Вас',en:'The office will not check this for you'}],
+ ['p',{bg:'Много заявители приемат, че ако има по-ранна сходна марка, ведомството само ще откаже регистрацията. Това не е така. Патентното ведомство на Република България и Службата на Европейския съюз за интелектуална собственост (EUIPO) проверяват служебно само абсолютните основания, например дали знакът е отличителен и дали не е описателен. Дали марката Ви влиза в конфликт с по-ранна марка, те не преценяват по своя инициатива. Това става само ако притежателят на по-ранното право подаде възражение.',
+       en:'Many applicants assume that if a similar earlier mark exists, the office will refuse registration of its own motion. That is not the case. The Patent Office of the Republic of Bulgaria and the European Union Intellectual Property Office (EUIPO) examine of their own motion only the absolute grounds, such as whether the sign is distinctive and not descriptive. They do not assess on their own initiative whether your mark conflicts with an earlier mark. That happens only if the owner of the earlier right files an opposition.'}],
+ ['p',{bg:'На практика заявката Ви може да премине успешно през проверката и да бъде публикувана. След това притежателят на по-ранна марка има три месеца, за да подаде възражение. Дори марката Ви да бъде регистрирана, тя може да бъде заличена по-късно по искане на притежател на по-ранно право.',
+       en:'In practice, your application may pass examination and be published. The owner of an earlier mark then has three months to file an opposition. Even if your mark is registered, it may later be cancelled at the request of the owner of an earlier right.'}],
+ ['h',{bg:'От какво Ви предпазва проучването',en:'What a search protects you against'}],
+ ['p',{bg:'Предварителното проучване намалява риска от:',en:'A clearance search reduces the risk of:'}],
+ ['ul',{bg:['възражение срещу заявката Ви и отказ на регистрацията;',
+            'загуба на платените държавни такси, които не се възстановяват при отказ;',
+            'искане за заличаване на вече регистрираната Ви марка;',
+            'претенции за нарушение и искане да преустановите използването на знака;',
+            'принудителна смяна на наименованието или логото, след като вече сте вложили в опаковки, уебсайт, реклама и разпознаваемост на пазара.'],
+        en:['an opposition against your application and refusal of registration;',
+            'loss of the official fees paid, which are not refunded on refusal;',
+            'an application to cancel your mark once it has been registered;',
+            'infringement claims and a demand that you stop using the sign;',
+            'a forced change of name or logo after you have already invested in packaging, a website, advertising and market recognition.']}],
+ ['p',{bg:'Колкото по-късно се установи конфликтът, толкова по-висока е цената му. Проучването е малка инвестиция в сравнение с разходите за ребрандиране или правен спор.',
+       en:'The later a conflict is discovered, the higher its cost. A search is a small investment compared with the cost of a rebrand or a legal dispute.'}],
+ ['h',{bg:'Какво се проверява',en:'What is checked'}],
+ ['p',{bg:'Проучването обхваща не само идентичните марки, но и сходните. Сходството се преценява визуално, фонетично и смислово, както и според това дали стоките и услугите са еднакви или сходни. Затова марка, която на пръв поглед изглежда различна, може все пак да се окаже в конфликт с Вашата, а търсенето само по точното изписване често не е достатъчно.',
+       en:'The search covers not only identical marks but also similar ones. Similarity is assessed visually, phonetically and conceptually, and by reference to whether the goods and services are identical or similar. A mark that looks different at first glance may therefore still conflict with yours, and a search for the exact spelling alone is often not enough.'}],
+ ['h',{bg:'Професионално проучване',en:'Professional clearance search'}],
+ ['p',{bg:'Можете да проведете начална проверка и сами. Професионалното проучване обаче включва анализ на идентичните и сходните марки в съответните регистри и правна оценка на риска. Получавате писмено становище с конкретни изводи: дали е разумно да подадете заявката в този вид, дали е добре да промените знака или обхвата на стоките и услугите, или е по-добре да изберете друго решение.',
+       en:'You can carry out an initial check yourself. A professional search, however, includes an analysis of identical and similar marks in the relevant registers and a legal assessment of the risk. You receive a written opinion with clear conclusions: whether it is sensible to file the application as it stands, whether to adjust the sign or the scope of the goods and services, or whether another route is preferable.'}],
+ ['check',{bg:['анализ в регистрите на Патентното ведомство, EUIPO и Мадридската система;',
+               'правна оценка на риска от адвокат, а не автоматичен списък с резултати;',
+               'писмено становище в срок до 3 работни дни, преди да платите държавната такса;',
+               'конкретна препоръка какво да направите.'],
+           en:['analysis of the registers of the Bulgarian Patent Office, EUIPO and the Madrid System;',
+               'a legal risk assessment by an attorney, not an automated list of hits;',
+               'a written opinion within 3 working days, before you pay the official fee;',
+               'a clear recommendation on what to do next.']}],
+ ['p',{bg:'Никое проучване не дава пълна гаранция, че няма да възникне спор. То обаче Ви позволява да вземете решението информирано и да подадете заявката с ясна представа за рисковете.',
+       en:'No search can fully guarantee that no dispute will arise. It does, however, allow you to make an informed decision and file your application with a clear understanding of the risks.'}]
+];
+function openSearchDrawer(){
+ const B=lang==='bg', d=document.getElementById('drawer');
+ const chosen=state.search==='full';
+ const price=String(searchFee()).replace(/^\+\s*/,'');
+ d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
+  <div class="kicker">${B?'Ръководство · стъпка 2':'Manual · step 2'}</div>
+  <h2 style="margin:8px 0 14px">${B?'Защо е важно проучването преди подаване':'Why a clearance search matters before filing'}</h2>
+  <article class="guidebody" style="margin-top:18px">${SEARCH_GUIDE.map(blockHtml).join('')}</article>
+  <div class="ws-offer" style="margin-top:22px">
+   <div class="ws-price" style="margin-top:0;padding-top:0;border-top:0"><span>${B?'Професионално проучване и анализ':'Professional clearance search and analysis'}</span><strong class="num">${price}</strong></div>
+   <button class="btn btn-primary" id="dorder" style="width:100%;justify-content:center">${
+     chosen?(B?'✓ Проучването е избрано':'✓ Search selected'):(B?'Поръчайте проучване':'Order a clearance search')}</button>
+   <p class="quiet" style="font-size:12.5px;margin:8px 0 0;text-align:left">${B
+     ?'Проучването влиза в сметката на стъпка 8. Ако то покаже сериозен риск, ще имате време да промените знака, преди да платите държавната такса.'
+     :'The search is added to the invoice at step 8. If it reveals a serious risk, you will have time to adjust the sign before paying the official fee.'}</p>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;padding-top:18px;border-top:1px solid var(--line-2)">
+   <button class="btn btn-quiet" id="dclose2" style="padding:9px 16px;font-size:14px">${B?'Обратно към стъпката':'Back to the step'}</button>
+  </div>`;
+ d.classList.add('open'); d.scrollTop=0;
+ document.getElementById('scrim').classList.add('on');
+ d.querySelector('#dclose').onclick=closeDrawer;
+ d.querySelector('#dclose2').onclick=closeDrawer;
+ d.querySelector('#dorder').onclick=()=>{ state.search='full'; save(); closeDrawer(); render();
+   const o=app.querySelector('[data-search="full"]'); if(o) o.scrollIntoView({block:'center',behavior:'smooth'}); };
+}
+
 /* „Заяви нова марка“ — нова, празна заявка в същия профил.
    Досегашната чернова НЕ се изтрива: първо се записва на сървъра и остава в
    „Моите заявки“, откъдето може да се продължи. Предадените не се пипат.   */
@@ -2425,6 +2520,11 @@ function body(k){
    ${state.route==='madrid'?madridBox():''}`;
 
  if(k==='search')return `
+  <button class="btn whybtn" id="whysearch" aria-haspopup="dialog">
+   <span class="whyico" aria-hidden="true">?</span>
+   <span>${lang==='bg'?'Защо е важно проучването?':'Why is a clearance search important?'}</span>
+   <span class="whychev" aria-hidden="true">→</span>
+  </button>
   <div class="opts two" style="margin-top:16px">
    <button class="opt" data-search="full" data-on="${state.search==='full'?1:0}">
     <span class="tick"></span>
@@ -4278,6 +4378,7 @@ function wire(){
  const ct=app.querySelector('#colourtoggle');if(ct)ct.onclick=()=>{state.colour=!state.colour;save();render()};
  app.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{state.kind=el.dataset.kind;save();render()});
  app.querySelectorAll('[data-search]').forEach(el=>el.onclick=()=>{state.search=el.dataset.search;save();render()});
+ const wsb=app.querySelector('#whysearch'); if(wsb) wsb.onclick=()=>openSearchDrawer();
  app.querySelectorAll('[data-declare]').forEach(el=>el.onclick=()=>{state.declared=!state.declared;save();render()});
  if(app.querySelector('#sigpad')) sigPadInit();
  const sgn=app.querySelector('#sgn');
