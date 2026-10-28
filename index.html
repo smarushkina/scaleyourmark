@@ -201,6 +201,17 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .ws-price strong{font-size:20px}
 .ws-note{margin:16px 0 0; font-size:12.5px}
 @media (max-width:820px){ .ws-grid,.ws-two{grid-template-columns:1fr} .whysearch{padding:16px} }
+.monbox{margin-top:18px; padding:18px; border-radius:16px; background:var(--surface); border:1px solid var(--gold-bright);
+  border-left:4px solid var(--gold-bright); box-shadow:var(--lift)}
+.opts.three{grid-template-columns:repeat(3,1fr)}
+@media (max-width:820px){ .opts.three{grid-template-columns:1fr} }
+.mon-plans{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.mon-plan{display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:14px; border-radius:12px; cursor:pointer;
+  border:1px solid var(--line); background:var(--surface); text-align:left; font:inherit; color:var(--ink)}
+.mon-plan[data-on="1"]{border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-bright) inset}
+.mon-plan .mp-t{font-weight:600; font-size:14.5px}
+.mon-plan .mp-p{font-size:22px; color:var(--gold)}
+.mon-plan .mp-c{margin-top:4px; font-size:13px; font-weight:600}
 .acctbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
 .newmarkbar{display:flex; justify-content:space-between; align-items:center; gap:14px 22px; flex-wrap:wrap;
   padding:16px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--line);
@@ -823,7 +834,7 @@ const POSTS=[
 const KEY='sym_atelier_v1';
 const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,
   madridCountries:'',
-  signatory:'',declared:false,terms:[],done:{},status:'draft',
+  signatory:'',declared:false,terms:[],done:{},status:'draft',monitor:null,
   sigName:'', sigCapacity:'', sigPng:null, poa_signed_at:null, poa_hash:null,
   matter_id:null, ref:null, signed_at:null,
   applicant:{kind:'legal',name:'',id:'',rep:'',addr:'',country:'BG'},
@@ -866,6 +877,9 @@ function officialFee(){const n=classCount(),r=ROUTES[state.route];
  return{cur:'CHF',v:(state.colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass}}
 const SERVICE={bg_nat:295,eutm:395,madrid:395};   // възнаграждение без ДДС
 const SEARCH_FEE=120;  // професионално проучване и анализ, по избор, без ДДС
+/* Мониторинг — плаща се предварително, за срок. Месечен абонамент няма. */
+const MONITOR={m6:{fee:600, bg:'6 месеца', en:'6 months'},
+               y1:{fee:1000, bg:'1 година', en:'1 year', save:200}};
 /* Цената се изписва от константата, а не на ръка — двете места в стъпка 2
    по-рано носеха числото в текста и щяха да останат стари при промяна. */
 /* Една-единствена функция за пари на целия сайт. На български сумата върви
@@ -1658,6 +1672,128 @@ function acqCard(){
   </tr></thead><tbody>${acqRows()}</tbody></table></div></div>`;
 }
 
+/* „Какво е мониторингът?“ — страничен панел като ръководствата. В черновата
+   изборът влиза в сметката на стъпка 8; след предаването се изпраща като
+   поръчка към кантората за конкретната преписка. */
+const MONITOR_GUIDE=[
+ ['lead',{bg:'Регистрацията на марката е началото на защитата, а не нейният край. След като марката Ви бъде заявена, всеки ден се подават нови заявки — някои от тях могат да са идентични или сходни с Вашата. Мониторингът Ви позволява да ги откриете навреме, докато все още можете да реагирате по най-бързия и най-евтин начин.',
+          en:'Registering your trademark is the beginning of protection, not the end of it. New applications are filed every day, and some of them may be identical or similar to yours. Trademark watching lets you identify them in time, while you can still act in the quickest and least costly way.'}],
+ ['h',{bg:'Ведомството няма да Ви уведоми',en:'The office will not notify you'}],
+ ['p',{bg:'Патентното ведомство и EUIPO не отказват служебно регистрацията на нова марка само защото е сходна с Вашата. Ако не подадете възражение, сходната марка може да бъде регистрирана. Задължението да следите за такива заявки и да реагирате е Ваше като притежател.',
+       en:'The Bulgarian Patent Office and EUIPO do not refuse a new mark of their own motion merely because it is similar to yours. If you do not file an opposition, the similar mark may be registered. As the owner, it is up to you to watch for such applications and act.'}],
+ ['h',{bg:'Срокът за възражение е кратък',en:'The opposition period is short'}],
+ ['p',{bg:'Възражение срещу нова заявка може да се подаде в срок от три месеца от публикуването ѝ. Това е най-бързият и най-евтиният начин да спрете сходна марка. След изтичането на срока остава само искането за заличаване на вече регистрирана марка — процедура, която е по-дълга, по-скъпа и с по-несигурен изход.',
+       en:'An opposition against a new application can be filed within three months of its publication. This is the quickest and least costly way to stop a similar mark. Once that period has expired, the only remaining route is an application to cancel a registered mark, which is longer, more expensive and less certain.'}],
+ ['h',{bg:'От какво Ви предпазва мониторингът',en:'What trademark watching protects you against'}],
+ ['ul',{bg:['регистриране на сходна марка от конкурент за същите или сходни стоки и услуги;',
+            'объркване на клиентите и загуба на продажби и репутация;',
+            'размиване на отличителността на Вашата марка;',
+            'пропускане на срока за възражение и по-скъп спор впоследствие.'],
+        en:['a competitor registering a similar mark for the same or similar goods and services;',
+            'customer confusion and loss of sales and reputation;',
+            'dilution of the distinctiveness of your mark;',
+            'missing the opposition deadline and facing a costlier dispute later.']}],
+ ['h',{bg:'Какво получавате',en:'What you receive'}],
+ ['check',{bg:['следене на новопубликуваните заявки за идентични и сходни марки в регистрите на Патентното ведомство, EUIPO и Мадридската система;',
+               'правна преценка от адвокат на всеки сигнал, а не автоматичен списък с резултати;',
+               'уведомление навреме, докато тече срокът за възражение;',
+               'конкретна препоръка дали и как да реагирате.'],
+           en:['watching of newly published applications for identical and similar marks in the registers of the Bulgarian Patent Office, EUIPO and the Madrid System;',
+               'a legal assessment of every hit by an attorney, not an automated list of results;',
+               'timely notice while the opposition period is still running;',
+               'a clear recommendation on whether and how to respond.']}],
+ ['p',{bg:'Мониторингът е отделна услуга и не е задължителен за подаването на заявката. Подаването на възражение, ако се наложи, се възлага отделно.',
+       en:'Trademark watching is a separate service and is not required in order to file. Filing an opposition, where needed, is engaged separately.'}]
+];
+let monitorMsg=null;   // съобщение в панела след поръчка
+function monitorPlanCards(cur,after){
+ const B=lang==='bg';
+ return `<div class="mon-plans">${['m6','y1'].map(k=>{const p=MONITOR[k], on=cur===k;
+   return `<button class="mon-plan" data-mplan="${k}" data-on="${on?1:0}">
+     <span class="mp-t">${esc(L(p))}</span>
+     <span class="mp-p num">${money(p.fee,'EUR')}</span>
+     ${p.save?`<span class="tag t" style="font-size:11.5px">${(B?'спестявате ':'save ')+money(p.save,'EUR')}</span>`:'<span class="quiet" style="font-size:12px">'+(B?'еднократно':'one-off')+'</span>'}
+     <span class="mp-c">${on?(B?'✓ Избрано':'✓ Selected'):after?(B?'Заявете →':'Order →'):(B?'Изберете':'Select')}</span></button>`}).join('')}</div>
+   <p class="quiet" style="font-size:12.5px;margin:8px 0 0;text-align:left">${B?'Цените са за една марка, без ДДС, и се заплащат предварително.':'Prices are per mark, excl. VAT, and are paid in advance.'}</p>`;
+}
+function openMonitorDrawer(opt){
+ opt=opt||{};
+ const B=lang==='bg', d=document.getElementById('drawer');
+ const after=!!opt.after;
+ const cur=after?null:state.monitor;
+ d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
+  <div class="kicker">${B?'Ръководство · мониторинг':'Guidelines · trademark watching'}</div>
+  <h2 style="margin:8px 0 14px">${B?'Защо е важен мониторингът на марката':'Why trademark watching matters'}</h2>
+  <article class="guidebody" style="margin-top:18px">${MONITOR_GUIDE.map(blockHtml).join('')}</article>
+  <div class="ws-offer" style="margin-top:22px">
+   <div class="kicker" style="margin-bottom:10px">${after
+     ?(B?'Заявете мониторинг':'Order trademark watching')+(opt.ref?' · '+esc(opt.ref):'')
+     :(B?'Изберете срок':'Choose a term')}</div>
+   ${monitorPlanCards(cur,after)}
+   ${monitorMsg?`<div class="${monitorMsg.type==='ok'?'helpbar':'caution'}" style="margin-top:12px"><span class="ht">${esc(monitorMsg.text)}</span></div>`:''}
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;padding-top:18px;border-top:1px solid var(--line-2)">
+   <button class="btn btn-quiet" id="dclose2" style="padding:9px 16px;font-size:14px">${B?'Затворете':'Close'}</button>
+  </div>`;
+ d.classList.add('open');
+ document.getElementById('scrim').classList.add('on');
+ d.querySelector('#dclose').onclick=()=>{monitorMsg=null;closeDrawer()};
+ d.querySelector('#dclose2').onclick=()=>{monitorMsg=null;closeDrawer()};
+ d.querySelectorAll('[data-mplan]').forEach(b=>b.onclick=async()=>{
+   const k=b.dataset.mplan;
+   if(!after){ state.monitor=k; save(); monitorMsg=null; closeDrawer(); render(); return; }
+   await orderMonitorAfter(k, opt);
+   const top=d.scrollTop; openMonitorDrawer(opt); d.scrollTop=top;
+ });
+}
+/* След предаването преписката е заключена — поръчката отива към кантората
+   като запитване по конкретната преписка; фактурата се издава отделно. */
+async function orderMonitorAfter(k, opt){
+ const B=lang==='bg', p=MONITOR[k];
+ if(!(remote && sb && auth)){
+   monitorMsg={type:'err',text:B?'Влезте в профила си, за да заявите мониторинг, или ни пишете на office@scaleyourmark.com.'
+                               :'Please sign in to order trademark watching, or email us at office@scaleyourmark.com.'};
+   return;
+ }
+ try{
+  const message=(B?'Заявка за мониторинг на марка':'Trademark watching order')+': '+L(p)+' · '+money(p.fee,'EUR')+(B?' без ДДС':' excl. VAT')
+    +(opt.ref?'\n'+(B?'Преписка':'Matter')+': '+opt.ref:'')+(opt.mark?'\n'+(B?'Марка':'Mark')+': '+opt.mark:'');
+  const {data,error}=await sb.functions.invoke('contact',{body:{name:auth.name||auth.email, email:auth.email,
+     topic:B?'Текуща заявка':'Application in progress', message:message, company:''}});
+  if(error || (data&&data.error)) throw (error||new Error(data.error));
+  monitorMsg={type:'ok',text:B?('Заявката за мониторинг ('+L(p)+') е изпратена. Ще получите фактура и потвърждение по имейл.')
+                             :('Your trademark watching order ('+L(p)+') has been sent. You will receive an invoice and confirmation by email.')};
+ }catch(e){
+  monitorMsg={type:'err',text:B?'Заявката не мина. Пишете ни на office@scaleyourmark.com.':'The order could not be sent. Please email us at office@scaleyourmark.com.'};
+ }
+}
+/* Видим блок „Мониторинг“ за стъпки 2 и 9. */
+function monitorBlock(){
+ const B=lang==='bg', p=state.monitor&&MONITOR[state.monitor];
+ return `<div class="monbox">
+  <div class="monhead">
+   <div><div class="kicker">${B?'Мониторинг на марката · по избор':'Trademark watching · optional'}</div>
+    <p style="margin:6px 0 0;text-align:left">${B
+     ?'Следим за нови сходни заявки и Ви уведомяваме, докато все още можете да подадете възражение.'
+     :'We watch for new similar applications and alert you while you can still file an opposition.'}</p></div>
+  </div>
+  <button class="btn whybtn" data-monwhy="1" style="margin-top:12px">
+   <span class="whyico" aria-hidden="true">?</span>
+   <span>${B?'Защо е важен мониторингът?':'Why does trademark watching matter?'}</span>
+   <span class="whychev" aria-hidden="true">→</span></button>
+  <div class="opts three" style="margin-top:12px">
+   ${['m6','y1'].map(k=>{const q=MONITOR[k];return `<button class="opt" data-monitor="${k}" data-on="${state.monitor===k?1:0}">
+     <span class="tick"></span><span><span class="ot">${esc(L(q))}</span>
+     <span class="os">${q.save?(B?'спестявате ':'save ')+money(q.save,'EUR'):(B?'еднократно, без ДДС':'one-off, excl. VAT')}</span></span>
+     <span class="op">+${money(q.fee,'EUR')}</span></button>`}).join('')}
+   <button class="opt" data-monitor="none" data-on="${state.monitor==='none'?1:0}"><span class="tick"></span>
+     <span><span class="ot">${B?'Не сега':'Not now'}</span><span class="os">${B?'Може да се заяви и по-късно.':'You can order it later.'}</span></span><span></span></button>
+  </div>
+  ${p?`<div class="helpbar" style="margin-top:12px"><span class="ht">${B?'Мониторингът влиза в цената, посочена в стъпка 8.':'Trademark watching is included in the price shown at step 8.'}</span>
+     <span class="num">+${money(p.fee,'EUR')}</span></div>`:''}
+ </div>`;
+}
+
 /* „Защо е важно проучването?“ — текст в страничния панел, като ръководствата,
    с бутон за поръчка накрая. */
 const SEARCH_GUIDE=[
@@ -2327,7 +2463,9 @@ function File_(){
      <div class="quiet" style="margin-top:3px">${lang==='bg'
        ?'Можете да я следите в „Профил“. За друга марка започнете нова заявка — стъпките започват отначало.'
        :'You can follow it under “Account”. To file another trademark, start a new application — the steps begin again.'}</div></div>
-    <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+     ${state.monitor&&MONITOR[state.monitor]?'':`<button class="btn btn-gold" data-monafter="1">${lang==='bg'?'Заявете мониторинг':'Order trademark watching'}</button>`}
+     <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button></div>
    </div>` : ''}
   <div class="filegrid">
 
@@ -2549,7 +2687,8 @@ function body(k){
        ?'Изборът да се продължи без проучване се записва по преписката заедно с датата — така и за двете страни остава ясно какво е било известно към момента на подаването.'
        :'The choice to proceed without a clearance search is recorded on the matter with its date, so it stays clear to both sides what was known at the time of filing.'}</div>`
    :`<p class="quiet" style="margin-top:12px">${lang==='bg'
-       ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}`;
+       ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}
+  ${monitorBlock()}`;
 
  if(k==='mark'){
   const eu = state.route==='eutm';
@@ -2793,7 +2932,8 @@ function body(k){
  }
 
  if(k==='pay'){const f=officialFee(),sv=SERVICE[state.route];
-  const net=sv+(state.search==='full'?SEARCH_FEE:0);   // облагаемо с ДДС
+   const mon=state.monitor&&MONITOR[state.monitor];
+   const net=sv+(state.search==='full'?SEARCH_FEE:0)+(mon?mon.fee:0);   // облагаемо с ДДС
   /* При Мадрид таксата на СОИС зависи от посочените държави и от техните
      индивидуални такси. Тя не може да се сметне тук, затова не се показва
      и не влиза в сумата за плащане — изпраща се отделно след прегледа. */
@@ -2802,7 +2942,9 @@ function body(k){
    <th>${lang==='bg'?'Позиция':'Item'}</th><th>${lang==='bg'?'Третиране':'Treatment'}</th><th style="text-align:right">${lang==='bg'?'Сума':'Amount'}</th></tr></thead><tbody>
    <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(sv,'EUR')}</td></tr>
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване и анализ':'Clearance search and opinion'}</td>
-     <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(SEARCH_FEE,'EUR')}</td></tr>`:''}
+      <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(SEARCH_FEE,'EUR')}</td></tr>`:''}
+    ${mon?`<tr><td>${lang==='bg'?'Мониторинг':'Trademark watching'}<span class="quiet"> · ${esc(L(mon))}</span></td>
+      <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(mon.fee,'EUR')}</td></tr>`:''}
    <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r num">${money(net*.2,'EUR')}</td></tr>
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС (WIPO)':'WIPO fee'}</td>
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
@@ -2849,11 +2991,17 @@ function body(k){
     .map(([a,b])=>`<div class="row nextrow"><span class="nextlabel">${esc(L(a))}</span>
       <span class="nextbody">${esc(L(b))}</span></div>`).join('')}
   </div>
-  <div class="sum" style="margin-top:18px">
-   <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Мониторинг и други услуги':'Monitoring and other services'}</div>
-   <p class="quiet" style="margin:0 0 12px">${lang==='bg'
-     ?'Мониторинг на марката, помощ при опозиция, медиация и споразумения се възлагат отделно. Пишете ни през формата за контакт и ще получите оферта и срок.'
-     :'Monitoring, assistance in opposition proceedings, mediation and settlement agreements are engaged separately. Write to us through the contact form and you will receive a quote and a timeframe.'}</p>
+   ${state.status==='draft'||!state.status ? monitorBlock() : `<div class="monbox">
+     <div class="kicker">${lang==='bg'?'Мониторинг на марката':'Trademark watching'}</div>
+     <p style="margin:6px 0 12px;text-align:left">${lang==='bg'?'Заявката е подадена. Заявете мониторинг, за да разберете навреме за нови сходни марки.':'Your application has been filed. Order trademark watching to learn of new similar marks in time.'}</p>
+     ${state.monitor&&MONITOR[state.monitor]
+       ?`<div class="helpbar"><span class="ht">${lang==='bg'?'✓ Мониторингът е заявен':'✓ Trademark watching ordered'} · ${esc(L(MONITOR[state.monitor]))}</span></div>`
+       :`<button class="btn btn-primary" data-monafter="1">${lang==='bg'?'Заявете мониторинг':'Order trademark watching'}</button>`}</div>`}
+   <div class="sum" style="margin-top:18px">
+    <div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Други услуги':'Other services'}</div>
+    <p class="quiet" style="margin:0 0 12px">${lang==='bg'
+      ?'Помощ при опозиция, медиация и споразумения се възлагат отделно. Пишете ни през формата за контакт и ще получите оферта и срок.'
+      :'Assistance in opposition proceedings, mediation and settlement agreements are engaged separately. Write to us through the contact form and you will receive a quote and a timeframe.'}</p>
    <button class="btn btn-gold" data-p="contact" style="padding:9px 16px;font-size:14px">${
      lang==='bg'?'Пишете ни':'Contact us'}</button>
   </div>
@@ -2980,15 +3128,16 @@ function Price(){
    <div class="grid2">
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Мониторинг':'Monitoring'}</div>
-     <div class="num" style="font-size:32px;color:var(--gold);line-height:1.1">${money0(100,'EUR')}
-      <span style="font-size:17px;color:var(--ink-3)">${lang==='bg'?'/ месец':'/ month'}</span></div>
+      <div class="num" style="font-size:32px;color:var(--gold);line-height:1.1">${money0(600,'EUR')}
+       <span style="font-size:17px;color:var(--ink-3)">${lang==='bg'?'/ 6 месеца':'/ 6 months'}</span></div>
      <div class="num" style="font-size:19px;color:var(--ink-2);line-height:1.2;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
       <span>${(lang==='bg'?'или ':'or ')+money0(1000,'EUR')}
        <span style="font-size:15px;color:var(--ink-3)">${lang==='bg'?'/ година':'/ year'}</span></span>
       <span class="tag t" style="font-size:12px">${(lang==='bg'?'спестявате ':'saves ')+money0(200,'EUR')}</span></div>
-     <p class="quiet">${lang==='bg'
-       ?'за марка, без ДДС. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
-       :'per mark, excl. VAT. We notify you of similar third-party applications while the opposition period is still open.'}</p>
+      <p class="quiet">${lang==='bg'
+        ?'за марка, без ДДС, платими предварително. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
+        :'per mark, excl. VAT, payable in advance. We notify you of similar third-party applications while the opposition period is still open.'}</p>
+      <button class="btn btn-ghost" data-monwhy="1" style="align-self:flex-start;padding:8px 14px;font-size:13.5px">${lang==='bg'?'Защо е важен мониторингът?':'Why does trademark watching matter?'}</button>
     </div>
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Други услуги':'Other services'}</div>
@@ -3874,7 +4023,8 @@ function peekBody(m){
  ${peekRow(lang==='bg'?'По-ранна дата':'Earlier date', pr.claim&&pr.claim!=='none'
     ? esc(pr.claim)+(pr.number?' · '+esc(pr.number):'')+(pr.country?' · '+esc(pr.country):'')
     : `<span class="quiet">${lang==='bg'?'не се претендира':'not claimed'}</span>`)}
- ${peekRow(lang==='bg'?'Проучване':'Clearance search', SEARCHLBL[d.search]?esc(L(SEARCHLBL[d.search])):(d.search?esc(d.search):`<span class="quiet">—</span>`))}
+  ${peekRow(lang==='bg'?'Мониторинг':'Trademark watching', d.monitor&&MONITOR[d.monitor]?esc(L(MONITOR[d.monitor]))+' · '+money(MONITOR[d.monitor].fee,'EUR'):`<span class="quiet">${lang==='bg'?'не е заявен':'not ordered'}</span>`)}
+  ${peekRow(lang==='bg'?'Проучване':'Clearance search', SEARCHLBL[d.search]?esc(L(SEARCHLBL[d.search])):(d.search?esc(d.search):`<span class="quiet">—</span>`))}
  ${peekRow(lang==='bg'?'Подписващ':'Signatory', d.sigName||d.signatory
     ? `${esc(d.sigName||d.signatory)}${d.sigCapacity?`<div class="quiet" style="font-size:13.5px">${lang==='bg'?'в качеството на':'acting as'} ${esc(d.sigCapacity)}</div>`:''}`
     : `<span class="quiet">${lang==='bg'?'още не е посочен':'not named yet'}</span>`)}
@@ -4097,7 +4247,8 @@ function dossierRows(d){
    kv({bg:'Класове',en:'Classes'}, cls.length?cls.join(', '):'—'),
    kv({bg:'Държавна такса',en:'Official fee'}, money(fe.v,fe.cur)),
    kv({bg:'Възнаграждение',en:'Service fee'}, money(SERVICE[d.route]||0,'EUR')),
-   kv({bg:'Проучване',en:'Clearance search fee'}, d.search_option&&d.search_option!=='none'?money(SEARCH_FEE,'EUR'):'')]));
+   kv({bg:'Проучване',en:'Clearance search fee'}, d.search_option&&d.search_option!=='none'?money(SEARCH_FEE,'EUR'):''),
+   kv({bg:'Мониторинг',en:'Trademark watching'}, (()=>{const m=(d.step_state||{}).monitor; return m&&MONITOR[m]?L(MONITOR[m])+' · '+money(MONITOR[m].fee,'EUR'):''})())]));
  return out;
 }
 
@@ -4235,7 +4386,8 @@ function Acct(){
      ? (lang==='bg'?'чернова, стъпка ':'draft, step ')+(m.current_step||1)+'/9 · '+esc(m.ref)
        +`<div style="margin-top:7px"><button class="btn btn-quiet" data-resume="${esc(m.id)}" style="padding:5px 12px;font-size:12.5px">${
           open?(lang==='bg'?'Продължете (текуща) →':'Continue (current) →'):(lang==='bg'?'Продължете →':'Continue →')}</button></div>`
-     : esc(m.ref);
+     : esc(m.ref)+`<div style="margin-top:7px"><button class="btn btn-quiet" data-monafter="1" data-ref="${esc(m.ref)}" data-mark="${esc(m.mark_text||'')}" style="padding:5px 12px;font-size:12.5px">${
+          lang==='bg'?'+ Мониторинг':'+ Trademark watching'}</button></div>`;
    return `<tr>${cell(esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)')), sub)}
     <td class="num">${ROUTES[m.route]?ROUTES[m.route].code:esc(m.route)}</td>
     <td class="num">${m.class_count||'—'}</td>
@@ -4369,6 +4521,10 @@ function wire(){
  app.querySelectorAll('[data-kind]').forEach(el=>el.onclick=()=>{state.kind=el.dataset.kind;save();render()});
  app.querySelectorAll('[data-search]').forEach(el=>el.onclick=()=>{state.search=el.dataset.search;save();render()});
  const wsb=app.querySelector('#whysearch'); if(wsb) wsb.onclick=()=>openSearchDrawer();
+ app.querySelectorAll('[data-monwhy]').forEach(b=>b.onclick=()=>openMonitorDrawer({}));
+ app.querySelectorAll('[data-monitor]').forEach(b=>b.onclick=()=>{state.monitor=b.dataset.monitor;save();render()});
+ app.querySelectorAll('[data-monafter]').forEach(b=>b.onclick=()=>{monitorMsg=null;
+   openMonitorDrawer({after:true, ref:b.dataset.ref||state.ref||'', mark:b.dataset.mark||state.mark||''})});
  app.querySelectorAll('[data-declare]').forEach(el=>el.onclick=()=>{state.declared=!state.declared;save();render()});
  if(app.querySelector('#sigpad')) sigPadInit();
  const sgn=app.querySelector('#sgn');
