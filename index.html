@@ -1491,7 +1491,7 @@ function stepBlockers(n){
     m.push(T('номер на по-ранната заявка','the number of the earlier application'));
  }
  if(n===7){
-  if(!sigNameEff()) m.push(T('име на подписващия','the signatory name'));
+  if(!sigNameEff()) m.push(sigMissingText());
   if(!state.declared) m.push(T('отметната декларация','the ticked declaration'));
  }
  return m;
@@ -1709,10 +1709,15 @@ let monitorMsg=null;   // съобщение в панела след поръч
 /* Кой подписва пълномощното. Физическото лице подписва само за себе си —
    име и качество не се питат отделно. */
 const isLegalApplicant=()=>((state.applicant&&state.applicant.kind)||'legal')==='legal';
+/* Юридическо лице: подписва управителят / законният представител от стъпка 5.
+   Физическо лице: подписва самият заявител. Отделни полета на стъпка 7 няма. */
 function sigNameEff(){ return isLegalApplicant()
-   ? ((state.sigName||'').trim() || ((state.applicant&&state.applicant.rep)||'').trim())
+   ? (((state.applicant&&state.applicant.rep)||'').trim() || (state.sigName||'').trim())
    : ((state.applicant&&state.applicant.name)||'').trim(); }
-function sigCapEff(){ return isLegalApplicant() ? (state.sigCapacity||'').trim() : ''; }
+function sigCapEff(){ return isLegalApplicant() ? (lang==='bg'?'законен представител':'legal representative') : ''; }
+function sigMissingText(){ return isLegalApplicant()
+   ? (lang==='bg'?'управител / законен представител (стъпка 5)':'the managing director / legal representative (step 5)')
+   : (lang==='bg'?'име на заявителя (стъпка 5)':'the applicant’s name (step 5)'); }
 function monitorPlanCards(cur,after){
  const B=lang==='bg';
  return `<div class="mon-plans">${['m6','y1'].map(k=>{const p=MONITOR[k], on=cur===k;
@@ -2891,14 +2896,13 @@ function body(k){
     :(miss.length?`<div class="caution" style="margin-bottom:12px">${lang==='bg'
      ?'Пълномощното ще се допълни само, щом попълните: ':'The power of attorney fills itself once you complete: '}${esc(miss.join(', '))}.</div>`:'')}
   ${sheet}
-  ${isLegalApplicant()?`<div class="grid2" style="gap:0 18px;margin-top:16px">
-   <div class="field"><label for="sgn">${lang==='bg'?'Име на подписващия':'Signatory’s name'}</label>
-    <input type="text" id="sgn" value="${esc(state.sigName||'')}" placeholder="${lang==='bg'?'Иван Петров':'Ivan Petrov'}"></div>
-   <div class="field"><label for="sgc">${lang==='bg'?'Качество':'Capacity'}</label>
-    <input type="text" id="sgc" value="${esc(state.sigCapacity||'')}" placeholder="${lang==='bg'?'управител':'manager'}"></div>
-  </div>`:`<p class="quiet" style="margin:16px 0 0;text-align:left">${lang==='bg'
-     ?'Пълномощното се подписва лично от заявителя'+(sigNameEff()?': <b>'+esc(sigNameEff())+'</b>':'')+'.'
-     :'The power of attorney is signed by the applicant personally'+(sigNameEff()?': <b>'+esc(sigNameEff())+'</b>':'')+'.'}</p>`}
+  <p class="quiet" style="margin:16px 0 0;text-align:left">${sigNameEff()
+     ?(isLegalApplicant()
+        ?(lang==='bg'?'Пълномощното се подписва от управителя / законния представител: <b>'+esc(sigNameEff())+'</b>.'
+                     :'The power of attorney is signed by the managing director / legal representative: <b>'+esc(sigNameEff())+'</b>.')
+        :(lang==='bg'?'Пълномощното се подписва лично от заявителя: <b>'+esc(sigNameEff())+'</b>.'
+                     :'The power of attorney is signed by the applicant personally: <b>'+esc(sigNameEff())+'</b>.'))
+     :(lang==='bg'?'Попълнете ':'Please complete ')+sigMissingText()+'.'}</p>
   <div class="sigwrap">
    <div class="stack" style="gap:6px">
     <span class="quiet">${lang==='bg'?'Подпис — начертайте с мишката или с пръст':'Signature — draw with the mouse or your finger'}</span>
@@ -3565,7 +3569,7 @@ async function poaSendCode(){
  if(poaBusy) return;
  const miss=poaReady();
  if(miss.length){ poaMsg={type:'err',text:(lang==='bg'?'Първо попълнете: ':'First complete: ')+miss.join(', ')}; render(); return }
- if(!sigNameEff()){ poaMsg={type:'err',text:lang==='bg'?'Напишете името на подписващия.':'Enter the signatory’s name.'}; render(); return }
+ if(!sigNameEff()){ poaMsg={type:'err',text:(lang==='bg'?'Попълнете ':'Please complete ')+sigMissingText()+'.'}; render(); return }
  if(!state.sigPng){ poaMsg={type:'err',text:lang==='bg'?'Положете подпис в полето.':'Draw your signature in the box.'}; render(); return }
  if(!state.declared){ poaMsg={type:'err',text:lang==='bg'?'Отбележете декларацията.':'Tick the declaration.'}; render(); return }
  if(!remote || !sb || !auth){ poaMsg={type:'err',text:lang==='bg'
@@ -3620,7 +3624,7 @@ async function poaSign(){
   const {data,error}=await sb.functions.invoke('poa',{body:{
     action:'sign', matter_id:mid, code:code,
     signatory_name:sigNameEff(),
-    signatory_capacity:sigCapEff(),
+    signatory_capacity:isLegalApplicant()?'законен представител':'',
     poa_html:html, signature_png:state.sigPng }});
   if(error){
    let c=null;
@@ -3630,7 +3634,7 @@ async function poaSign(){
   if(data&&data.error) throw new Error(data.error);
   state.poa_signed_at=data.signed_at; state.poa_hash=data.hash;
   state.signed_at=data.signed_at;
-  state.signatory=sigNameEff()+(sigCapEff()?', '+sigCapEff():'');
+  state.signatory=sigNameEff()+(isLegalApplicant()?', законен представител':'');
   saveLocal(); poaSetStage('idle');
   poaMsg={type:'ok',text:lang==='bg'?'Пълномощното е подписано и приложено към преписката.'
                                     :'The power of attorney has been signed and attached to the matter.'};
@@ -3897,7 +3901,7 @@ function poaFacts(){
   priorNumber:(state.priority&&state.priority.number||'').trim(),
   priorCountry:(state.priority&&state.priority.country||'').trim(),
   signName:sigNameEff(),
-  signCap:sigCapEff(),
+  signCap:'',
   ref:state.ref||'',
   date:new Date().toLocaleDateString('bg-BG')
  };
@@ -3913,10 +3917,10 @@ function poaHtml(opts){
  const markBG = f.markName ? '„'+e(f.markName)+'“' : '(марка без словен елемент, съгласно приложеното изображение)';
  const markEN = f.markName ? '“'+e(f.markName)+'”' : '(a mark without a word element, as per the image attached)';
  const whoBG = f.legal
-   ? `Долуподписаният/ата <b>${e(f.signName||'…')}</b>, в качеството ми на <b>${e(f.signCap||'представляващ')}</b> на <b>${e(f.applicantName||'…')}</b>, ЕИК/рег. № ${e(f.applicantId||'…')}, със седалище и адрес на управление: ${e(f.applicantAddr||'…')} (Дружеството)`
+   ? `Долуподписаният/ата <b>${e(f.signName||'…')}</b>, в качеството ми на <b>${e(f.signCap||'законен представител')}</b> на <b>${e(f.applicantName||'…')}</b>, ЕИК/рег. № ${e(f.applicantId||'…')}, със седалище и адрес на управление: ${e(f.applicantAddr||'…')} (Дружеството)`
    : `Долуподписаният/ата <b>${e(f.applicantName||'…')}</b>${f.applicantId?', ЕГН/№ на документ за самоличност '+e(f.applicantId):''}, с адрес: ${e(f.applicantAddr||'…')}`;
  const whoEN = f.legal
-   ? `The undersigned, <b>${e(f.signName||'…')}</b>, in my capacity as <b>${e(f.signCap||'representative')}</b> of <b>${e(f.applicantName||'…')}</b>, company number ${e(f.applicantId||'…')}, having its registered office at ${e(f.applicantAddr||'…')} (the “Company”)`
+   ? `The undersigned, <b>${e(f.signName||'…')}</b>, in my capacity as <b>${e(f.signCap||'legal representative')}</b> of <b>${e(f.applicantName||'…')}</b>, company number ${e(f.applicantId||'…')}, having its registered office at ${e(f.applicantAddr||'…')} (the “Company”)`
    : `The undersigned, <b>${e(f.applicantName||'…')}</b>${f.applicantId?', personal identification / identity document number '+e(f.applicantId):''}, residing at ${e(f.applicantAddr||'…')}`;
  const onBehalfBG = f.legal ? 'от името и за сметка на Дружеството' : 'от мое име и за моя сметка';
  const onBehalfEN = f.legal ? 'in the name and on behalf of the Company' : 'in my name and on my behalf';
