@@ -863,7 +863,7 @@ let page='why';   // сайтът се отваря със „Защо ScaleYour
 
 function feeOf(route,n,colour){
  const r=ROUTES[route]; n=Math.max(1,n||1);
- if(route==='bg_nat')return{cur:'EUR',v:r.base+Math.max(0,n-3)*r.extra+r.cert};
+ if(route==='bg_nat'){const fil=r.base+Math.max(0,n-3)*r.extra;return{cur:'EUR',v:fil+r.cert,filing:fil,cert:r.cert}}
  if(route==='eutm')  return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
  return{cur:'CHF',v:(colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass};
 }
@@ -879,7 +879,7 @@ function normaliseTerms(){
 }
 function classCount(){return new Set(state.terms.map(t=>t.c)).size||1}
 function officialFee(){const n=classCount(),r=ROUTES[state.route];
- if(state.route==='bg_nat')return{cur:'EUR',v:r.base+Math.max(0,n-3)*r.extra+r.cert};
+ if(state.route==='bg_nat'){const fil=r.base+Math.max(0,n-3)*r.extra;return{cur:'EUR',v:fil+r.cert,filing:fil,cert:r.cert}}
  if(state.route==='eutm')return{cur:'EUR',v:r.base+(n>=2?r.second:0)+Math.max(0,n-2)*r.third};
  return{cur:'CHF',v:(state.colour?r.colour:r.base)+r.party+Math.max(0,n-3)*r.overclass}}
 const SERVICE={bg_nat:295,eutm:395,madrid:395};   // възнаграждение без ДДС
@@ -2985,8 +2985,12 @@ function body(k){
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС (WIPO)':'WIPO fee'}</td>
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
        <td class="r">&#8212;</td></tr>`
+   :f.cert?`<tr><td>${lang==='bg'?'Държавна такса за заявяване':'Official filing fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
+       <td class="quiet">${lang==='bg'?'държавна такса, без ДДС':'official fee, no VAT'}</td><td class="r num">${money(f.filing,f.cur)}</td></tr>
+     <tr><td>${lang==='bg'?'Държавна такса за издаване на свидетелство за регистрация':'Official fee for issuing the registration certificate'}</td>
+       <td class="quiet">${lang==='bg'?'държавна такса, без ДДС':'official fee, no VAT'}</td><td class="r num">${money(f.cert,f.cur)}</td></tr>`
    :`<tr><td>${lang==='bg'?'Държавна такса':'Official fee'}<span class="quiet"> · ${classCount()} ${lang==='bg'?'кл.':'cl.'}</span></td>
-       <td class="quiet">${lang==='bg'?'допълнителен разход':'additional cost'}</td><td class="r num">${money(f.v,f.cur)}</td></tr>`}
+       <td class="quiet">${lang==='bg'?'държавна такса, без ДДС':'official fee, no VAT'}</td><td class="r num">${money(f.v,f.cur)}</td></tr>`}
    <tr><td style="font-weight:600">${lang==='bg'?(madrid?'Общо сега':'Общо'):(madrid?'Payable now':'Total')}</td><td></td><td class="r num" style="font-weight:600">${
      madrid?money(net*1.2,'EUR'):money(f.v+net*1.2,'EUR')}</td></tr>
    </tbody></table></div>
@@ -3126,7 +3130,7 @@ function Price(){
      <th style="text-align:right">${lang==='bg'?'Държавна такса':'Official fee'}</th><th style="text-align:right;padding-right:22px">${lang==='bg'?'Адв. възнаграждение<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">без ДДС</div>':'Professional fee<div class="quiet" style="font-weight:400;text-transform:none;letter-spacing:0">excl. VAT</div>'}</th></tr></thead>
     <tbody>${rows.map(([k,d])=>{const r=ROUTES[k], sv=SERVICE[k];return `<tr>
      <td style="padding-left:22px"><strong>${esc(L(r))}</strong><div class="quiet">${esc(L(r.office))}</div></td>
-     <td class="quiet">${esc(L(d))}</td><td class="r num">${money(r.base, r.cur)}</td>
+     <td class="quiet">${esc(L(d))}</td><td class="r num">${money(r.base, r.cur)}${r.cert?`<div class="quiet" style="font-family:inherit;font-size:12.5px;white-space:nowrap">+ ${money(r.cert,r.cur)} ${lang==='bg'?'свидетелство':'certificate'}</div>`:''}</td>
      <td class="r num" style="padding-right:22px">${money(sv,'EUR')}</td></tr>`}).join('')}
      <tr><td style="padding-left:22px"><strong>${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Trademark clearance search and analysis of identical and similar marks'}</strong>
        <div class="quiet">${lang==='bg'?'по избор, на стъпка 2':'optional, at step 2'}</div></td>
@@ -3142,7 +3146,8 @@ function Price(){
     <tbody>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.bg_nat))}</strong></td>
       <td colspan="2" class="feec"><span class="feefig">${money(265.87,'EUR')}</span>
-       <span class="feenote">${lang==='bg'?'покриват до три класа':'covers up to three classes'}</span></td>
+       <span class="feenote">${lang==='bg'?'покриват до три класа':'covers up to three classes'}</span>
+       <span class="feenote">${lang==='bg'?'+ '+money(25.56,'EUR')+' държавна такса за издаване на свидетелство за регистрация':'+ '+money(25.56,'EUR')+' official fee for issuing the registration certificate'}</span></td>
       <td class="r num" style="padding-right:22px">+${money(15.34,'EUR')}</td></tr>
      <tr><td style="padding-left:22px"><strong>${esc(L(ROUTES.eutm))}</strong></td>
       <td class="r num">${money(850,'EUR')}</td>
