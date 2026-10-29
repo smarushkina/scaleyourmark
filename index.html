@@ -1812,43 +1812,50 @@ function monitorBlock(inPay){
 /* „Защо е важно проучването?“ — текст в страничния панел, като ръководствата,
    с бутон за поръчка накрая. */
 const SEARCH_GUIDE=[
- ['lead',{bg:'Преди да заявите търговската си марка, е важно да проверите дали вече не съществуват по-ранни права, които са идентични или сходни с Вашия знак. Това е една от най-важните стъпки в целия процес, защото рискът, който не е открит преди подаването, обикновено излиза наяве едва когато е най-скъпо да се реагира.',
-          en:'Before you file your trademark, it is important to check whether there are earlier rights that are identical or similar to your sign. This is one of the most important steps in the whole process, because a risk that is not identified before filing usually comes to light only when it is most expensive to deal with.'}],
- ['h',{bg:'Ведомството няма да провери това вместо Вас',en:'The office will not check this for you'}],
- ['p',{bg:'Много заявители приемат, че ако има по-ранна сходна марка, ведомството само ще откаже регистрацията. Това не е така. Патентното ведомство на Република България и Службата на Европейския съюз за интелектуална собственост (EUIPO) проверяват служебно само абсолютните основания, например дали знакът е отличителен и дали не е описателен. Дали марката Ви влиза в конфликт с по-ранна марка, те не преценяват по своя инициатива. Това става само ако притежателят на по-ранното право подаде възражение.',
-       en:'Many applicants assume that if a similar earlier mark exists, the office will refuse registration of its own motion. That is not the case. The Patent Office of the Republic of Bulgaria and the European Union Intellectual Property Office (EUIPO) examine of their own motion only the absolute grounds, such as whether the sign is distinctive and not descriptive. They do not assess on their own initiative whether your mark conflicts with an earlier mark. That happens only if the owner of the earlier right files an opposition.'}],
- ['p',{bg:'На практика заявката Ви може да премине успешно през проверката и да бъде публикувана. След това притежателят на по-ранна марка има три месеца, за да подаде възражение. Дори марката Ви да бъде регистрирана, тя може да бъде заличена по-късно по искане на притежател на по-ранно право.',
-       en:'In practice, your application may pass examination and be published. The owner of an earlier mark then has three months to file an opposition. Even if your mark is registered, it may later be cancelled at the request of the owner of an earlier right.'}],
- ['h',{bg:'От какво Ви предпазва проучването',en:'What a clearance search protects you against'}],
- ['p',{bg:'Предварителното проучване намалява риска от:',en:'A clearance search reduces the risk of:'}],
- ['ul',{bg:['възражение срещу заявката Ви и отказ на регистрацията;',
-            'загуба на платените държавни такси, които не се възстановяват при отказ;',
-            'искане за заличаване на вече регистрираната Ви марка;',
-            'претенции за нарушение и искане да преустановите използването на знака;',
-            'принудителна смяна на наименованието или логото, след като вече сте вложили в опаковки, уебсайт, реклама и разпознаваемост на пазара.'],
-        en:['an opposition against your application and refusal of registration;',
-            'loss of the official fees paid, which are not refunded on refusal;',
-            'an application to cancel your mark once it has been registered;',
-            'infringement claims and a demand that you stop using the sign;',
-            'a forced change of name or logo after you have already invested in packaging, a website, advertising and market recognition.']}],
- ['p',{bg:'Колкото по-късно се установи конфликтът, толкова по-висока е цената му. Проучването е малка инвестиция в сравнение с разходите за ребрандиране или правен спор.',
-       en:'The later a conflict is discovered, the higher its cost. A clearance search is a small investment compared with the cost of a rebrand or a legal dispute.'}],
- ['h',{bg:'Какво се проверява',en:'What is checked'}],
- ['p',{bg:'Проучването обхваща не само идентичните марки, но и сходните. Сходството се преценява визуално, фонетично и смислово, както и според това дали стоките и услугите са еднакви или сходни. Затова марка, която на пръв поглед изглежда различна, може все пак да се окаже в конфликт с Вашата, а търсенето само по точното изписване често не е достатъчно.',
-       en:'A clearance search covers not only identical marks but also similar ones. Similarity is assessed visually, phonetically and conceptually, and by reference to whether the goods and services are identical or similar. A mark that looks different at first glance may therefore still conflict with yours, and a search for the exact spelling alone is often not enough.'}],
- ['h',{bg:'Професионално проучване',en:'Professional clearance search and opinion'}],
- ['p',{bg:'Можете да проведете начална проверка и сами. Професионалното проучване обаче включва анализ на идентичните и сходните марки в съответните регистри и правна оценка на риска. Получавате писмено становище с конкретни изводи: дали е разумно да подадете заявката в този вид, дали е добре да промените знака или обхвата на стоките и услугите, или е по-добре да изберете друго решение.',
-       en:'You can carry out an initial check yourself. A professional clearance search, however, includes an analysis of identical and similar marks in the relevant registers and a legal assessment of the risk. You receive a written clearance opinion with clear conclusions: whether it is sensible to file the application as it stands, whether to adjust the sign or the scope of the goods and services, or whether another route is preferable.'}],
- ['check',{bg:['анализ в регистрите на Патентното ведомство, EUIPO и Мадридската система;',
-               'правна оценка на риска от адвокат, а не автоматичен списък с резултати;',
-               'писмено становище в срок до 3 работни дни, преди да платите държавната такса;',
-               'конкретна препоръка какво да направите.'],
-           en:['analysis of the registers of the Bulgarian Patent Office, EUIPO and the Madrid System;',
-               'a legal risk assessment by an attorney, not an automated list of hits;',
-               'a written opinion within 3 working days, before you pay the official fee;',
-               'a clear recommendation on what to do next.']}],
- ['p',{bg:'Никое проучване не дава пълна гаранция, че няма да възникне спор. То обаче Ви позволява да вземете решението информирано и да подадете заявката с ясна представа за рисковете.',
-       en:'No clearance search can fully guarantee that no dispute will arise. It does, however, allow you to make an informed decision and file your application with a clear understanding of the risks.'}]
+ ['lead',{bg:'Преди да подадете заявка за регистрация на търговска марка, е важно да проверите дали съществуват по-ранни права върху идентични или сходни знаци. Това е една от най-важните стъпки в процеса по регистрация. Рисковете, които останат неоткрити в началото, често се проявяват едва когато преодоляването им вече изисква значително повече време, средства и усилия.',
+          en:'Before filing a trademark application, it is essential to check whether any earlier rights exist in identical or similar signs. This is one of the most important steps in the registration process. Risks that go undetected at the outset often emerge only when addressing them becomes significantly more costly.'}],
+ ['h',{bg:'Ведомството няма да извърши тази проверка вместо Вас',en:'The Trademark Office Will Not Do This for You'}],
+ ['p',{bg:'Много заявители приемат, че ако съществува по-ранна сходна марка, съответното ведомство автоматично ще откаже регистрацията на тяхната. Това обаче не е така.',
+       en:'Many applicants assume that if an earlier similar trademark exists, the relevant trademark office will automatically refuse their application. This is not the case.'}],
+ ['p',{bg:'Патентното ведомство на Република България и Службата на Европейския съюз за интелектуална собственост (EUIPO) извършват служебна проверка за абсолютните основания за отказ, например дали знакът притежава отличителен характер или има описателен характер. По правило те не отказват регистрация поради конфликт с по-ранна марка по собствена инициатива. Такива конфликти обикновено се разглеждат в рамките на производство по опозиция, образувано по инициатива на притежателя на по-ранните права.',
+       en:'The Bulgarian Patent Office and the European Union Intellectual Property Office (EUIPO) examine applications on absolute grounds for refusal, such as whether a sign is distinctive or descriptive. They do not generally refuse registration on the basis of conflicting earlier trademarks on their own initiative. Such conflicts are typically addressed through opposition proceedings initiated by the owners of earlier rights.'}],
+ ['p',{bg:'На практика Вашата заявка може да премине успешно през проверката и да бъде публикувана. От датата на публикацията притежателят на по-ранна марка разполага с тримесечен срок за подаване на опозиция. Дори след регистрацията марката Ви може да стане предмет на производство по заличаване, ако нарушава по-ранни права.',
+       en:'In practice, your application may pass the examination and proceed to publication. The owner of an earlier trademark may then have three months from publication to file an opposition. Even after registration, your trademark may be subject to cancellation proceedings if it conflicts with an earlier right.'}],
+ ['h',{bg:'От какво Ви предпазва проучването',en:'What a Trademark Search Helps You Avoid'}],
+ ['p',{bg:'Предварителното проучване помага да намалите риска от:',en:'A preliminary trademark search helps reduce the risk of:'}],
+ ['ulb',{bg:[['Опозиция и отказ на регистрацията',' поради конфликт с по-ранни права;'],
+             ['Загуба на платените държавни такси',', които по правило не се възстановяват при отказ на регистрацията;'],
+             ['Заличаване на вече регистрираната Ви марка',' вследствие на успешно оспорване от притежател на по-ранни права;'],
+             ['Претенции за нарушение на права върху марка',' и искания за преустановяване на използването на знака;'],
+             ['Скъпо струващ ребрандинг',', включително необходимост от смяна на наименованието или логото, след като вече сте инвестирали в опаковки, уебсайт, маркетинг и изграждане на разпознаваемост на пазара.']],
+         en:[['Opposition and refusal of registration',' due to conflicting earlier rights;'],
+             ['Loss of official filing fees',', which are generally non-refundable if registration is refused;'],
+             ['Cancellation of your registered trademark',' following a successful challenge by the owner of an earlier right;'],
+             ['Trademark infringement claims',' and demands to cease using your sign;'],
+             ['Costly rebranding',', including having to change your name or logo after investing in packaging, your website, marketing and brand recognition.']]}],
+ ['p',{bg:'Колкото по-късно бъде установен конфликтът, толкова по-скъпо и трудно може да бъде преодолян. Предварителното проучване е сравнително малка инвестиция в сравнение с потенциалните разходи за ребрандинг или правни спорове.',
+       en:'The later a conflict is discovered, the more expensive and disruptive it can become. A trademark search is a relatively modest investment compared with the potential costs of rebranding or legal proceedings.'}],
+ ['h',{bg:'Какво включва проучването на търговска марка?',en:'What Does a Trademark Search Involve?'}],
+ ['p',{bg:'Пълноценното проучване обхваща не само идентичните марки, но и сходните марки, които могат да влязат в конфликт с Вашата. При оценката се вземат предвид визуалното, фонетичното и смисловото сходство между знаците, както и стоките и услугите, за които марките са заявени или регистрирани.',
+       en:'A comprehensive trademark search covers not only identical marks but also potentially conflicting similar marks. Similarity is assessed visually, phonetically and conceptually, taking into account the goods and services for which the marks are registered or applied for.'}],
+ ['p',{bg:'Марка, която на пръв поглед изглежда различна, все пак може да създава вероятност от объркване с по-ранна марка. Ето защо търсенето само по точното изписване обикновено не е достатъчно, за да се оцени надеждно рискът от конфликт.',
+       en:'A mark that appears different at first glance may still create a likelihood of confusion with an earlier trademark. For this reason, searching for exact matches alone is rarely sufficient to assess the risks associated with a proposed mark.'}],
+ ['h',{bg:'Професионално проучване на търговска марка',en:'Professional Trademark Search'}],
+ ['p',{bg:'Можете да извършите първоначална проверка и самостоятелно. Професионалното проучване обаче надхвърля простото откриване на потенциално релевантни резултати. То включва анализ на идентични и сходни марки в съответните регистри и правна оценка на възможните конфликти.',
+       en:'You can conduct an initial search yourself. However, a professional trademark search goes beyond identifying potentially relevant results. It involves analysing identical and similar marks in the relevant registers and assessing the legal significance of any potential conflicts.'}],
+ ['p',{bg:'Получавате писмено правно становище с конкретни изводи и практически насоки дали е разумно да подадете заявката в първоначалния ѝ вид, да обмислите промяна на знака или ограничаване на обхвата на стоките и услугите, или да изберете алтернативно решение.',
+       en:'You receive a written legal opinion setting out the findings and providing clear, practical guidance on whether to proceed with the application as planned, consider modifying the sign or narrowing the scope of goods and services, or explore an alternative.'}],
+ ['p',{bg:'Професионалното проучване включва:',en:'Our professional search includes:'}],
+ ['checkb',{bg:[['Проверка в съответните регистри',' — на Патентното ведомство на Република България, EUIPO и Мадридската система за международна регистрация на марки;'],
+                ['Правна оценка от адвокат',' — вместо автоматично генериран списък с резултати от търсенето;'],
+                ['Писмено становище в срок до три работни дни',' — за да можете да прецените рисковете, преди да заплатите държавната такса за подаване на заявката;'],
+                ['Конкретна препоръка за следващите стъпки',' — съобразена с установените резултати и потенциалните рискове.']],
+            en:[['Comprehensive register searches',' covering the Bulgarian Patent Office, EUIPO and the Madrid System;'],
+                ['A legal assessment by a lawyer',', rather than an automated list of search results;'],
+                ['A written opinion within three business days',', allowing you to assess the risks before paying the official filing fee;'],
+                ['A clear recommendation',' on the most appropriate next steps.']]}],
+ ['p',{bg:'Никое проучване не може да гарантира, че никога няма да възникне спор. Професионалното проучване обаче Ви помага да вземете информирано решение, да разберете потенциалните рискове и да подходите към регистрацията на марката си с по-голяма увереност.',
+       en:'No trademark search can guarantee that a dispute will never arise. However, a professional search helps you make an informed decision, understand the potential risks and approach the registration process with greater confidence.'}]
 ];
 function openSearchDrawer(){
  const B=lang==='bg', d=document.getElementById('drawer');
@@ -1856,7 +1863,7 @@ function openSearchDrawer(){
  const price=String(searchFee()).replace(/^\+\s*/,'');
  d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
   <div class="kicker">${B?'Ръководство · стъпка 2':'Guidelines · step 2'}</div>
-  <h2 style="margin:8px 0 14px">${B?'Защо е важно проучването преди подаване':'Why a trademark clearance search matters before filing'}</h2>
+  <h2 style="margin:8px 0 14px">${B?'Защо е важно проучването преди подаване на заявка за марка':'Why a Trademark Search Before Filing Matters'}</h2>
   <article class="guidebody" style="margin-top:18px">${SEARCH_GUIDE.map(blockHtml).join('')}</article>
   <div class="ws-offer" style="margin-top:22px">
    <div class="ws-price" style="margin-top:0;padding-top:0;border-top:0"><span>${B?'Професионално проучване и анализ':'Trademark clearance search and opinion'}</span><strong class="num">${price}</strong></div>
@@ -3079,6 +3086,9 @@ function blockHtml(bl){
    lang==='bg'?'Въпросът, на който трябва да отговорите':'The question to answer'}</span><p>${esc(L(bl[1]))}</p></div>`;
  if(k==='ul') return `<ul>${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
  if(k==='check') return `<ul class="gcheck">${L(bl[1]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ /* Списък с удебелено начало: всеки елемент е [удебелено, останалото]. */
+ if(k==='ulb') return `<ul>${L(bl[1]).map(x=>`<li><strong>${esc(x[0])}</strong>${esc(x[1])}</li>`).join('')}</ul>`;
+ if(k==='checkb') return `<ul class="gcheck">${L(bl[1]).map(x=>`<li><strong>${esc(x[0])}</strong>${esc(x[1])}</li>`).join('')}</ul>`;
  if(k==='lead') return `<p class="glead">${brand(L(bl[1]))}</p>`;
  if(k==='warn')return `<div class="caution" style="margin:18px 0"><strong>${
    lang==='bg'?'Важно':'Important'}</strong><br>${esc(L(bl[1]))}</div>`;
