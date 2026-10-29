@@ -13,6 +13,13 @@
 body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
 img{max-width:100%}
 [hidden]{display:none!important}
+
+/* Единен шрифт и размер на текста — на всички страници, стъпки и странични
+   панели (ръководства, проучване, мониторинг). Пълномощното (.sheet) запазва
+   своя шрифт на документ. */
+#app :is(p,li):not(.sheet *),
+#drawer :is(p,li){font-family:"Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;
+  font-size:15px !important; line-height:1.6 !important; font-style:normal}
 </style>
 </head>
 <body>
@@ -1677,34 +1684,41 @@ function acqCard(){
    изборът влиза в сметката на стъпка 8; след предаването се изпраща като
    поръчка към кантората за конкретната преписка. */
 const MONITOR_GUIDE=[
- ['lead',{bg:'Регистрацията на марката е началото на защитата, а не нейният край. След като марката Ви бъде заявена, всеки ден се подават нови заявки — някои от тях могат да са идентични или сходни с Вашата. Мониторингът Ви позволява да ги откриете навреме, докато все още можете да реагирате по най-бързия и най-евтин начин.',
-          en:'Registering your trademark is the beginning of protection, not the end of it. New applications are filed every day, and some of them may be identical or similar to yours. Trademark watching lets you identify them in time, while you can still act in the quickest and least costly way.'}],
- ['h',{bg:'Ведомството няма да Ви уведоми',en:'The office will not notify you'}],
- ['p',{bg:'Патентното ведомство и EUIPO не отказват служебно регистрацията на нова марка само защото е сходна с Вашата. Ако не подадете възражение, сходната марка може да бъде регистрирана. Задължението да следите за такива заявки и да реагирате е Ваше като притежател.',
-       en:'The Bulgarian Patent Office and EUIPO do not refuse a new mark of their own motion merely because it is similar to yours. If you do not file an opposition, the similar mark may be registered. As the owner, it is up to you to watch for such applications and act.'}],
- ['h',{bg:'Срокът за възражение е кратък',en:'The opposition period is short'}],
- ['p',{bg:'Възражение срещу нова заявка може да се подаде в срок от три месеца от публикуването ѝ. Това е най-бързият и най-евтиният начин да спрете сходна марка. След изтичането на срока остава само искането за заличаване на вече регистрирана марка — процедура, която е по-дълга, по-скъпа и с по-несигурен изход.',
-       en:'An opposition against a new application can be filed within three months of its publication. This is the quickest and least costly way to stop a similar mark. Once that period has expired, the only remaining route is an application to cancel a registered mark, which is longer, more expensive and less certain.'}],
- ['h',{bg:'От какво Ви предпазва мониторингът',en:'What trademark watching protects you against'}],
- ['ul',{bg:['регистриране на сходна марка от конкурент за същите или сходни стоки и услуги;',
-            'объркване на клиентите и загуба на продажби и репутация;',
-            'размиване на отличителността на Вашата марка;',
-            'пропускане на срока за възражение и по-скъп спор впоследствие.'],
-        en:['a competitor registering a similar mark for the same or similar goods and services;',
-            'customer confusion and loss of sales and reputation;',
-            'dilution of the distinctiveness of your mark;',
-            'missing the opposition deadline and facing a costlier dispute later.']}],
- ['h',{bg:'Какво получавате',en:'What you receive'}],
- ['check',{bg:['следене на новопубликуваните заявки за идентични и сходни марки в регистрите на Патентното ведомство, EUIPO и Мадридската система;',
-               'правна преценка от адвокат на всеки сигнал, а не автоматичен списък с резултати;',
-               'уведомление навреме, докато тече срокът за възражение;',
-               'конкретна препоръка дали и как да реагирате.'],
-           en:['watching of newly published applications for identical and similar marks in the registers of the Bulgarian Patent Office, EUIPO and the Madrid System;',
-               'a legal assessment of every hit by an attorney, not an automated list of results;',
-               'timely notice while the opposition period is still running;',
-               'a clear recommendation on whether and how to respond.']}],
- ['p',{bg:'Мониторингът е отделна услуга и не е задължителен за подаването на заявката. Подаването на възражение, ако се наложи, се възлага отделно.',
-       en:'Trademark watching is a separate service and is not required in order to file. Filing an opposition, where needed, is engaged separately.'}]
+ ['lead',{bg:'Регистрацията на търговската марка е началото на нейната защита, а не нейният край. След подаването на Вашата заявка на пазара продължават да се заявяват нови марки, някои от които могат да бъдат идентични или сходни с Вашата и да създадат риск за правата Ви.',
+          en:'Registering your trademark is the beginning of its protection, not the end. New trademark applications continue to be filed every day, and some may be identical or similar to yours, potentially putting your rights at risk.'}],
+ ['p',{bg:'Мониторингът на марката Ви позволява да откривате потенциално конфликтни заявки своевременно — докато все още можете да предприемете действия за защита на правата си по по-бърз и икономически ефективен начин.',
+       en:'Trademark monitoring helps you identify potentially conflicting applications at an early stage, while you still have the opportunity to take action to protect your rights in a faster and more cost-effective manner.'}],
+ ['h',{bg:'Ведомството няма да Ви уведоми',en:'The Trademark Office Will Not Notify You'}],
+ ['p',{bg:'Патентното ведомство на Република България и EUIPO по правило не отказват служебно регистрацията на нова марка само защото тя е идентична или сходна с по-ранна марка. Ако не бъде подадена опозиция от притежателя на по-ранните права, новата марка може да бъде регистрирана.',
+       en:'The Bulgarian Patent Office and the European Union Intellectual Property Office (EUIPO) generally do not refuse to register a new trademark on their own initiative simply because it is identical or similar to an earlier mark. If the owner of the earlier rights does not file an opposition, the new trademark may proceed to registration.'}],
+ ['p',{bg:'Ето защо отговорността да следите за нови заявки, които могат да засегнат правата Ви, и да прецените дали е необходимо да предприемете действия, е Ваша като притежател на марката.',
+       en:'As a trademark owner, you are therefore responsible for monitoring new applications that may affect your rights and assessing whether action is necessary to protect them.'}],
+ ['h',{bg:'Срокът за подаване на опозиция е ограничен',en:'The Opposition Deadline Is Limited'}],
+ ['p',{bg:'Срещу нова заявка за марка може да бъде подадена опозиция в срок от три месеца от публикуването ѝ при приложимите процедури за национални и европейски марки. Това е възможност да се противопоставите на регистрацията, преди тя да бъде извършена.',
+       en:'An opposition to a new trademark application may be filed within three months of its publication under the applicable procedures for national and EU trademarks. This gives you an opportunity to challenge the registration before it is completed.'}],
+ ['p',{bg:'Ако срокът за опозиция бъде пропуснат и марката бъде регистрирана, може да се наложи да потърсите защита чрез производство по заличаване. Подобна процедура обикновено изисква повече време и средства и може да доведе до по-голяма правна несигурност.',
+       en:'If the opposition deadline is missed and the trademark is registered, you may need to seek protection through cancellation proceedings. Such proceedings generally require more time and expense and may involve greater legal uncertainty.'}],
+ ['h',{bg:'От какво Ви предпазва мониторингът',en:'What Trademark Monitoring Helps You Avoid'}],
+ ['p',{bg:'Мониторингът помага да намалите риска от:',en:'Monitoring helps reduce the risk of:'}],
+ ['ul',{bg:['Регистрация на идентична или сходна марка от конкурент за идентични или сходни стоки и услуги;',
+            'Объркване на потребителите и потенциална загуба на клиенти, продажби и репутация;',
+            'Постепенно размиване на отличителния характер на Вашата марка;',
+            'Пропускане на срока за подаване на опозиция и необходимост от по-продължителни и скъпи правни действия впоследствие.'],
+        en:['A competitor registering an identical or similar trademark for identical or similar goods and services;',
+            'Consumer confusion and potential losses in customers, sales and reputation;',
+            'The gradual dilution of your trademark’s distinctive character;',
+            'Missing the opposition deadline and having to pursue more lengthy and costly legal action later.']}],
+ ['h',{bg:'Какво включва услугата',en:'What the Service Includes'}],
+ ['checkb',{bg:[['Проследяване на новопубликувани заявки',' за идентични и сходни марки в регистрите на Патентното ведомство на Република България, EUIPO и Мадридската система за международна регистрация на марки;'],
+                ['Правна оценка от адвокат',' на установените потенциални конфликти, вместо автоматично генериран списък с резултати;'],
+                ['Своевременно уведомяване',' при откриване на потенциално конфликтна заявка, така че да разполагате с възможност да реагирате в рамките на приложимия срок за опозиция;'],
+                ['Конкретна препоръка за действие',', съобразена с установените обстоятелства и възможностите за защита на правата Ви.']],
+            en:[['Monitoring newly published trademark applications',' for identical and similar marks in the registers of the Bulgarian Patent Office, EUIPO and the Madrid System for the International Registration of Marks;'],
+                ['Legal assessment by a lawyer',' of identified potential conflicts, rather than an automatically generated list of search results;'],
+                ['Timely notification',' when a potentially conflicting application is identified, giving you an opportunity to respond within the applicable opposition period;'],
+                ['A clear recommendation',' on the next steps, tailored to the findings and the available options for protecting your rights.']]}],
+ ['p',{bg:'Мониторингът е самостоятелна услуга и не е задължително условие за подаване на заявка за регистрация на марка. Ако се установи необходимост от подаване на опозиция, правното представителство и самото производство се възлагат отделно.',
+       en:'Trademark monitoring is a standalone service and is not a prerequisite for filing a trademark application. If an opposition is considered necessary, the legal representation and opposition proceedings are commissioned separately.'}]
 ];
 let monitorMsg=null;   // съобщение в панела след поръчка
 /* Кой подписва пълномощното. Физическото лице подписва само за себе си —
@@ -1736,7 +1750,7 @@ function openMonitorDrawer(opt){
  const cur=after?null:state.monitor;
  d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
   <div class="kicker">${B?'Ръководство · мониторинг':'Guidelines · trademark watching'}</div>
-  <h2 style="margin:8px 0 14px">${B?'Защо е важен мониторингът на марката':'Why trademark watching matters'}</h2>
+  <h2 style="margin:8px 0 14px">${B?'Защо е важен мониторингът на търговската марка':'Why Trademark Monitoring Matters'}</h2>
   <article class="guidebody" style="margin-top:18px">${MONITOR_GUIDE.map(blockHtml).join('')}</article>
   <div class="ws-offer" style="margin-top:22px">
    <div class="kicker" style="margin-bottom:10px">${after
