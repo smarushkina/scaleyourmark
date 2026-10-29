@@ -612,7 +612,7 @@ const L = o => (o && o[lang]!==undefined) ? o[lang] : o;
 const NAV=[{id:'why',bg:'ScaleYourMark',en:'ScaleYourMark'},
 {id:'about',bg:'За нас',en:'About us'},
 {id:'mark',bg:'За търговската марка',en:'About trademarks'},
-{id:'file',bg:'Заявяване',en:'File a mark'},{id:'guides',bg:'Ръководства',en:'Guidelines'},
+{id:'file',bg:'Заявяване',en:'File a trademark'},{id:'guides',bg:'Ръководства',en:'Guidelines'},
 {id:'price',bg:'Цени',en:'Pricing'},
 {id:'contact',bg:'Контакти',en:'Contact'},{id:'acct',bg:'Профил',en:'Account'},{id:'office',bg:'Панел',en:'Dashboard'}];
 
@@ -626,7 +626,7 @@ const ROUTES={
  bg_nat:{code:'BG',bg:'Национална марка (България)',en:'National mark (Bulgaria)',office:{bg:'Патентно ведомство на РБ',en:'Bulgarian Patent Office'},
    cur:'EUR',base:265.87,extra:15.34,incl:3,cert:25.56,
    bg_s:'Закрила само в България. Държавната такса покрива до 3 класа.',en_s:'Protection in Bulgaria only. The official fee covers up to 3 classes.'},
- eutm:{code:'EUTM',bg:'Марка на Европейския съюз',en:'European Union trade mark',office:{bg:'СЕСИС (EUIPO), Аликанте',en:'EUIPO, Alicante'},
+ eutm:{code:'EUTM',bg:'Марка на Европейския съюз',en:'European Union trademark',office:{bg:'СЕСИС (EUIPO), Аликанте',en:'EUIPO, Alicante'},
    cur:'EUR',base:850,second:50,third:150,incl:1,
    bg_s:'Едно заявяване, единна закрила в 27 държави членки.',en_s:'One filing, unitary protection across 27 Member States.'},
  madrid:{code:'WO',bg:'Международна регистрация (Мадрид)',en:'International registration (Madrid)',office:{bg:'СОИС (WIPO), Женева',en:'WIPO, Geneva'},
@@ -637,7 +637,7 @@ const ROUTES={
 const STEPS=[
  {n:1,key:'territory',t:{bg:'Къде ви трябва закрила?',en:'Where do you need protection?'},
   i:{bg:'Марката е териториално право — тя действа само там, където е регистрирана. Този избор определя цената, срока и обхвата.',
-     en:'A trade mark is a territorial right — it only bites where it is registered. This choice drives price, timing and scope.'},
+     en:'A trademark is a territorial right — it only bites where it is registered. This choice drives price, timing and scope.'},
   need:{bg:['Къде продавате днес','Къде ще продавате след 3 години','Дали вече имате регистрация някъде'],
         en:['Where you sell today','Where you will sell in three years','Whether you already own a registration somewhere']},
   man:{bg:['Само български пазар — националната марка е по-евтина и по-бърза.',
@@ -1749,12 +1749,12 @@ function openMonitorDrawer(opt){
  const after=!!opt.after;
  const cur=after?null:state.monitor;
  d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
-  <div class="kicker">${B?'Ръководство · мониторинг':'Guidelines · trademark watching'}</div>
+  <div class="kicker">${B?'Ръководство · мониторинг':'Guidelines · trademark monitoring'}</div>
   <h2 style="margin:8px 0 14px">${B?'Защо е важен мониторингът на търговската марка':'Why Trademark Monitoring Matters'}</h2>
   <article class="guidebody" style="margin-top:18px">${MONITOR_GUIDE.map(blockHtml).join('')}</article>
   <div class="ws-offer" style="margin-top:22px">
    <div class="kicker" style="margin-bottom:10px">${after
-     ?(B?'Заявете мониторинг':'Order trademark watching')+(opt.ref?' · '+esc(opt.ref):'')
+     ?(B?'Заявете мониторинг':'Order trademark monitoring')+(opt.ref?' · '+esc(opt.ref):'')
      :(B?'Изберете срок':'Choose a term')}</div>
    ${monitorPlanCards(cur,after)}
    ${monitorMsg?`<div class="${monitorMsg.type==='ok'?'helpbar':'caution'}" style="margin-top:12px"><span class="ht">${esc(monitorMsg.text)}</span></div>`:''}
@@ -1779,17 +1779,17 @@ async function orderMonitorAfter(k, opt){
  const B=lang==='bg', p=MONITOR[k];
  if(!(remote && sb && auth)){
    monitorMsg={type:'err',text:B?'Влезте в профила си, за да заявите мониторинг, или ни пишете на office@scaleyourmark.com.'
-                               :'Please sign in to order trademark watching, or email us at office@scaleyourmark.com.'};
+                               :'Please sign in to order trademark monitoring, or email us at office@scaleyourmark.com.'};
    return;
  }
  try{
-  const message=(B?'Заявка за мониторинг на марка':'Trademark watching order')+': '+L(p)+' · '+money(p.fee,'EUR')+(B?' без ДДС':' excl. VAT')
+  const message=(B?'Заявка за мониторинг на марка':'Trademark monitoring order')+': '+L(p)+' · '+money(p.fee,'EUR')+(B?' без ДДС':' excl. VAT')
     +(opt.ref?'\n'+(B?'Преписка':'Matter')+': '+opt.ref:'')+(opt.mark?'\n'+(B?'Марка':'Mark')+': '+opt.mark:'');
   const {data,error}=await sb.functions.invoke('contact',{body:{name:auth.name||auth.email, email:auth.email,
      topic:B?'Текуща заявка':'Application in progress', message:message, company:''}});
   if(error || (data&&data.error)) throw (error||new Error(data.error));
   monitorMsg={type:'ok',text:B?('Заявката за мониторинг ('+L(p)+') е изпратена. Ще получите фактура и потвърждение по имейл.')
-                             :('Your trademark watching order ('+L(p)+') has been sent. You will receive an invoice and confirmation by email.')};
+                             :('Your trademark monitoring order ('+L(p)+') has been sent. You will receive an invoice and confirmation by email.')};
  }catch(e){
   monitorMsg={type:'err',text:B?'Заявката не мина. Пишете ни на office@scaleyourmark.com.':'The order could not be sent. Please email us at office@scaleyourmark.com.'};
  }
@@ -1799,14 +1799,14 @@ function monitorBlock(inPay){
  const B=lang==='bg', p=state.monitor&&MONITOR[state.monitor];
  return `<div class="monbox">
   <div class="monhead">
-   <div><div class="kicker">${B?'Мониторинг на марката · по избор':'Trademark watching · optional'}</div>
+   <div><div class="kicker">${B?'Мониторинг на марката · по избор':'Trademark monitoring · optional'}</div>
     <p style="margin:6px 0 0;text-align:left">${B
      ?'Следим за нови сходни заявки и Ви уведомяваме, докато все още можете да подадете възражение.'
      :'We watch for new similar applications and alert you while you can still file an opposition.'}</p></div>
   </div>
   <button class="btn whybtn" data-monwhy="1" style="margin-top:12px">
    <span class="whyico" aria-hidden="true">?</span>
-   <span>${B?'Защо е важен мониторингът?':'Why does trademark watching matter?'}</span>
+   <span>${B?'Защо е важен мониторингът?':'Why does trademark monitoring matter?'}</span>
    <span class="whychev" aria-hidden="true">→</span></button>
   <div class="opts three" style="margin-top:12px">
    ${['m6','y1'].map(k=>{const q=MONITOR[k];return `<button class="opt" data-monitor="${k}" data-on="${state.monitor===k?1:0}">
@@ -1817,8 +1817,8 @@ function monitorBlock(inPay){
      <span><span class="ot">${B?'Не сега':'Not now'}</span><span class="os">${B?'Може да се заяви и по-късно.':'You can order it later.'}</span></span><span></span></button>
   </div>
   ${p?`<div class="helpbar" style="margin-top:12px"><span class="ht">${inPay
-     ?(B?'Мониторингът е добавен към крайната цена.':'Trademark watching has been added to the total.')
-     :(B?'Мониторингът влиза в цената, посочена в стъпка 8.':'Trademark watching is included in the price shown at step 8.')}</span>
+     ?(B?'Мониторингът е добавен към крайната цена.':'Trademark monitoring has been added to the total.')
+     :(B?'Мониторингът влиза в цената, посочена в стъпка 8.':'Trademark monitoring is included in the price shown at step 8.')}</span>
      <span class="num">+${money(p.fee,'EUR')}</span></div>`:''}
  </div>`;
 }
@@ -1982,7 +1982,7 @@ function chrome(){
  const fab=document.getElementById('fab');
  if(fab){
   fab.hidden = (page==='file');
-  document.getElementById('fabtext').textContent = lang==='bg'?'Заявете марка':'File a mark';
+  document.getElementById('fabtext').textContent = lang==='bg'?'Заявете марка':'File a trademark';
   fab.setAttribute('aria-label', lang==='bg'?'Към заявяването':'Start your application');
   fab.onclick=()=>go('file');
  }
@@ -2075,16 +2075,16 @@ document.getElementById('scrim').onclick=closeDrawer;
 const GUIDE = {
 1:{b:[
  ['p',{bg:'Преди да заявите търговската си марка, трябва да определите къде искате тя да бъде защитена. Закрилата на търговската марка е териториална. Това означава, че регистрацията Ви дава права в определена територия, в зависимост от вида на заявката, която изберете.',
-      en:'Before you file your trade mark you need to decide where you want it protected. Trade mark protection is territorial. That means registration gives you rights in a particular territory, depending on the type of application you choose.'}],
+      en:'Before you file your trademark you need to decide where you want it protected. Trademark protection is territorial. That means registration gives you rights in a particular territory, depending on the type of application you choose.'}],
  ['q',{bg:'На кои пазари използвате или планирате да използвате своята марка?',
       en:'In which markets do you use, or plan to use, your mark?'}],
  ['p',{bg:'Помислете не само за настоящата си дейност, но и за развитието на бизнеса Ви в близко бъдеще.',
       en:'Think not only about what you do today, but about how your business will develop in the near future.'}],
  ['h',{bg:'Основните възможности',en:'The main options'}],
  ['p',{bg:'България — ако предлагате продуктите или услугите си основно на българския пазар и не планирате непосредствено разширяване в други държави, можете да заявите национална търговска марка в България. Това е подходящият вариант, когато търсите закрила на марката си на територията на България.',
-      en:'Bulgaria — if you offer your products or services mainly on the Bulgarian market and have no immediate plans to expand into other countries, you can file a national trade mark in Bulgaria. This is the right option when you are seeking protection on Bulgarian territory.'}],
+      en:'Bulgaria — if you offer your products or services mainly on the Bulgarian market and have no immediate plans to expand into other countries, you can file a national trademark in Bulgaria. This is the right option when you are seeking protection on Bulgarian territory.'}],
  ['p',{bg:'Европейски съюз — ако развивате или планирате да развивате бизнеса си в повече от една държава от Европейския съюз, можете да обмислите заявяване на марка на Европейския съюз. Една заявка предоставя закрила във всички държави членки на ЕС. Това може да бъде подходящ вариант, когато бизнесът Ви е насочен към европейския пазар или планирате разширяване извън България.',
-      en:'European Union — if you operate, or plan to operate, in more than one EU Member State, you may want to consider a European Union trade mark. A single application gives protection in every EU Member State. This can be the right option when your business is aimed at the European market or you are planning to expand beyond Bulgaria.'}],
+      en:'European Union — if you operate, or plan to operate, in more than one EU Member State, you may want to consider a European Union trademark. A single application gives protection in every EU Member State. This can be the right option when your business is aimed at the European market or you are planning to expand beyond Bulgaria.'}],
  ['p',{bg:'Други държави — ако използвате или планирате да използвате марката си извън Европейския съюз, може да е необходимо да потърсите закрила в съответните държави. В зависимост от държавите и конкретната Ви ситуация съществуват различни възможности за международна регистрация.',
       en:'Other countries — if you use, or plan to use, your mark outside the European Union, you may need to seek protection in the countries concerned. Depending on those countries and on your particular situation, there are different routes to international registration.'}],
  ['h',{bg:'Как да изберете?',en:'How to choose'}],
@@ -2105,7 +2105,7 @@ const GUIDE = {
 
 2:{b:[
  ['p',{bg:'Преди да заявите търговската си марка, е важно да проверите дали вече не съществува по-ранна марка, която е идентична или сходна с Вашата.',
-      en:'Before you file your trade mark it is important to check whether an earlier mark already exists that is identical or similar to yours.'}],
+      en:'Before you file your trademark it is important to check whether an earlier mark already exists that is identical or similar to yours.'}],
  ['p',{bg:'Тази проверка е една от най-важните стъпки преди подаване на заявката. Тя може да Ви помогне да установите потенциални пречки за регистрацията и да избегнете разходи за заявяване на марка, която може да бъде оспорена или да не получи закрила.',
       en:'This check is one of the most important steps before filing. It can help you identify potential obstacles to registration and avoid spending money on a mark that may be opposed or may not obtain protection.'}],
  ['q',{bg:'Съществува ли вече регистрирана или заявена марка, която може да бъде пречка за Вашата?',
@@ -2114,7 +2114,7 @@ const GUIDE = {
       en:'Searching for the same name is not enough. You also need to look for similar marks, where they cover identical or similar goods or services.'}],
  ['h',{bg:'Какво трябва да проверите?',en:'What to check'}],
  ['p',{bg:'1. Идентични марки. Първо проверете дали същото име или обозначение вече е регистрирано или заявено като търговска марка за съответните стоки или услуги. Например, ако искате да регистрирате марката „ABC“, проверете дали вече съществува марка „ABC“ в съответната територия и за релевантни стоки или услуги.',
-      en:'1. Identical marks. First check whether the same name or sign is already registered or applied for as a trade mark for the goods or services concerned. For example, if you want to register the mark ABC, check whether a mark ABC already exists in the relevant territory and for relevant goods or services.'}],
+      en:'1. Identical marks. First check whether the same name or sign is already registered or applied for as a trademark for the goods or services concerned. For example, if you want to register the mark ABC, check whether a mark ABC already exists in the relevant territory and for relevant goods or services.'}],
  ['p',{bg:'2. Сходни марки. Липсата на идентична марка не означава автоматично, че Вашата марка е свободна. Проверете и за марки, които са сходни визуално, фонетично или като смисъл и са регистрирани или заявени за сходни стоки или услуги. Например различията в изписването на две марки не винаги са достатъчни, за да се избегне сходство между тях.',
       en:'2. Similar marks. The absence of an identical mark does not automatically mean yours is free. Look also for marks that are similar visually, phonetically or in meaning and that are registered or applied for in respect of similar goods or services. Differences in spelling, for instance, are not always enough to avoid similarity.'}],
  ['p',{bg:'3. Стоките и услугите. При проверката трябва да вземете предвид за какво ще използвате марката. Една и съща или сходна марка може да съществува за различни стоки и услуги, без това непременно да означава, че двете марки са несъвместими. Затова проверката на името трябва да бъде направена заедно с преглед на стоките и услугите, за които искате да получите закрила.',
@@ -2126,8 +2126,8 @@ const GUIDE = {
             'регистрите на марките на Европейския съюз;',
             'международни регистрации;',
             'други национални регистри, когато са релевантни.'],
-        en:['the Bulgarian trade mark register;',
-            'the European Union trade mark registers;',
+        en:['the Bulgarian trademark register;',
+            'the European Union trademark registers;',
             'international registrations;',
             'other national registers, where relevant.']}],
  ['p',{bg:'Освен официалните регистри може да съществуват и други права или обстоятелства, които е важно да бъдат взети предвид.',
@@ -2177,7 +2177,7 @@ const GUIDE = {
       en:'A mark may be a name alone, a graphic alone, or a combination of text and visual elements.'}],
  ['h',{bg:'Основните възможности',en:'The main options'}],
  ['p',{bg:'1. Само име или дума. При този вариант регистрирате самото наименование като търговска марка, без конкретен шрифт, цвят или графично оформление. Например: SCALEYOURMARK. Този вид марка защитава словния елемент и обикновено е подходящ, когато основната отличителна част на бранда е неговото име. Ако в бъдеще промените шрифта, цветовете или визуалното оформление, регистрацията на словната марка може да продължи да защитава самото наименование.',
-      en:'1. A name or word alone. Here you register the name itself as a trade mark, without any particular typeface, colour or styling. For example: SCALEYOURMARK. This type protects the word element and is usually right where the distinctive core of the brand is its name. If you later change the typeface, the colours or the styling, a word mark registration can continue to protect the name itself.'}],
+      en:'1. A name or word alone. Here you register the name itself as a trademark, without any particular typeface, colour or styling. For example: SCALEYOURMARK. This type protects the word element and is usually right where the distinctive core of the brand is its name. If you later change the typeface, the colours or the styling, a word mark registration can continue to protect the name itself.'}],
  ['p',{bg:'2. Лого или графичен елемент. Ако основният отличителен елемент на бранда е изображение, символ или конкретно графично оформление, можете да заявите марката във вида, в който тя е представена. Тук защитата е свързана с конкретното визуално представяне на марката. Този вариант може да бъде подходящ, когато логото само по себе си има отличителен характер и е важен елемент от идентичността на бизнеса.',
       en:'2. A logo or graphic element. If the distinctive core of the brand is an image, a symbol or a particular styling, you can file the mark in the form in which it is presented. Protection here attaches to that specific visual representation. This can be right where the logo is distinctive in itself and is an important part of the identity of the business.'}],
  ['p',{bg:'3. Име и лого заедно. Ако използвате наименование и графичен елемент като едно общо визуално обозначение, можете да заявите комбинирана марка. Например: SCALEYOURMARK + лого. При този вариант заявявате конкретната комбинация от словни и графични елементи.',
@@ -2220,7 +2220,7 @@ const GUIDE = {
 
 4:{b:[
  ['p',{bg:'Търговската марка не се регистрира абстрактно. При заявяването трябва да посочите за кои стоки и услуги искате да получите закрила. Това определя обхвата на правата Ви и е една от най-важните стъпки при подготовката на заявката.',
-      en:'A trade mark is not registered in the abstract. When you file you have to state which goods and services you want protected. This defines the scope of your rights and is one of the most important steps in preparing the application.'}],
+      en:'A trademark is not registered in the abstract. When you file you have to state which goods and services you want protected. This defines the scope of your rights and is one of the most important steps in preparing the application.'}],
  ['q',{bg:'За какви стоки или услуги използвате или ще използвате своята марка?',
       en:'For which goods or services do you use, or will you use, your mark?'}],
  ['p',{bg:'Помислете не само какво предлагате днес, но и как планирате да развивате бизнеса си.',
@@ -2308,7 +2308,7 @@ const GUIDE = {
 
 6:{b:[
  ['p',{bg:'При регистрацията на търговска марка датата на подаване на заявката е важна. Тя може да определи приоритета Ви спрямо по-късно подадени заявки за идентични или сходни марки. В някои случаи обаче може да разполагате с по-ранна дата на приоритет, която можете да използвате при нова заявка.',
-      en:'In trade mark registration the filing date matters. It can determine your priority against later applications for identical or similar marks. In some cases, however, you may hold an earlier priority date that you can use for a new application.'}],
+      en:'In trademark registration the filing date matters. It can determine your priority against later applications for identical or similar marks. In some cases, however, you may hold an earlier priority date that you can use for a new application.'}],
  ['q',{bg:'Подавали ли сте вече заявка за същата марка в България или друга държава и разполагате ли с право на приоритет от тази заявка?',
       en:'Have you already filed for the same mark in Bulgaria or elsewhere, and do you hold a right of priority from that application?'}],
  ['p',{bg:'Ако не сте подавали по-ранна заявка, в повечето случаи можете да продължите с настоящата заявка и не е необходимо да посочвате по-ранен приоритет.',
@@ -2338,10 +2338,10 @@ const GUIDE = {
       en:'These details may be needed to assess whether you can claim priority.'}],
  ['h',{bg:'Важно е да спазите срока',en:'The time limit matters'}],
  ['p',{bg:'Правото на приоритет не може да се използва неограничено във времето. При международните правила за търговските марки обичайният срок за претендиране на приоритет е шест месеца от датата на първата заявка, при наличие на останалите законови условия. Затова, ако сте подали по-ранна заявка и искате да използвате нейния приоритет, проверете срока преди подаването на новата заявка.',
-      en:'The right of priority is not open-ended. Under the international rules on trade marks the usual window for claiming priority is six months from the date of the first application, provided the other legal conditions are met. So if you have an earlier application and want to use its priority, check the deadline before you file the new one.'}],
+      en:'The right of priority is not open-ended. Under the international rules on trademarks the usual window for claiming priority is six months from the date of the first application, provided the other legal conditions are met. So if you have an earlier application and want to use its priority, check the deadline before you file the new one.'}],
  ['h',{bg:'А ако не сте подавали по-рано?',en:'And if you have not filed before?'}],
  ['p',{bg:'Ако това е първата Ви заявка за марката, просто продължете към следващата стъпка. Не е необходимо да имате по-ранна дата, за да регистрирате търговска марка. Датата на настоящата заявка ще бъде датата, от която ще се определи нейният приоритет, при условие че заявката отговаря на приложимите изисквания.',
-      en:'If this is your first application for the mark, simply move on to the next step. You do not need an earlier date in order to register a trade mark. The date of this application will be the date from which its priority runs, provided the application meets the applicable requirements.'}]
+      en:'If this is your first application for the mark, simply move on to the next step. You do not need an earlier date in order to register a trademark. The date of this application will be the date from which its priority runs, provided the application meets the applicable requirements.'}]
 ]},
 7:{b:[
  ['p',{bg:'Преди да преминете към подаване на заявката, трябва да определите кой възлага услугата и кой има право да подписва необходимите документи.',
@@ -2372,7 +2372,7 @@ const GUIDE = {
       en:'ScaleYourMark gives you a clear, pre-agreed price for the service, so that you know what to expect before you begin.'}],
  ['h',{bg:'Какво плащате?',en:'What you are paying for'}],
  ['p',{bg:'При регистрацията на търговска марка обичайно има два вида разходи:',
-      en:'Registering a trade mark usually involves two kinds of cost:'}],
+      en:'Registering a trademark usually involves two kinds of cost:'}],
  ['ul',{bg:['такса за услугата на ScaleYourMark — за подготовката и професионалното съдействие при подаването;',
             'официални такси за заявяване на търговската марка — дължими към съответното ведомство според избраната територия и обхвата на заявката.'],
         en:['the ScaleYourMark service fee, for preparation and professional assistance with filing;',
@@ -2398,7 +2398,7 @@ const GUIDE = {
  ['p',{bg:'След като всички данни са потвърдени и необходимото плащане е извършено, заявката може да бъде подготвена за подаване съгласно избраната услуга. Важно е да знаете, че плащането на услугата и подаването на заявката не означават автоматично, че марката ще бъде регистрирана. Регистрацията зависи от проверката на заявката и от приложимите законови изисквания.',
       en:'Once everything is confirmed and payment has been made, the application can be prepared for filing under the service chosen. Paying for the service and filing the application do not automatically mean the mark will be registered. Registration depends on examination of the application and on the applicable legal requirements.'}],
  ['warn',{bg:'Таксите за регистрация на търговски марки се определят от съответните институции и могат да се променят. Преди плащане ще видите актуалната стойност на приложимите разходи за Вашата конкретна заявка. Ако заявката включва повече класове, специфичен териториален обхват или претенция за приоритет, могат да се прилагат допълнителни изисквания или такси.',
-        en:'Trade mark fees are set by the institutions concerned and can change. Before payment you will see the current figure for the costs applicable to your particular application. Where the application covers more classes, a particular territorial scope or a priority claim, additional requirements or fees may apply.'}]
+        en:'Trademark fees are set by the institutions concerned and can change. Before payment you will see the current figure for the costs applicable to your particular application. Where the application covers more classes, a particular territorial scope or a priority claim, additional requirements or fees may apply.'}]
 ]},
 9:{b:[
  ['p',{bg:'След като потвърдите заявката и извършите плащането, Вие сте готови.',
@@ -2483,12 +2483,12 @@ function rolesSection(){
 function File_(){
  const s=STEPS[state.step-1], pct=Math.round((state.step-1)/9*100);
  const done=Object.keys(state.done).length;
- if(!auth) return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
+ if(!auth) return `${pageHead({bg:'Заявяване на марка',en:'Filing a trademark'},
   {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
   {bg:'Заявката се попълва в девет стъпки.',
    en:'The application is completed in nine steps.'})}${rolesSection()}${authGate()}`;
 
- return `${pageHead({bg:'Заявяване на марка',en:'Filing a trade mark'},
+ return `${pageHead({bg:'Заявяване на марка',en:'Filing a trademark'},
   {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
   {bg:'Заявката се попълва в девет стъпки.',
    en:'The application is completed in nine steps.'})}
@@ -2500,7 +2500,7 @@ function File_(){
        ?'Можете да я следите в „Профил“. За друга марка започнете нова заявка — стъпките започват отначало.'
        :'You can follow it under “Account”. To file another trademark, start a new application — the steps begin again.'}</div></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-     ${state.monitor&&MONITOR[state.monitor]?'':`<button class="btn btn-gold" data-monafter="1">${lang==='bg'?'Заявете мониторинг':'Order trademark watching'}</button>`}
+     ${state.monitor&&MONITOR[state.monitor]?'':`<button class="btn btn-gold" data-monafter="1">${lang==='bg'?'Заявете мониторинг':'Order trademark monitoring'}</button>`}
      <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button></div>
    </div>` : ''}
   <div class="filegrid">
@@ -2979,7 +2979,7 @@ function body(k){
    <tr><td>${lang==='bg'?'Адв. възнаграждение':'Legal fee'}</td><td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(sv,'EUR')}</td></tr>
    ${state.search==='full'?`<tr><td>${lang==='bg'?'Проучване и анализ':'Clearance search and opinion'}</td>
       <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(SEARCH_FEE,'EUR')}</td></tr>`:''}
-    ${mon?`<tr><td>${lang==='bg'?'Мониторинг':'Trademark watching'}<span class="quiet"> · ${esc(L(mon))}</span></td>
+    ${mon?`<tr><td>${lang==='bg'?'Мониторинг':'Trademark monitoring'}<span class="quiet"> · ${esc(L(mon))}</span></td>
       <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(mon.fee,'EUR')}</td></tr>`:''}
    <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}<span class="quiet"> · ${lang==='bg'?'върху':'on'} ${money(net,'EUR')}</span></td><td class="quiet">${lang==='bg'?'данък върху услугите':'tax on services'}</td><td class="r num">${money(net*.2,'EUR')}</td></tr>
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС (WIPO)':'WIPO fee'}</td>
@@ -3175,7 +3175,7 @@ function Price(){
       <p class="quiet">${lang==='bg'
         ?'за марка, без ДДС, платими предварително. Уведомяваме ви за сходна чужда заявка, докато опозиционният срок още тече.'
         :'per mark, excl. VAT, payable in advance. We notify you of similar third-party applications while the opposition period is still open.'}</p>
-      <button class="btn btn-ghost" data-monwhy="1" style="align-self:flex-start;padding:8px 14px;font-size:13.5px">${lang==='bg'?'Защо е важен мониторингът?':'Why does trademark watching matter?'}</button>
+      <button class="btn btn-ghost" data-monwhy="1" style="align-self:flex-start;padding:8px 14px;font-size:13.5px">${lang==='bg'?'Защо е важен мониторингът?':'Why does trademark monitoring matter?'}</button>
     </div>
     <div class="card pad stack" style="gap:8px">
      <div class="kicker">${lang==='bg'?'Други услуги':'Other services'}</div>
@@ -3299,11 +3299,11 @@ function Why(){
  const claim={bg:'Вие познавате своя бизнес. Ние ви помагаме да защитите неговото име.',
               en:'You know your business. We help you protect its name.'};
  const promise={bg:'Информирайте се безплатно. Подгответе се самостоятелно. Получете професионална подкрепа. Заявете своята търговска марка с ясна и предвидима цена.',
-                en:'Learn what you need at no cost. Prepare it yourself. Get professional support. File your trade mark at a clear, predictable price.'};
+                en:'Learn what you need at no cost. Prepare it yourself. Get professional support. File your trademark at a clear, predictable price.'};
 
  return `${pageHead({bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
   {bg:'Ясен път към регистрацията на вашата търговска марка',
-   en:'A clear path to registering your trade mark'})}
+   en:'A clear path to registering your trademark'})}
 
  <section class="sec sec-warm${lang==='en'?' why-en':''}"${lang==='en'?' lang="en"':''}><div class="wrap">
   <div class="whygrid">${idea.map(x=>`<p class="copy">${brand(L(x))}</p>`).join('')}</div>
@@ -3437,7 +3437,7 @@ function Mark(){
    ${[[{bg:'България',en:'Bulgaria'},{bg:'Национална регистрация',en:'National Registration'},
        {bg:'Когато защитата е необходима само на територията на страната. Заявява се пред Патентното ведомство на Република България.',
         en:'When protection is required only within Bulgaria. The application is filed with the Bulgarian Patent Office.'}],
-      [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union Trade Mark'},
+      [{bg:'Европейски съюз',en:'European Union'},{bg:'Марка на Европейския съюз',en:'European Union Trademark'},
        {bg:'Когато бизнесът ви има или предстои да има присъствие в повече държави членки. Едно заявяване, единна закрила в 27 държави.',
         en:'When your business already operates, or plans to operate, in multiple EU Member States. One application provides unitary protection across all 27 Member States.'}],
       [{bg:'Международно',en:'International'},{bg:'Мадридска система',en:'The Madrid System'},
@@ -3984,8 +3984,8 @@ function poaHtml(opts){
  <p>${whoEN}</p>
  <h5>HEREBY AUTHORIZE</h5>
  <p>${e(ATTORNEY.name_en)} — ${e(ATTORNEY.bar_en)}, e-mail: ${e(ATTORNEY.email)},</p>
- <p>to represent me in connection with the registration of the following trade mark:</p>
- <p><b>${markEN}</b> — ${e(kind.en)}, individual trade mark${f.colour?', with a colour claim':''}, for goods and/or services in class ${e(cls)} of the Nice Classification.</p>
+ <p>to represent me in connection with the registration of the following trademark:</p>
+ <p><b>${markEN}</b> — ${e(kind.en)}, individual trademark${f.colour?', with a colour claim':''}, for goods and/or services in class ${e(cls)} of the Nice Classification.</p>
  ${f.route==='madrid'&&f.countries.length?`<p>Designating the following Contracting Parties: ${e(f.countries.join(', '))}.</p>`:''}
  ${f.priorKind!=='none'&&(f.priorNumber||f.priorCountry)?`<p>Claiming ${f.priorKind==='seniority'?'seniority':'convention priority'} from earlier application ${e(f.priorNumber||'—')}${f.priorCountry?', filed in '+e(f.priorCountry):''}.</p>`:''}
  <p>With the right to file an application for registration of the above-mentioned mark ${onBehalfEN} before ${e(off.en)}, as well as to perform ${onBehalfEN} all necessary actions before ${e(off.en)} protecting the principal’s rights and legitimate interests with regard to the industrial property subject matter specified herein; to authorize a third party to provide procedural representation; and to wholly or partially transfer the powers granted herein to a third party who is legally entitled to exercise them.</p>
@@ -4070,7 +4070,7 @@ function peekBody(m){
  ${peekRow(lang==='bg'?'По-ранна дата':'Earlier date', pr.claim&&pr.claim!=='none'
     ? esc(pr.claim)+(pr.number?' · '+esc(pr.number):'')+(pr.country?' · '+esc(pr.country):'')
     : `<span class="quiet">${lang==='bg'?'не се претендира':'not claimed'}</span>`)}
-  ${peekRow(lang==='bg'?'Мониторинг':'Trademark watching', d.monitor&&MONITOR[d.monitor]?esc(L(MONITOR[d.monitor]))+' · '+money(MONITOR[d.monitor].fee,'EUR'):`<span class="quiet">${lang==='bg'?'не е заявен':'not ordered'}</span>`)}
+  ${peekRow(lang==='bg'?'Мониторинг':'Trademark monitoring', d.monitor&&MONITOR[d.monitor]?esc(L(MONITOR[d.monitor]))+' · '+money(MONITOR[d.monitor].fee,'EUR'):`<span class="quiet">${lang==='bg'?'не е заявен':'not ordered'}</span>`)}
   ${peekRow(lang==='bg'?'Проучване':'Clearance search', SEARCHLBL[d.search]?esc(L(SEARCHLBL[d.search])):(d.search?esc(d.search):`<span class="quiet">—</span>`))}
  ${peekRow(lang==='bg'?'Подписващ':'Signatory', d.sigName||d.signatory
     ? `${esc(d.sigName||d.signatory)}${d.sigCapacity?`<div class="quiet" style="font-size:13.5px">${lang==='bg'?'в качеството на':'acting as'} ${esc(d.sigCapacity)}</div>`:''}`
@@ -4295,7 +4295,7 @@ function dossierRows(d){
    kv({bg:'Държавна такса',en:'Official fee'}, money(fe.v,fe.cur)),
    kv({bg:'Възнаграждение',en:'Service fee'}, money(SERVICE[d.route]||0,'EUR')),
    kv({bg:'Проучване',en:'Clearance search fee'}, d.search_option&&d.search_option!=='none'?money(SEARCH_FEE,'EUR'):''),
-   kv({bg:'Мониторинг',en:'Trademark watching'}, (()=>{const m=(d.step_state||{}).monitor; return m&&MONITOR[m]?L(MONITOR[m])+' · '+money(MONITOR[m].fee,'EUR'):''})())]));
+   kv({bg:'Мониторинг',en:'Trademark monitoring'}, (()=>{const m=(d.step_state||{}).monitor; return m&&MONITOR[m]?L(MONITOR[m])+' · '+money(MONITOR[m].fee,'EUR'):''})())]));
  return out;
 }
 
@@ -4434,7 +4434,7 @@ function Acct(){
        +`<div style="margin-top:7px"><button class="btn btn-quiet" data-resume="${esc(m.id)}" style="padding:5px 12px;font-size:12.5px">${
           open?(lang==='bg'?'Продължете (текуща) →':'Continue (current) →'):(lang==='bg'?'Продължете →':'Continue →')}</button></div>`
      : esc(m.ref)+`<div style="margin-top:7px"><button class="btn btn-gold" data-monafter="1" data-ref="${esc(m.ref)}" data-mark="${esc(m.mark_text||'')}" style="padding:5px 12px;font-size:12.5px">${
-          lang==='bg'?'+ Заявете мониторинг':'+ Order trademark watching'}</button></div>`;
+          lang==='bg'?'+ Заявете мониторинг':'+ Order trademark monitoring'}</button></div>`;
    return `<tr>${cell(esc(m.mark_text||(lang==='bg'?'(без словен елемент)':'(no word element)')), sub)}
     <td class="num">${ROUTES[m.route]?ROUTES[m.route].code:esc(m.route)}</td>
     <td class="num">${m.class_count||'—'}</td>
@@ -4457,7 +4457,7 @@ function Acct(){
   <div class="acctbar">
    <h2 style="margin:0;font-size:clamp(20px,2.2vw,24px)">${lang==='bg'?'Моите заявки':'My applications'}</h2>
    <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button class="btn btn-gold" data-monafter="1">${lang==='bg'?'Мониторинг на марка':'Trademark watching'}</button>
+    <button class="btn btn-gold" data-monafter="1">${lang==='bg'?'Мониторинг на марка':'Trademark monitoring'}</button>
     <button class="btn btn-primary" id="newmark">${lang==='bg'?'+ Заяви нова марка':'+ File a new trademark'}</button></div>
   </div>
   <div class="card" style="overflow:hidden"><div class="tblwrap"><table class="tbl">
