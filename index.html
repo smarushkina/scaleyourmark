@@ -2960,7 +2960,7 @@ function body(k){
       <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(SEARCH_FEE,'EUR')}</td></tr>`:''}
     ${mon?`<tr><td>${lang==='bg'?'Мониторинг':'Trademark watching'}<span class="quiet"> · ${esc(L(mon))}</span></td>
       <td class="quiet">${lang==='bg'?'услуга, без ДДС':'service, excl. VAT'}</td><td class="r num">${money(mon.fee,'EUR')}</td></tr>`:''}
-   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}</td><td class="quiet">${lang==='bg'?'услуги':'services'}</td><td class="r num">${money(net*.2,'EUR')}</td></tr>
+   <tr><td>${lang==='bg'?'ДДС 20%':'VAT 20%'}<span class="quiet"> · ${lang==='bg'?'върху':'on'} ${money(net,'EUR')}</span></td><td class="quiet">${lang==='bg'?'данък върху услугите':'tax on services'}</td><td class="r num">${money(net*.2,'EUR')}</td></tr>
    ${madrid?`<tr><td>${lang==='bg'?'Такса на СОИС (WIPO)':'WIPO fee'}</td>
        <td class="quiet">${lang==='bg'?'изчислява се допълнително':'calculated separately'}</td>
        <td class="r">&#8212;</td></tr>`
