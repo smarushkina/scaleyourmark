@@ -1489,7 +1489,7 @@ function stepBlockers(n){
   if(legal && !(a.id||'').trim()) m.push(T('ЕИК на заявителя','the company number'));
    if(legal && !(a.rep||'').trim()) m.push(T('управител / законен представител','the managing director / legal representative'));
   if(!legal && state.route==='bg_nat' && !(a.id||'').trim())
-    m.push(T('ЕГН или номер на документ за самоличност','the personal or document number'));
+    m.push(T('ЕГН','the personal identification number'));
   if(!(a.addr||'').trim()) m.push(T('адрес за кореспонденция','the address for service'));
  }
  if(n===6){
@@ -2849,7 +2849,7 @@ function body(k){
   <div class="grid2" style="gap:0 20px;grid-auto-rows:auto;align-items:start">
    <div class="field"><label for="an">${legal?(lang==='bg'?'Наименование':'Legal name'):(lang==='bg'?'Име и фамилия':'Full name')}${req(!(a.name||'').trim())}</label>
     <input type="text" id="an" class="${(a.name||'').trim()?'':'needfix'}" value="${esc(a.name)}" placeholder="${legal?'ОРБИТА ЕООД':'Иван Петров'}"></div>
-   ${needsId?`<div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН или номер на документ':'Personal or document number')}${req(!(a.id||'').trim())}</label>
+   ${needsId?`<div class="field"><label for="ae">${legal?'ЕИК':(lang==='bg'?'ЕГН':'Personal identification number')}${req(!(a.id||'').trim())}</label>
     <input type="text" id="ae" class="${(a.id||'').trim()?'':'needfix'}" value="${esc(a.id)}" placeholder="204512345"></div>`:''}
     ${legal?`<div class="field"><label for="arep">${lang==='bg'?'Управител / законен представител':'Managing director / legal representative'}${req(!(a.rep||'').trim())}</label>
      <input type="text" id="arep" class="${(a.rep||'').trim()?'':'needfix'}" value="${esc(a.rep||'')}" placeholder="${lang==='bg'?'Иван Петров Иванов':'Ivan Petrov Ivanov'}" autocomplete="name">
@@ -3971,10 +3971,10 @@ function poaHtml(opts){
  const markEN = f.markName ? '“'+e(f.markName)+'”' : '(a mark without a word element, as per the image attached)';
  const whoBG = f.legal
    ? `Долуподписаният/ата <b>${e(f.signName||'…')}</b>, в качеството ми на <b>${e(f.signCap||'законен представител')}</b> на <b>${e(f.applicantName||'…')}</b>, ЕИК/рег. № ${e(f.applicantId||'…')}, със седалище и адрес на управление: ${e(f.applicantAddr||'…')} (Дружеството)`
-   : `Долуподписаният/ата <b>${e(f.applicantName||'…')}</b>${f.applicantId?', ЕГН/№ на документ за самоличност '+e(f.applicantId):''}, с адрес: ${e(f.applicantAddr||'…')}`;
+   : `Долуподписаният/ата <b>${e(f.applicantName||'…')}</b>${f.applicantId?', ЕГН '+e(f.applicantId):''}, с адрес: ${e(f.applicantAddr||'…')}`;
  const whoEN = f.legal
    ? `The undersigned, <b>${e(f.signName||'…')}</b>, in my capacity as <b>${e(f.signCap||'legal representative')}</b> of <b>${e(f.applicantName||'…')}</b>, company number ${e(f.applicantId||'…')}, having its registered office at ${e(f.applicantAddr||'…')} (the “Company”)`
-   : `The undersigned, <b>${e(f.applicantName||'…')}</b>${f.applicantId?', personal identification / identity document number '+e(f.applicantId):''}, residing at ${e(f.applicantAddr||'…')}`;
+   : `The undersigned, <b>${e(f.applicantName||'…')}</b>${f.applicantId?', personal identification number '+e(f.applicantId):''}, residing at ${e(f.applicantAddr||'…')}`;
  const onBehalfBG = f.legal ? 'от името и за сметка на Дружеството' : 'от мое име и за моя сметка';
  const onBehalfEN = f.legal ? 'in the name and on behalf of the Company' : 'in my name and on my behalf';
 
