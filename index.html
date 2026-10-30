@@ -433,6 +433,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .whyitem{background:var(--surface); border:1px solid var(--line); border-top:2px solid var(--gold-bright);
          border-radius:12px; padding:18px 20px 19px}
 .whyitem h3{font-size:17px; font-weight:400; color:var(--ink); line-height:1.3; margin:0 0 7px}
+.svcitem{display:flex; flex-direction:column}
+@media (min-width:901px){ .whylist.svc2{grid-template-columns:1fr 1fr} }
+.svcitem p{flex:1}
+.svcprice{margin-top:14px; padding-top:11px; border-top:1px solid var(--line); font-size:15px; line-height:1.6; color:var(--ink-2);
+  display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
+.svcprice strong{font-weight:600; color:var(--ink); text-align:right}
 .whyitem p{font-size:15px; line-height:1.7; color:var(--ink-2); margin:0; text-wrap:pretty}
 @media (min-width:601px) and (max-width:900px){ .whylist{grid-template-columns:1fr 1fr} }
 @media (max-width:600px){ .whylist{grid-template-columns:1fr; gap:14px} .whyitem{padding:16px 17px 17px} }
@@ -612,12 +618,13 @@ const L = o => (o && o[lang]!==undefined) ? o[lang] : o;
 const NAV=[{id:'why',bg:'ScaleYourMark',en:'ScaleYourMark'},
 {id:'about',bg:'За нас',en:'About us'},
 {id:'mark',bg:'За търговската марка',en:'About trademarks'},
+{id:'services',bg:'Други услуги',en:'Other services'},
 {id:'file',bg:'Заявяване',en:'File a trademark'},{id:'guides',bg:'Ръководства',en:'Guidelines'},
 {id:'price',bg:'Цени',en:'Pricing'},
 {id:'contact',bg:'Контакти',en:'Contact'},{id:'acct',bg:'Профил',en:'Account'},{id:'office',bg:'Панел',en:'Dashboard'}];
 
 const NAVGROUPS=[
- {after:'mark', bg:'Услугата', en:'The service'},
+ {after:'services', bg:'Услугата', en:'The service'},
  {after:'price', bg:'Кантората', en:'The firm'},
  {after:'contact', bg:'Вашият достъп', en:'Your account'}
 ];
@@ -1996,7 +2003,7 @@ function chrome(){
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Заявяване':'Filing'}</div>
    ${['file','guides','price','acct'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Дружество':'Company'}</div>
-   ${['about','mark','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+   ${['about','mark','services','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Правни':'Legal'}</div>
    <a href="#">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
@@ -2012,7 +2019,7 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  const key=page+'|'+state.step+'|'+guideStep;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
- chrome();app.innerHTML=({why:Why,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
+ chrome();app.innerHTML=({why:Why,services:Services,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
  renderKey=key;
  /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
  if(!keep.same){
@@ -2497,6 +2504,61 @@ function rolesSection(){
        <span class="kicker" style="color:var(--gold-bright)">${String(i+1).padStart(2,'0')} · ${esc(L(who))}</span>
        <h3 style="font-size:18px">${esc(L(what))}</h3><p class="quiet">${esc(L(d))}</p></div>`).join('')}
   </div>
+ </div></section>`;
+}
+
+/* ---------- Услуги ----------------------------------------------------------
+   Всички услуги по защитата на марката, подредени по етапа, в който клиентът
+   има нужда от тях. Цените идват от същите константи като в заявката. */
+function Services(){
+ const B=lang==='bg';
+ /* Само услугите, които не са описани другаде на сайта. Проучването,
+    заявяването и мониторингът са в заявката и в „Цени“. */
+ const items=[
+  [{bg:'Преди подаване',en:'Before Filing'},{bg:'Консултация по стратегия за защита',en:'Trademark Strategy Consultation'},
+   {bg:'Съвет относно териториалния обхват, вида на марката, стоките и услугите и притежателя — особено когато има няколко собственици или съдружници, или предстои преструктуриране на бизнеса.',
+    en:'Advice on territorial scope, type of mark, goods and services, and ownership, particularly where there are several owners or partners, or a business restructuring is planned.'}],
+  [{bg:'По време на производството',en:'During Examination'},{bg:'Отговор на нередовност или отказ',en:'Responding to Office Objections'},
+   {bg:'Анализ на указанията или на предварителния отказ на ведомството и изготвяне на отговор, с който се отстраняват нередовностите или се оспорват основанията за отказ.',
+    en:'Analysis of the office’s notice of deficiency or provisional refusal, and preparation of a response that remedies the deficiencies or contests the grounds for refusal.'}],
+  [{bg:'По време на производството',en:'During Examination'},{bg:'Отговор на опозиция',en:'Responding to an Opposition'},
+   {bg:'Защита на Вашата заявка, когато притежател на по-ранни права е подал опозиция срещу нея. Оценяваме основанията, изготвяме становище и при необходимост искаме доказателства за използването на по-ранната марка.',
+    en:'Defence of your application where the owner of earlier rights has filed an opposition against it. We assess the grounds, prepare observations and, where appropriate, request proof of use of the earlier mark.'}],
+  [{bg:'Защита на правата',en:'Enforcing Your Rights'},{bg:'Подаване на опозиция',en:'Filing an Opposition'},
+   {bg:'Защита на Вашата марка срещу по-късна идентична или сходна заявка. Изготвяме и подаваме опозицията в тримесечния срок от публикуването, с правна аргументация и доказателства.',
+    en:'Protection of your trademark against a later identical or similar application. We prepare and file the opposition within three months of publication, supported by legal argument and evidence.'}],
+  [{bg:'Защита на правата',en:'Enforcing Your Rights'},{bg:'Медиация и споразумения',en:'Mediation and Settlement Agreements'},
+   {bg:'Уреждане на спорове с притежатели на конфликтни марки чрез преговори, медиация и споразумения за съвместно съществуване.',
+    en:'Resolution of disputes with owners of conflicting marks through negotiation, mediation and coexistence agreements.'}],
+  [{bg:'След регистрацията',en:'After Registration'},{bg:'Подновяване на регистрацията',en:'Trademark Renewal'},
+   {bg:'Подновяване на регистрацията за нов срок от 10 години и следене на срока, така че закрилата на марката да не прекъсне.',
+    en:'Renewal of the registration for a further ten-year term, with the renewal deadline monitored so that protection is not interrupted.'}]
+ ];
+ return `${pageHead({bg:'Други услуги',en:'Other services'},
+   {bg:'Допълнителни услуги по защитата на марката',en:'Additional Trademark Protection Services'},
+   {bg:'Правна помощ извън самото заявяване — при спорове, възражения и поддържане на регистрацията.',
+    en:'Legal support beyond filing itself: in disputes, objections and maintaining your registration.'})}
+ <section class="sec sec-warm"><div class="wrap">
+  <div class="sechead">
+   <div style="margin-bottom:13px"><span class="seclabel">${B?'Услуги по оферта':'Services by quote'}</span></div>
+   <h2>${B?'Когато е нужна повече от регистрация':'When You Need More Than Registration'}</h2>
+  </div>
+  <div class="whylist">
+   ${items.map(([k,t,d])=>`<div class="whyitem svcitem">
+     <div class="kicker" style="margin-bottom:8px">${esc(L(k))}</div>
+     <h3>${esc(L(t))}</h3>
+     <p>${esc(L(d))}</p></div>`).join('')}
+  </div>
+ </div></section>
+ <section class="sec sec-navy"><div class="wrap stack" style="gap:16px;max-width:760px">
+  <div><span class="seclabel">${B?'Възлагане':'Engagement'}</span></div>
+  <h2>${B?'Как да възложите услуга':'How to Engage Us'}</h2>
+  <div class="goldrule"></div>
+  <p class="lede">${B
+    ?'Опишете ни накратко услугата, от която имате нужда, в имейл и ще се свържем с Вас в рамките на един работен ден.'
+    :'Briefly describe the service you need in an email and we will get back to you within one working day.'}</p>
+  <a class="btn btn-gold" style="align-self:start;text-decoration:none" href="mailto:office@scaleyourmark.com?subject=${encodeURIComponent(B?'Запитване за услуга':'Service enquiry')}">${B?'Поискайте оферта':'Request a quote'}</a>
+  <p class="quiet" style="margin:0;color:rgba(255,255,255,.75)">office@scaleyourmark.com</p>
  </div></section>`;
 }
 
