@@ -435,6 +435,16 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .whyitem h3{font-size:17px; font-weight:400; color:var(--ink); line-height:1.3; margin:0 0 7px}
 .svcitem{display:flex; flex-direction:column}
 @media (min-width:901px){ .whylist.svc2{grid-template-columns:1fr 1fr} }
+.newscard{cursor:pointer; transition:transform .15s, box-shadow .15s}
+.newscard:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(10,25,47,.12)}
+.newscard:focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px}
+/* „Други услуги“: четири по-малки карти на ред */
+.whylist.svc4{grid-template-columns:repeat(4,1fr); gap:14px}
+.whylist.svc4 .whyitem{padding:18px 18px 20px}
+.whylist.svc4 .whyitem h3{font-size:16px; line-height:1.3; margin:0 0 8px}
+.whylist.svc4 .whyitem p{text-align:left !important; hyphens:auto}
+@media (max-width:1100px){ .whylist.svc4{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:600px){ .whylist.svc4{grid-template-columns:1fr} }
 .svcitem p{flex:1}
 .svcprice{margin-top:14px; padding-top:11px; border-top:1px solid var(--line); font-size:15px; line-height:1.6; color:var(--ink-2);
   display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap}
@@ -620,6 +630,7 @@ const NAV=[{id:'why',bg:'ScaleYourMark',en:'ScaleYourMark'},
 {id:'mark',bg:'За търговската марка',en:'About trademarks'},
 {id:'services',bg:'Други услуги',en:'Other services'},
 {id:'file',bg:'Заявяване',en:'File a trademark'},{id:'guides',bg:'Ръководства',en:'Guidelines'},
+{id:'news',bg:'Новини и казуси',en:'News & Cases'},
 {id:'price',bg:'Цени',en:'Pricing'},
 {id:'contact',bg:'Контакти',en:'Contact'},{id:'acct',bg:'Профил',en:'Account'},{id:'office',bg:'Панел',en:'Dashboard'}];
 
@@ -836,12 +847,78 @@ const TERMS=[
 ];
 
 const POSTS=[
- {d:'2026-09-02',c:{bg:'Практика',en:'Case law'},t:{bg:'Общият съд отново стеснява обхвата на заглавията на класове',en:'The General Court further narrows the scope of class headings'},
-  s:{bg:'Какво означава решението за спецификации отпреди IP Translator и кога си струва нова заявка.',en:'What the ruling means for pre-IP Translator specifications and when a new application is worth filing.'}},
- {d:'2026-08-19',c:{bg:'България',en:'Bulgaria'},t:{bg:'Таксите на Патентно ведомство в евро: какво се промени от 1 януари',en:'Bulgarian Patent Office fees in euro: what changed on 1 January'},
-  s:{bg:'Преизчисляване по фиксирания курс, закръгляне и ефект върху заявки с повече от три класа.',en:'Conversion at the fixed exchange rate, rounding and the impact on applications covering more than three classes.'}},
- {d:'2026-07-30',c:{bg:'Стратегия',en:'Strategy'},t:{bg:'Мадрид или директни национални заявки за пазара в ОАЕ',en:'Madrid or direct national filings for the UAE market'},
-  s:{bg:'Сравнение на разходите за портфолио от четири класа и защо централната атака остава риск.',en:'A cost comparison for a four-class portfolio, and why central attack remains a risk.'}}
+ {id:'counterfeits-2025',type:'news',d:'2026-10-22',
+  t:{bg:'Рекорд на задържаните фалшиви стоки в ЕС, България е сред първите на границата',en:'Counterfeit detentions in the EU hit a record, with Bulgaria among the leaders at the border'},
+  s:{bg:'Над 196 милиона фалшиви артикула за 6,3 млрд. евро са задържани в ЕС през 2025 г. Марките са най-често нарушаваното право.',en:'Over 196 million counterfeit items worth EUR 6.3 billion were detained in the EU in 2025. Trademarks are the most frequently infringed right.'},
+  body:[{bg:'Според съвместния доклад на EUIPO и Европейската комисия през 2025 г. в ЕС са задържани над 196 милиона фалшиви артикула на приблизителна стойност 6,3 млрд. евро. Това е най-високият брой, отчитан досега, с 67% повече от 2024 г.',
+         en:'According to the joint report of EUIPO and the European Commission, over 196 million counterfeit items worth an estimated EUR 6.3 billion were detained in the EU in 2025. This is the highest figure ever reported, 67% more than in 2024.'},
+        {bg:'Най-често задържани са дискове с музика, филми и игри, следвани от играчки, етикети, облекло и цигари. По вид право марките са нарушени в 57% от случаите, авторското право в 43%, а дизайните в 7%.',
+         en:'The goods most often detained were discs with music, films and games, followed by toys, labels, clothing and cigarettes. By type of right, trademarks were infringed in 57% of cases, copyright in 43% and designs in 7%.'},
+        {bg:'За България данните са особено показателни: на външната граница на ЕС страната ни е на второ място по брой задържани артикули след Румъния.',
+         en:'The figures are particularly telling for Bulgaria: at the EU’s external border, the country ranks second by number of detained items, after Romania.'}],
+  lesson:{bg:'Митниците могат да задържат фалшиви стоки по искане на притежателя на регистрирана марка. Без регистрация няма основание за такава защита.',en:'Customs can detain counterfeit goods at the request of the owner of a registered trademark. Without registration, there is no basis for such protection.'},
+  src:{label:'EUIPO',url:'https://www.euipo.europa.eu/en/news/detentions-of-counterfeit-goods-in-the-eu-reached-an-all-time-high-in-2025'}},
+ {id:'saudi-madrid',type:'news',d:'2026-10-08',
+  t:{bg:'Саудитска Арабия се присъедини към Мадридската система',en:'Saudi Arabia joins the Madrid System'},
+  s:{bg:'От 8 октомври 2026 г. Саудитска Арабия може да бъде посочена в международна заявка за марка.',en:'Since 8 October 2026, Saudi Arabia can be designated in an international trademark application.'},
+  body:[{bg:'Саудитска Арабия депозира акта си за присъединяване към Мадридския протокол на 8 юли 2026 г., а протоколът влезе в сила за кралството на 8 октомври 2026 г. Така българските притежатели на марки могат да я посочат в международна заявка, подадена чрез Патентното ведомство или EUIPO.',
+         en:'Saudi Arabia deposited its instrument of accession to the Madrid Protocol on 8 July 2026, and the Protocol entered into force for the Kingdom on 8 October 2026. Bulgarian trademark owners can now designate it in an international application filed through the Bulgarian Patent Office or EUIPO.'},
+        {bg:'Индивидуалната такса е 1 397 швейцарски франка на клас. Саудитска Арабия е декларирала и 18-месечен срок за отказ, така че окончателният отговор може да отнеме година и половина.',
+         en:'The individual fee is CHF 1,397 per class. Saudi Arabia has also declared an 18-month refusal period, so a final answer may take a year and a half.'}],
+  lesson:{bg:'Мадридската система вече покрива пет от шестте държави от Персийския залив. Преди да изберете между международна и национална заявка, сравнете таксите и сроковете.',en:'The Madrid System now covers five of the six Gulf states. Before choosing between an international and a national application, compare fees and timelines.'},
+  src:{label:'WIPO',url:'https://www.wipo.int/en/web/madrid-system/w/news/2026/saudi-arabia-joins-wipos-madrid-system'}},
+ {id:'ikea-c-298-23',type:'case',d:'2026-09-08',court:{bg:'Съд на ЕС · C-298/23',en:'Court of Justice · C-298/23'},
+  t:{bg:'IKEA срещу политическа партия: свободата на словото не е безгранична',en:'IKEA v a political party: freedom of expression has limits'},
+  s:{bg:'Съдът на ЕС: използването на известна марка само за да се подсили политическо послание трудно може да бъде „основателна причина“.',en:'Court of Justice: using a reputed mark merely to amplify a political message can hardly amount to “due cause”.'},
+  body:[{bg:'Белгийската партия „Фламандски интерес“ представи програмата си за имиграцията като инструкция за сглобяване на IKEA, с характерните синьо-жълти цветове, шрифт и анимационни фигури. IKEA заведе дело, а белгийският съд попита Съда на ЕС дали политическата пародия може да бъде „основателна причина“ за използване на чужда известна марка.',
+         en:'The Belgian party Vlaams Belang presented its immigration programme as an IKEA assembly manual, with the familiar blue and yellow colours, typography and cartoon figures. IKEA sued, and the Belgian court asked the Court of Justice whether political parody can constitute “due cause” for using another’s reputed trademark.'},
+        {bg:'С решение на Голям състав от 8 септември 2026 г. Съдът приема, че самото позоваване на свободата на изразяване не е достатъчно. Използващият марката трябва да докаже, че конкретните му причини надделяват над законните интереси на притежателя. Използването на марките на IKEA само за подсилване на политическо послание не изглежда да отговаря на това изискване, а окончателната преценка остава за белгийския съд.',
+         en:'In its Grand Chamber judgment of 8 September 2026, the Court held that merely invoking freedom of expression is not enough. The user must show that its specific reasons outweigh the proprietor’s legitimate interests. Using IKEA’s marks solely to reinforce a political message does not appear to meet that test, with the final assessment left to the Belgian court.'}],
+  lesson:{bg:'Известната марка не може да се използва безплатно, за да се „яхне“ репутацията ѝ, дори в политиката. Това е силен аргумент срещу паразитни кампании.',en:'A reputed trademark cannot be used free of charge to ride on its reputation, even in politics. This is a strong argument against free-riding campaigns.'},
+  src:{label:'CURIA · C-298/23',url:'https://curia.europa.eu/juris/liste.jsf?num=C-298/23'}},
+ {id:'craft-gi-deadline',type:'news',d:'2026-09-24',
+  t:{bg:'Географски означения за занаятчийски продукти: краен срок 2 декември 2026 г.',en:'Geographical indications for craft products: deadline 2 December 2026'},
+  s:{bg:'След 2 декември 2026 г. националните регистрации на географски означения за занаятчийски и промишлени продукти се прекратяват.',en:'After 2 December 2026, national registrations of geographical indications for craft and industrial products come to an end.'},
+  body:[{bg:'Новият европейски регламент за географските означения на занаятчийски и промишлени продукти се прилага от 1 декември 2025 г. След 2 декември 2026 г. досегашните регистрации на национално ниво се прекратяват.',
+         en:'The new EU regulation on geographical indications for craft and industrial products has applied since 1 December 2025. After 2 December 2026, existing national registrations come to an end.'},
+        {bg:'Системата вече дава резултати: през септември 2026 г. за първи път регистрирано такова означение стигна до етап, на който защитата му може да се ползва от митническите механизми на ЕС.',
+         en:'The system is already producing results: in September 2026, a registered craft indication reached, for the first time, the stage where its protection can be supported by EU customs enforcement.'}],
+  lesson:{bg:'Ако защитата на ваш продукт зависи от българска регистрация на географско означение, проверете сега дали и как да преминете към защита на ниво ЕС.',en:'If the protection of your product depends on a Bulgarian registration of a geographical indication, check now whether and how to move to EU-level protection.'},
+  src:{label:'EUIPO',url:'https://www.euipo.europa.eu/en/gi-hub/ci-regulation'}},
+ {id:'openai-t-555-25',type:'case',d:'2026-07-15',court:{bg:'Общ съд · T-555/25',en:'General Court · T-555/25'},
+  t:{bg:'OpenAI не може да монополизира думите „open AI“',en:'OpenAI cannot monopolise the words “open AI”'},
+  s:{bg:'Общият съд потвърди частичния отказ: OPENAI описва самата стока, а известността на компанията не променя това.',en:'The General Court upheld the partial refusal: OPENAI describes the goods themselves, and the company’s fame does not change that.'},
+  body:[{bg:'OpenAI поиска да регистрира марката OPENAI в ЕС за софтуер, технологични услуги и услуги по сигурност. EUIPO отказа частично, а на 15 юли 2026 г. Общият съд отхвърли изцяло жалбата на компанията и я осъди да плати разноските.',
+         en:'OpenAI applied to register the mark OPENAI in the EU for software, technology services and security services. EUIPO partially refused the application, and on 15 July 2026 the General Court dismissed the company’s appeal in its entirety and ordered it to pay the costs.'},
+        {bg:'Съдът приема, че потребителят разпознава двете думи „open“ и „AI“ дори без интервал между тях. Изразът може да се разбере като достъпен или неограничен изкуствен интелект, т.е. описва самата стока. Аргументът, че всички познават OpenAI, не помогна: известността на компанията не може да „спаси“ знак, който е описателен по своето естество. Регистрациите в над 30 други държави също не промениха изхода.',
+         en:'The Court found that consumers recognise the two words “open” and “AI” even without a space between them. The expression can be understood as accessible or unrestricted artificial intelligence, so it describes the goods themselves. The argument that everyone knows OpenAI did not help: the company’s fame cannot “save” a sign that is inherently descriptive. Registrations in more than 30 other countries did not change the outcome either.'}],
+  lesson:{bg:'Името, което описва какво продавате, е най-слабата марка, колкото и известно да е. По-добре е за марката да изберете измислена или необичайна дума, а описателните думи да оставите за продуктовите линии.',en:'A name that describes what you sell is the weakest kind of mark, however famous it is. It is better to choose an invented or unusual word for the brand and keep descriptive words for product lines.'},
+  src:{label:'EUR-Lex · T-555/25',url:'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:62025TJ0555'}},
+ {id:'eutm-record-h1',type:'news',d:'2026-07',
+  t:{bg:'Рекорден брой заявки за марки на ЕС през първото полугодие',en:'Record number of EU trademark applications in the first half of the year'},
+  s:{bg:'Заявките за марки и дизайни на ЕС достигнаха 166 214 през първото полугодие на 2026 г., с 4,7% повече от година по-рано.',en:'EU trademark and design applications reached 166,214 in the first half of 2026, up 4.7% on a year earlier.'},
+  body:[{bg:'Заявките в EUIPO достигнаха рекордно ниво през първото полугодие на 2026 г.: общо 166 214 за марки и дизайни на ЕС, с 4,7% повече от година по-рано. Ръстът идва основно от вътрешния пазар, където заявките от държавите членки нарастват с 14,6%.',
+         en:'Filings at EUIPO reached a record level in the first half of 2026: a total of 166,214 EU trademark and design applications, up 4.7% on a year earlier. Growth came mainly from the Single Market, where filings from Member States rose by 14.6%.'}],
+  lesson:{bg:'Регистрите се пълнят по-бързо от всякога, а с това расте и рискът новата ви марка да се сблъска с вече заявена. Проучването преди подаване става все по-важно.',en:'Registers are filling up faster than ever, and so is the risk that your new mark will clash with one already filed. A clearance search before filing is becoming ever more important.'},
+  src:{label:'EUIPO',url:'https://www.euipo.europa.eu/en/news/eu-trade-marks-push-ip-filings-to-a-record-high-in-the-first-half-of-2026'}},
+ {id:'obelix-t-24-25',type:'case',d:'2026-05-13',court:{bg:'Общ съд · T-24/25',en:'General Court · T-24/25'},
+  t:{bg:'„Обеликс“ върху оръжия? Общият съд казва „не“',en:'“Obelix” on firearms? The General Court says no'},
+  s:{bg:'Известната марка се защитава и извън своя сектор. Общият съд отмени решението на EUIPO, което остави в сила марката OBELIX за оръжия.',en:'A reputed mark is protected beyond its own sector. The General Court annulled the EUIPO decision that had upheld the OBELIX mark for firearms.'},
+  body:[{bg:'Полска фирма регистрира марката OBELIX за огнестрелни оръжия и боеприпаси. Издателят на комиксите „Астерикс и Обеликс“ поиска заличаването ѝ, но EUIPO отказа. Според службата героят е известен, но марката „Обеликс“ няма собствена репутация, защото се използва заедно с „Астерикс“.',
+         en:'A Polish company registered the mark OBELIX for firearms and ammunition. The publisher of the Asterix and Obelix comics sought to have it declared invalid, but EUIPO refused. In its view, the character is famous, but the mark “Obelix” has no reputation of its own because it is used together with “Asterix”.'},
+        {bg:'С решение от 13 май 2026 г. Общият съд отмени решението на EUIPO. Продуктите с „Обеликс“ и знака ® показват, че името се използва като марка, а съвместната употреба с „Астерикс“ не пречи публиката да го възприема като известна марка сама по себе си. Съдът отхвърли и аргумента, че оръжията и забавленията са твърде далечни сектори: липсата на връзка не може да се извежда само от търговската отдалеченост между стоките.',
+         en:'By judgment of 13 May 2026, the General Court annulled the EUIPO decision. Products bearing “Obelix” with the ® symbol show that the name is used as a trademark, and its joint use with “Asterix” does not prevent the public from perceiving it as a reputed mark in its own right. The Court also rejected the argument that firearms and entertainment are too far apart: the absence of a link cannot be inferred merely from the commercial distance between the goods.'}],
+  lesson:{bg:'Колкото по-известна е марката, толкова по-широк е периметърът на защитата ѝ. Събирайте доказателства за известността: продажби, реклама и проучвания.',en:'The better known a mark is, the wider its scope of protection. Keep evidence of its reputation: sales, advertising and surveys.'},
+  src:{label:'CURIA · T-24/25',url:'https://curia.europa.eu/juris/liste.jsf?num=T-24/25'}},
+ {id:'bangaranga',type:'news',d:'2026-05',
+  t:{bg:'„Бангаранга“: надпревара за марката след „Евровизия“',en:'“Bangaranga”: a race for the trademark after Eurovision'},
+  s:{bg:'След победата на песента в „Евровизия“ 2026 трети лица подадоха няколко заявки за марката в България и в EUIPO.',en:'After the song won Eurovision 2026, third parties filed several applications for the mark in Bulgaria and at EUIPO.'},
+  body:[{bg:'Победата на песента „Bangaranga“ в „Евровизия“ 2026 доведе до серия заявки от трети лица: четири в България и още една в EUIPO, за храни, напитки, козметика, облекло и развлечения.',
+         en:'The victory of the song “Bangaranga” at Eurovision 2026 triggered a series of applications by third parties: four in Bulgaria and one more at EUIPO, covering food, drinks, cosmetics, clothing and entertainment.'},
+        {bg:'Музикалната компания на изпълнителката предупреди, че ще предприеме правни действия срещу опитите за недобросъвестно присвояване на популярността на песента, и призова заявителите да оттеглят заявките си.',
+         en:'The performer’s record company warned that it would take legal action against attempts to appropriate the song’s popularity in bad faith and called on the applicants to withdraw their applications.'}],
+  lesson:{bg:'Известността на едно име не го защитава автоматично като марка. Който заяви пръв, получава предимство, освен ако заявката не бъде оспорена като недобросъвестна.',en:'A name’s fame does not automatically protect it as a trademark. The first to file gains an advantage, unless the application is successfully challenged as filed in bad faith.'},
+  src:{label:'24 часа',url:'https://www.24chasa.bg/ozhivlenie/article/22880884'}}
 ];
 
 /* state */
@@ -965,6 +1042,7 @@ function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u))}catc
 function loadAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(e){return null}}
 function saveAuth(a){try{a?localStorage.setItem(AUTH_KEY,JSON.stringify(a)):localStorage.removeItem(AUTH_KEY)}catch(e){}}
 let auth = null;
+let newsId = null, newsFilter = 'all';   // „Новини и казуси“: отворена статия и филтър
 let guideStep = 0;   // 0 = списъкът; 1..8 = отворено ръководство
 let authTab = 'login';          // login | register | reset | newpass
 let recovering = false;         // отворена е връзката за нова парола от имейла
@@ -2003,12 +2081,12 @@ function chrome(){
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Заявяване':'Filing'}</div>
    ${['file','guides','price','acct'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Дружество':'Company'}</div>
-   ${['about','mark','services','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+   ${['about','mark','services','news','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Правни':'Legal'}</div>
    <a href="#">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="#">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
-function go(p){ pwNotice=null; if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
+function go(p){ pwNotice=null; newsId=null; if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
 /* При пре-рисуване на същата стъпка се пази докъде е превъртял човекът.
    Иначе всяко натискане на бутон го връща в началото на пълномощното. */
 let renderKey='';
@@ -2016,10 +2094,10 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  if((page==='acct'||page==='office')&&remote&&auth&&!mattersAsked){loadMatters()}
  if(page==='office'&&remote&&auth&&isAdmin()&&!acqAsked){loadAcq()}
  if(page==='office'&&remote&&auth&&isAdmin()&&!clientsAsked){loadClients()}
- const key=page+'|'+state.step+'|'+guideStep;
+ const key=page+'|'+state.step+'|'+guideStep+'|'+newsId;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
- chrome();app.innerHTML=({why:Why,services:Services,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
+ chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
  renderKey=key;
  /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
  if(!keep.same){
@@ -2515,24 +2593,30 @@ function Services(){
  /* Само услугите, които не са описани другаде на сайта. Проучването,
     заявяването и мониторингът са в заявката и в „Цени“. */
  const items=[
-  [{bg:'Преди подаване',en:'Before Filing'},{bg:'Консултация по стратегия за защита',en:'Trademark Strategy Consultation'},
-   {bg:'Съвет относно териториалния обхват, вида на марката, стоките и услугите и притежателя — особено когато има няколко собственици или съдружници, или предстои преструктуриране на бизнеса.',
-    en:'Advice on territorial scope, type of mark, goods and services, and ownership, particularly where there are several owners or partners, or a business restructuring is planned.'}],
-  [{bg:'По време на производството',en:'During Examination'},{bg:'Отговор на нередовност или отказ',en:'Responding to Office Objections'},
-   {bg:'Анализ на указанията или на предварителния отказ на ведомството и изготвяне на отговор, с който се отстраняват нередовностите или се оспорват основанията за отказ.',
-    en:'Analysis of the office’s notice of deficiency or provisional refusal, and preparation of a response that remedies the deficiencies or contests the grounds for refusal.'}],
-  [{bg:'По време на производството',en:'During Examination'},{bg:'Отговор на опозиция',en:'Responding to an Opposition'},
-   {bg:'Защита на Вашата заявка, когато притежател на по-ранни права е подал опозиция срещу нея. Оценяваме основанията, изготвяме становище и при необходимост искаме доказателства за използването на по-ранната марка.',
-    en:'Defence of your application where the owner of earlier rights has filed an opposition against it. We assess the grounds, prepare observations and, where appropriate, request proof of use of the earlier mark.'}],
-  [{bg:'Защита на правата',en:'Enforcing Your Rights'},{bg:'Подаване на опозиция',en:'Filing an Opposition'},
+  [{bg:'Създаване на стратегия по защита на търговска марка',en:'Trademark Protection Strategy'},
+   {bg:'Изготвяне на стратегия за защита на марката — териториален обхват, вид на марката, стоки и услуги, притежател и етапи на разширяване, съобразени с бизнес плановете Ви.',
+    en:'Development of a protection strategy for your trademark, covering territorial scope, type of mark, goods and services, ownership and expansion stages, aligned with your business plans.'}],
+  [{bg:'Мониторинг на търговска марка',en:'Trademark Monitoring'},
+   {bg:'Следене на новопубликуваните заявки за идентични и сходни марки и уведомяване навреме, докато тече срокът за опозиция. Всеки сигнал се оценява от адвокат.',
+    en:'Monitoring of newly published applications for identical and similar marks, with timely notice while the opposition period is still running. Every hit is assessed by a lawyer.'}],
+  [{bg:'Подаване на опозиция',en:'Filing an Opposition'},
    {bg:'Защита на Вашата марка срещу по-късна идентична или сходна заявка. Изготвяме и подаваме опозицията в тримесечния срок от публикуването, с правна аргументация и доказателства.',
     en:'Protection of your trademark against a later identical or similar application. We prepare and file the opposition within three months of publication, supported by legal argument and evidence.'}],
-  [{bg:'Защита на правата',en:'Enforcing Your Rights'},{bg:'Медиация и споразумения',en:'Mediation and Settlement Agreements'},
+  [{bg:'Отговор на опозиция',en:'Responding to an Opposition'},
+   {bg:'Защита на Вашата заявка, когато притежател на по-ранни права е подал опозиция срещу нея. Оценяваме основанията, изготвяме становище и при необходимост искаме доказателства за използването на по-ранната марка.',
+    en:'Defence of your application where the owner of earlier rights has filed an opposition against it. We assess the grounds, prepare observations and, where appropriate, request proof of use of the earlier mark.'}],
+  [{bg:'Отговор на нередовност или отказ',en:'Responding to Office Objections'},
+   {bg:'Анализ на указанията или на предварителния отказ на ведомството и изготвяне на отговор, с който се отстраняват нередовностите или се оспорват основанията за отказ.',
+    en:'Analysis of the office’s notice of deficiency or provisional refusal, and preparation of a response that remedies the deficiencies or contests the grounds for refusal.'}],
+  [{bg:'Медиация и споразумения',en:'Mediation and Settlement Agreements'},
    {bg:'Уреждане на спорове с притежатели на конфликтни марки чрез преговори, медиация и споразумения за съвместно съществуване.',
     en:'Resolution of disputes with owners of conflicting marks through negotiation, mediation and coexistence agreements.'}],
-  [{bg:'След регистрацията',en:'After Registration'},{bg:'Подновяване на регистрацията',en:'Trademark Renewal'},
+  [{bg:'Подновяване на регистрацията',en:'Trademark Renewal'},
    {bg:'Подновяване на регистрацията за нов срок от 10 години и следене на срока, така че закрилата на марката да не прекъсне.',
-    en:'Renewal of the registration for a further ten-year term, with the renewal deadline monitored so that protection is not interrupted.'}]
+    en:'Renewal of the registration for a further ten-year term, with the renewal deadline monitored so that protection is not interrupted.'}],
+  [{bg:'Прехвърляне и лицензиране на марка',en:'Trademark Assignment and Licensing'},
+   {bg:'Изготвяне на договори за прехвърляне или лицензиране на марка и вписването им в съответното ведомство, така че промяната да има действие спрямо трети лица.',
+    en:'Drafting of trademark assignment and licence agreements and their recordal with the relevant office, so that the change takes effect against third parties.'}]
  ];
  return `${pageHead({bg:'Други услуги',en:'Other services'},
    {bg:'Допълнителни услуги по защитата на марката',en:'Additional Trademark Protection Services'},
@@ -2543,9 +2627,8 @@ function Services(){
    <div style="margin-bottom:13px"><span class="seclabel">${B?'Услуги по оферта':'Services by quote'}</span></div>
    <h2>${B?'Когато е нужна повече от регистрация':'When You Need More Than Registration'}</h2>
   </div>
-  <div class="whylist">
-   ${items.map(([k,t,d])=>`<div class="whyitem svcitem">
-     <div class="kicker" style="margin-bottom:8px">${esc(L(k))}</div>
+  <div class="whylist svc4">
+   ${items.map(([t,d])=>`<div class="whyitem svcitem">
      <h3>${esc(L(t))}</h3>
      <p>${esc(L(d))}</p></div>`).join('')}
   </div>
@@ -2557,8 +2640,7 @@ function Services(){
   <p class="lede">${B
     ?'Опишете ни накратко услугата, от която имате нужда, в имейл и ще се свържем с Вас в рамките на един работен ден.'
     :'Briefly describe the service you need in an email and we will get back to you within one working day.'}</p>
-  <a class="btn btn-gold" style="align-self:start;text-decoration:none" href="mailto:office@scaleyourmark.com?subject=${encodeURIComponent(B?'Запитване за услуга':'Service enquiry')}">${B?'Поискайте оферта':'Request a quote'}</a>
-  <p class="quiet" style="margin:0;color:rgba(255,255,255,.75)">office@scaleyourmark.com</p>
+  <button class="btn btn-gold" data-p="contact" style="align-self:start">${B?'Поискайте оферта':'Request a quote'}</button>
  </div></section>`;
 }
 
@@ -3270,24 +3352,59 @@ function Price(){
    </div></div></section>`;
 }
 
-function Blog(){
- const [f,...rest]=POSTS;
- return `${pageHead({bg:'Новини и практика',en:'News and practice'},
-  {bg:'Какво се променя в марковото право',en:'Developments in trademark law'},
-  {bg:'Решения на съдилищата, промени в тарифите и практика на ведомствата, за пет минути четене.',
-   en:'Court decisions, fee updates and office practice, in a five-minute read.'})}
- <section class="sec"><div class="wrap stack" style="gap:28px">
-  <article class="card pad grid2" style="align-items:center;gap:30px">
-   <div class="stack" style="gap:12px">
-    <div style="display:flex;gap:10px;align-items:center"><span class="tag v">${esc(L(f.c))}</span><span class="quiet num">${f.d}</span></div>
-    <h2>${esc(L(f.t))}</h2><p class="lede" style="font-size:17px">${esc(L(f.s))}</p>
-    <a href="#" class="blogread" style="color:var(--gold);font-weight:700;text-decoration:none">${lang==='bg'?'Прочети →':'Read →'}</a></div>
-   <div class="mark-tile" style="height:200px;font-size:26px">${lang==='bg'?'СЪДЕБНА ПРАКТИКА':'CASE LAW'}</div>
-  </article>
-  <div class="grid2">${rest.map(p=>`<article class="card pad stack" style="gap:10px">
-    <div style="display:flex;gap:10px;align-items:center"><span class="tag t">${esc(L(p.c))}</span><span class="quiet num">${p.d}</span></div>
-    <h3>${esc(L(p.t))}</h3><p class="quiet" style="font-size:15px">${esc(L(p.s))}</p>
-    <a href="#" class="blogread" style="color:var(--gold);font-weight:700;text-decoration:none;font-size:14.5px">${lang==='bg'?'Прочети →':'Read →'}</a></article>`).join('')}</div>
+/* ---------- Новини и казуси ------------------------------------------------ */
+function newsDate(d){
+ const m=['януари','февруари','март','април','май','юни','юли','август','септември','октомври','ноември','декември'];
+ const me=['January','February','March','April','May','June','July','August','September','October','November','December'];
+ const [y,mo,da]=d.split('-').map(Number);
+ if(!da) return lang==='bg'?`${m[mo-1]} ${y} г.`:`${me[mo-1]} ${y}`;
+ return lang==='bg'?`${da} ${m[mo-1]} ${y} г.`:`${da} ${me[mo-1]} ${y}`;
+}
+function newsTag(p){
+ const B=lang==='bg';
+ return p.type==='case'
+  ?`<span class="tag v">${B?'Казус':'Case'}</span><span class="quiet" style="font-size:13px">${esc(L(p.court))}</span>`
+  :`<span class="tag t">${B?'Новина':'News'}</span>`;
+}
+function News(){
+ const B=lang==='bg';
+ const p=newsId&&POSTS.find(x=>x.id===newsId);
+ if(p) return `${pageHead({bg:'Новини и казуси',en:'News & Cases'},p.t,p.s)}
+ <section class="sec"><div class="wrap" style="max-width:780px">
+  <button class="btn btn-quiet" data-newsback="1" style="padding:6px 14px;font-size:14px;margin-bottom:18px">${B?'← Всички новини и казуси':'← All news & cases'}</button>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px">${newsTag(p)}<span class="quiet" style="font-size:13px">${newsDate(p.d)}</span></div>
+  <article class="stack" style="gap:14px">${p.body.map(x=>`<p class="copy" style="max-width:none;margin:0">${esc(L(x))}</p>`).join('')}</article>
+  <div class="helpbar" style="margin-top:22px;display:block;padding:16px 18px">
+   <div class="kicker" style="margin-bottom:6px">${B?'Поуката':'The takeaway'}</div>
+   <p style="margin:0">${esc(L(p.lesson))}</p></div>
+  <p class="quiet" style="margin-top:18px">${B?'Източник':'Source'}: <a href="${esc(p.src.url)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">${esc(p.src.label)}</a></p>
+  <p class="quiet" style="font-size:13px">${B?'Материалът е информационен и не представлява правен съвет по конкретен случай.':'This material is for information purposes only and does not constitute legal advice on any specific matter.'}</p>
+ </div></section>`;
+ const list=POSTS.filter(x=>newsFilter==='all'||x.type===newsFilter).slice().sort((a,b)=>b.d.localeCompare(a.d));
+ const fb=(k,lb)=>`<button class="btn ${newsFilter===k?'btn-primary':'btn-quiet'}" data-newsf="${k}" style="padding:7px 16px;font-size:14px">${lb}</button>`;
+ return `${pageHead({bg:'Новини и казуси',en:'News & Cases'},
+   {bg:'Какво се случва в марковото право',en:'What Is Happening in Trademark Law'},
+   {bg:'Новини от ведомствата и кратки анализи на решения по интересни казуси, с поуката за Вашия бизнес.',
+    en:'News from the trademark offices and short analyses of notable decisions, with the takeaway for your business.'})}
+ <section class="sec sec-warm"><div class="wrap">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px">
+   ${fb('all',B?'Всички':'All')}${fb('news',B?'Новини':'News')}${fb('case',B?'Казуси':'Cases')}
+  </div>
+  <div class="whylist svc4 newsgrid">
+   ${list.map(x=>`<article class="whyitem svcitem newscard" data-news="${x.id}" tabindex="0" role="button">
+     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">${newsTag(x)}</div>
+     <div class="quiet" style="font-size:13px;margin-bottom:6px">${newsDate(x.d)}</div>
+     <h3>${esc(L(x.t))}</h3>
+     <p>${esc(L(x.s))}</p>
+     <div style="margin-top:12px;color:var(--gold);font-weight:600;font-size:14.5px">${B?'Прочетете →':'Read →'}</div></article>`).join('')}
+  </div>
+ </div></section>
+ <section class="sec sec-navy"><div class="wrap stack" style="gap:16px;max-width:760px">
+  <div><span class="seclabel">${B?'Бюлетин':'Newsletter'}</span></div>
+  <h2>${B?'Получавайте новините веднъж месечно':'Get the News Once a Month'}</h2>
+  <div class="goldrule"></div>
+  <p class="lede">${B?'Решения на съдилищата, промени в таксите и практика на ведомствата, в кратък месечен бюлетин.':'Court decisions, fee updates and office practice, in a short monthly newsletter.'}</p>
+  <button class="btn btn-gold" data-p="contact" style="align-self:start">${B?'Абонирайте се':'Subscribe'}</button>
  </div></section>`;
 }
 
@@ -4653,6 +4770,10 @@ function wire(){
  app.querySelectorAll('[data-search]').forEach(el=>el.onclick=()=>{state.search=el.dataset.search;save();render()});
  const wsb=app.querySelector('#whysearch'); if(wsb) wsb.onclick=()=>openSearchDrawer();
  app.querySelectorAll('[data-monwhy]').forEach(b=>b.onclick=()=>openMonitorDrawer({}));
+ app.querySelectorAll('[data-newsf]').forEach(b=>b.onclick=()=>{newsFilter=b.dataset.newsf;render()});
+ app.querySelectorAll('[data-news]').forEach(c=>{const open=()=>{newsId=c.dataset.news;render()};
+   c.onclick=open; c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}}});
+ app.querySelectorAll('[data-newsback]').forEach(b=>b.onclick=()=>{newsId=null;render()});
  app.querySelectorAll('[data-monitor]').forEach(b=>b.onclick=()=>{state.monitor=b.dataset.monitor;save();render()});
  app.querySelectorAll('[data-monafter]').forEach(b=>b.onclick=()=>{monitorMsg=null;
    openMonitorDrawer({after:true, ref:b.dataset.ref||state.ref||'', mark:b.dataset.mark||state.mark||''})});
