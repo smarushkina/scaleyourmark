@@ -1156,6 +1156,7 @@ async function initAuth(){
   try{
    const {data}=await sb.auth.getSession();
    await adoptSession(data?data.session:null);
+   await restoreDraft();
   }catch(e){ auth=null }
   // ВАЖНО: обратното извикване се изпълнява вътре в ключалката на Supabase Auth.
   // Ако тук се изчака друга заявка към Supabase, се получава взаимно блокиране
@@ -1163,6 +1164,7 @@ async function initAuth(){
   sb.auth.onAuthStateChange((evt, session)=>{
    setTimeout(async ()=>{
     await adoptSession(session);
+    if(evt==='SIGNED_IN') await restoreDraft();
     if(evt==='PASSWORD_RECOVERY' && !otpActive){
      recovering=true; authTab='newpass';
      authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
@@ -1218,8 +1220,16 @@ async function adoptSession(session){
         admin:!!(prof&&prof.is_lawyer) };
 }
 
-function signOut(){
+async function signOut(){
  recovering=false;
+ if(draftTimer){ clearTimeout(draftTimer); draftTimer=null; }
+ let saved=true;
+ if(remote && sb && auth && state.status==='draft' && draftHasContent()){
+   try{ saved = (await pushDraft())!==false }catch(e){ saved=false }
+ }
+ /* На общ компютър следващият човек не бива да вижда чуждата чернова.
+    Тя остава на сървъра и се връща при следващ вход. */
+ if(saved && remote){ state=JSON.parse(JSON.stringify(BLANK)); matterOk=false; saveLocal(); }
  if(remote && sb){ sb.auth.signOut().catch(()=>{}) }
  auth=null; saveAuth(null); authTab='login'; authMsg=null; go('acct');
 }
@@ -1306,6 +1316,7 @@ async function doLogin(f){
    const {data,error}=await sb.auth.signInWithPassword({email:f.email.trim(), password:f.pass});
    if(error) throw error;
    await adoptSession(data.session);
+   await restoreDraft();
    authMsg=null;
   }catch(e){ authMsg={type:'err',text:authErr(e)} }
   busy=false; render(); return;
@@ -1512,7 +1523,8 @@ function markTextDb(){
 function stepStateDb(){
  const o = {};
  for(const k in state){ if(k!=='img') o[k]=state[k]; }
- o.img = state.img ? {name:state.img.name, size:state.img.size, w:state.img.w, h:state.img.h} : null;
+ o.img = state.img ? {name:state.img.name, size:state.img.size, w:state.img.w, h:state.img.h,
+          type:state.img.type||null, storage_key:state.img.storage_key||null} : null;
  return o;
 }
 
@@ -1564,7 +1576,38 @@ async function pushDraft(){
    step_state: stepStateDb()
  };
  const {error} = await sb.from('matters').update(patch).eq('id', id);
- if(error){ syncErr(error); render(); } else if(syncState){ syncState=null; render(); }
+ if(error){ syncErr(error); render(); return false }
+ if(syncState){ syncState=null; render(); }
+ return true;
+}
+
+/* Възстановяване на черновата при вход.
+   Черновата живее и на сървъра (matters.step_state). Ако в този браузър няма
+   попълнена чернова — друг компютър, изтрита история, или след изход — при вход
+   се зарежда последната незавършена заявка на човека. Чернова на друг профил в
+   същия браузър не се показва. */
+async function restoreDraft(){
+ if(!(remote && sb && auth)) return;
+ if(state.owner && state.owner!==auth.id){
+   state=JSON.parse(JSON.stringify(BLANK)); matterOk=false; saveLocal();
+ }
+ if(!(state.status==='draft' && draftHasContent()) && !(state.status && state.status!=='draft')){
+   try{
+     const {data}=await sb.from('matters').select('id,ref,status,step_state,updated_at')
+       .eq('user_id',auth.id).eq('status','draft').order('updated_at',{ascending:false}).limit(1);
+     const d=data&&data[0];
+     if(d && d.step_state){
+       const st=JSON.parse(JSON.stringify(BLANK));
+       Object.assign(st, d.step_state||{});
+       st.applicant=Object.assign({}, BLANK.applicant, st.applicant||{});
+       st.priority =Object.assign({}, BLANK.priority,  st.priority ||{});
+       st.matter_id=d.id; st.ref=d.ref; st.status='draft';
+       await hydrateImg(st);
+       state=st; normaliseTerms(); matterOk=true;
+     }
+   }catch(e){}
+ }
+ state.owner=auth.id; saveLocal();
 }
 
 function queueDraft(){
@@ -1598,7 +1641,7 @@ async function uploadOtherFile(file){
   },{onConflict:'matter_id,sha256'});
   if(error) throw error;
   state.img={name:file.name,size:file.size,type:file.type,url:null,storage_key:key,uploaded:true};
-  save(); render();
+  save(); render(); dropOtherMarkImages(id,key);
  }catch(e){
   say((lang==='bg'?'Файлът не можа да се качи: ':'The file could not be uploaded: ')+((e&&e.message)||e));
  }
@@ -1619,6 +1662,39 @@ async function uploadMarkImage(id){
    byte_size:blob.size, sha256:hash, privileged:false, uploaded_by:auth.id
  }, {onConflict:'matter_id,sha256'});
  if(error) throw error;
+ return key;
+}
+
+/* Изображението на марката се качва веднага щом бъде избрано, за да остане в
+   черновата на сървъра и да се възстанови на всяко устройство. По-старите
+   изображения на същата преписка се махат, за да не стигне до адвоката старо. */
+async function dropOtherMarkImages(id,key){
+ try{ await sb.from('documents').delete().eq('matter_id',id).eq('kind','mark_image').neq('storage_key',key||'') }catch(e){}
+}
+async function syncMarkImage(){
+ if(!(remote && sb && auth) || state.status!=='draft') return;
+ const img=state.img; if(!img || !img.url || img.uploaded) return;
+ try{
+  const id=await ensureMatter(); if(!id) return;
+  const key=await uploadMarkImage(id);
+  if(state.img===img){ img.storage_key=key; img.uploaded=true; save(); }
+  await dropOtherMarkImages(id,key);
+ }catch(e){}
+}
+/* При възстановяване на черновата изображението се изтегля обратно от
+   хранилището като data URL — точно както е било при избора му. */
+async function hydrateImg(st){
+ if(!st.img) return;
+ if(st.img.url) return;
+ if(!st.img.storage_key){ st.img=null; return; }
+ if(!/^image\//.test(st.img.type||'image/jpeg')) return;     // PDF/MP3/MP4: остава само описанието
+ try{
+  const sig=await sb.storage.from('matter-files').createSignedUrl(st.img.storage_key,600);
+  const u=sig&&sig.data&&sig.data.signedUrl; if(!u) return;
+  const blob=await (await fetch(u)).blob();
+  st.img.url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob)});
+  st.img.uploaded=true;
+ }catch(e){}
 }
 
 /* Какво липсва на една стъпка, за да се мине нататък. Връща имената на
@@ -2088,7 +2164,7 @@ async function resumeMatter(id){
  st.applicant=Object.assign({}, BLANK.applicant, st.applicant||{});
  st.priority =Object.assign({}, BLANK.priority,  st.priority ||{});
  st.matter_id=data.id; st.ref=data.ref; st.status='draft';
- if(st.img && !st.img.url) st.img=null;     // изображението не се пази в черновата — качва се отново
+ await hydrateImg(st);                       // изображението се връща от хранилището
  state=st; normaliseTerms(); matterOk=true; syncState=null; saveLocal();
  mattersAsked=false; matters=null;
  go('file');
@@ -2880,7 +2956,7 @@ function handleImg(file){
    x.drawImage(im,0,0,c.width,c.height);
    let url=''; try{url=c.toDataURL('image/jpeg',0.85)}catch(e){url=''}
    state.img={name:file.name,size:file.size,type:'image/jpeg',w:im.width,h:im.height,url:url};
-   save(); render();
+   save(); render(); syncMarkImage();
   };
   im.onerror=()=>say(lang==='bg'?'Файлът не може да бъде прочетен като изображение.':'The file could not be read as an image.');
   im.src=r.result;
@@ -4801,7 +4877,17 @@ function wire(){
    }
    state.done[state.step]=true; syncState=null;
    if(state.step<9){state.step++;save();render();scrollToStep()}else{handover()}};
- if(sbtn)sbtn.onclick=()=>{save();if(draftTimer){clearTimeout(draftTimer);draftTimer=null;pushDraft()}go('acct')};
+ if(sbtn)sbtn.onclick=async()=>{
+   saveLocal(); if(draftTimer){clearTimeout(draftTimer);draftTimer=null}
+   sbtn.disabled=true;
+   const ok = (remote && sb && auth) ? await pushDraft() : true;
+   sbtn.disabled=false;
+   if(ok===false){ return }          // грешката се вижда в стъпката; не излизаме
+   mattersAsked=false; matters=null;
+   pwNotice={bg:'Черновата е запазена. Можете да продължите по всяко време от „Моите заявки“.',
+             en:'Your draft has been saved. You can continue at any time from “My applications”.'};
+   const keep=pwNotice; go('acct'); pwNotice=keep; render();
+ };
  if(rs)rs.onclick=()=>startNewMark();
  const nm=app.querySelector('#newmark'); if(nm) nm.onclick=()=>startNewMark();
  app.querySelectorAll('[data-resume]').forEach(b=>b.onclick=()=>resumeMatter(b.dataset.resume));
@@ -4906,7 +4992,8 @@ function wire(){
  const din=app.querySelector('#imgin'), dz=app.querySelector('#drop');
  if(din){
   const pk=app.querySelector('#pickimg'); if(pk)pk.onclick=e=>{e.stopPropagation();din.click()};
-  const rm=app.querySelector('#rmimg'); if(rm)rm.onclick=e=>{e.stopPropagation();state.img=null;save();render()};
+  const rm=app.querySelector('#rmimg'); if(rm)rm.onclick=e=>{e.stopPropagation();state.img=null;save();render();
+    if(remote&&sb&&auth&&state.matter_id) dropOtherMarkImages(state.matter_id,'');};
   din.onchange=e=>handleImg(e.target.files&&e.target.files[0]);
   if(dz){
    dz.onclick=e=>{if(!e.target.closest('button'))din.click()};
