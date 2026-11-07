@@ -1528,9 +1528,24 @@ function stepStateDb(){
  return o;
 }
 
+/* Supabase понякога отхвърля току-що издадена сесия с PGRST303 „JWT issued at
+   future“ (разминаване в часовниците на сървърите им). Тогава опресняваме
+   сесията, изчакваме и опитваме още веднъж, преди да покажем грешка. */
+const isJwtSkew=e=>!!e && /PGRST303|issued at future/i.test(((e.code||'')+' '+(e.message||'')));
+async function jwtRetry(fn){
+ let r=await fn();
+ for(let i=0;i<2 && r && isJwtSkew(r.error);i++){
+   try{ await sb.auth.refreshSession() }catch(x){}
+   await new Promise(ok=>setTimeout(ok, 2500*(i+1)));
+   r=await fn();
+ }
+ return r;
+}
 function syncErr(e){
- syncState = {type:'err', text:(lang==='bg'?'Черновата не се записа на сървъра: ':'The draft was not saved on the server: ')
-   + ((e && e.message) || e)};
+ syncState = {type:'err', text: isJwtSkew(e)
+   ? (lang==='bg'?'Временен проблем със сървъра на базата данни. Данните Ви са запазени в браузъра — опитайте отново след няколко минути.'
+                 :'Temporary problem with the database server. Your data is saved in this browser — please try again in a few minutes.')
+   : (lang==='bg'?'Черновата не се записа на сървъра: ':'The draft was not saved on the server: ') + ((e && e.message) || e)};
 }
 
 /* Ид. от localStorage може да сочи към изтрита или чужда преписка — тогава
@@ -1541,15 +1556,16 @@ async function ensureMatter(){
  if(!remote || !sb || !auth) return null;
  if(state.matter_id && matterOk) return state.matter_id;
  if(state.matter_id){
-  const {data,error}=await sb.from('matters').select('id,ref').eq('id',state.matter_id).maybeSingle();
+  const {data,error}=await jwtRetry(()=>sb.from('matters').select('id,ref').eq('id',state.matter_id).maybeSingle());
   if(!error && data && data.id){ matterOk=true; if(data.ref) state.ref=data.ref; saveLocal(); return state.matter_id }
+  if(error){ syncErr(error); return null }      // временна грешка — не губим номера на преписката
   state.matter_id=null; state.ref=null; saveLocal();
  }
  const base={user_id:auth.id, route:state.route, status:'draft', current_step:state.step};
- let {data, error} = await sb.from('matters')
+ let {data, error} = await jwtRetry(()=>sb.from('matters')
    .insert(Object.assign({}, base, {src_source:ACQ.source, src_medium:ACQ.medium,
             src_campaign:ACQ.campaign, src_referrer:ACQ.referrer}))
-   .select('id,ref').single();
+   .select('id,ref').single());
  /* Ако колоните за източника още ги няма в базата, преписката пак се създава.
     Така сайтът не зависи от реда, в който се пуска миграцията. */
  if(error && /src_(source|medium|campaign|referrer)/.test(error.message||'')){
@@ -1575,7 +1591,7 @@ async function pushDraft(){
    search_option: state.search || null,
    step_state: stepStateDb()
  };
- const {error} = await sb.from('matters').update(patch).eq('id', id);
+ const {error} = await jwtRetry(()=>sb.from('matters').update(patch).eq('id', id));
  if(error){ syncErr(error); render(); return false }
  if(syncState){ syncState=null; render(); }
  return true;
@@ -1593,8 +1609,8 @@ async function restoreDraft(){
  }
  if(!(state.status==='draft' && draftHasContent()) && !(state.status && state.status!=='draft')){
    try{
-     const {data}=await sb.from('matters').select('id,ref,status,step_state,updated_at')
-       .eq('user_id',auth.id).eq('status','draft').order('updated_at',{ascending:false}).limit(1);
+     const {data}=await jwtRetry(()=>sb.from('matters').select('id,ref,status,step_state,updated_at')
+       .eq('user_id',auth.id).eq('status','draft').order('updated_at',{ascending:false}).limit(1));
      const d=data&&data[0];
      if(d && d.step_state){
        const st=JSON.parse(JSON.stringify(BLANK));
@@ -3965,7 +3981,7 @@ async function poaSendCode(){
   /* Преписката се създава или възстановява тук, а черновата се записва, преди
      да тръгне кодът — така пълномощното се сглобява от текущите данни.     */
   const mid=await ensureMatter();
-  if(!mid) throw new Error('matter');
+  if(!mid){ if(syncState&&syncState.type==='err') throw new Error('server'); throw new Error('matter'); }
   if(draftTimer){ clearTimeout(draftTimer); draftTimer=null }
   await pushDraft();
   const {data,error}=await sb.functions.invoke('poa',{body:{action:'send_code',matter_id:mid}});
@@ -3988,7 +4004,8 @@ async function poaSendCode(){
    too_many: lang==='bg'?'Твърде много заявки за кратко време. Опитайте след час.':'Too many requests in a short time. Try again in an hour.',
    auth: lang==='bg'?'Влезте отново в профила си и опитайте пак.':'Please sign in again and try once more.',
    matter: lang==='bg'?'Преписката беше създадена наново. Натиснете бутона още веднъж.':'The matter has been recreated. Press the button once more.',
-   mail: lang==='bg'?'Кодът не можа да бъде изпратен. Опитайте пак след минута.':'The code could not be sent. Try again in a minute.'
+   mail: lang==='bg'?'Кодът не можа да бъде изпратен. Опитайте пак след минута.':'The code could not be sent. Try again in a minute.',
+   server: (syncState&&syncState.text)||(lang==='bg'?'Временен проблем със сървъра. Опитайте след няколко минути.':'Temporary server problem. Please try again in a few minutes.')
   };
   await poaDiagFrom(e,'send_code');
   if(c==='matter'){ matterOk=false; state.matter_id=null; state.ref=null; saveLocal() }
@@ -4005,7 +4022,7 @@ async function poaSign(){
  const html=poaStandalone({signature:state.sigPng, signedAt:new Date().toISOString(), email:auth&&auth.email});
  try{
   const mid=await ensureMatter();
-  if(!mid) throw new Error('matter');
+  if(!mid){ if(syncState&&syncState.type==='err') throw new Error('server'); throw new Error('matter'); }
   const {data,error}=await sb.functions.invoke('poa',{body:{
     action:'sign', matter_id:mid, code:code,
     signatory_name:sigNameEff(),
