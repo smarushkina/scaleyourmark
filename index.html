@@ -3035,10 +3035,7 @@ function body(k){
 
    <button class="opt" data-search="none" data-on="${state.search==='none'?1:0}">
     <span class="tick"></span>
-    <span><span class="ot">${lang==='bg'?'Продължавам без проучване':'Continue without a clearance search'}</span>
-     <span class="os">${lang==='bg'
-       ?'Приемам риска от опозиция в тримесечния срок след публикацията. Държавната такса не се възстановява.'
-       :'I accept the risk of an opposition in the three months after publication. The official fee is not refunded.'}</span></span>
+    <span><span class="ot">${lang==='bg'?'Продължавам без проучване':'Continue without a clearance search'}</span></span>
     <span></span></button>
   </div>
 
@@ -3047,9 +3044,7 @@ function body(k){
        ?'Проучването влиза в цената, посочена в стъпка 8.':'The clearance search is included in the price shown at step 8.'}</span>
       <span class="num">${searchFee()}</span></div>`
    :state.search==='none'
-   ?`<div class="caution" style="margin-top:14px">${lang==='bg'
-       ?'Изборът да се продължи без проучване се записва по преписката заедно с датата — така и за двете страни остава ясно какво е било известно към момента на подаването.'
-       :'The choice to proceed without a clearance search is recorded on the matter with its date, so it stays clear to both sides what was known at the time of filing.'}</div>`
+   ?''
    :`<p class="quiet" style="margin-top:12px">${lang==='bg'
        ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}
   ${monitorBlock()}`;
@@ -5042,11 +5037,11 @@ function wire(){
  const tc=app.querySelector('#tc');
  if(tq){
    tq.value = suggQ;
-   paintSugg();
+   paintSugg(); suggWarmUp();
    tq.oninput = e=>{
      suggQ = e.target.value;
      if(suggTimer) clearTimeout(suggTimer);
-     suggTimer = setTimeout(()=>{suggTimer=null; runSugg()}, 300);
+     suggTimer = setTimeout(()=>{suggTimer=null; runSugg()}, 220);
    };
    tq.onkeydown = e=>{
      if(e.key==='Enter'){ e.preventDefault();
@@ -5109,10 +5104,40 @@ function suggNarrow(q){
  });
 }
 
+/* Пълен отговор = EUIPO е върнал всички съвпадения (общо ≤ получени редове).
+   Тогава всяко по-дълго търсене със същото начало е подмножество и се филтрира
+   тук, веднага, без ново питане към EUIPO (което за нова дума отнема секунди). */
+const SUGG_LIMIT=50, SUGG_SHOW=25;
+function suggFilter(rows,q){
+ const toks=String(q).toLowerCase().split(/\s+/).filter(Boolean);
+ return rows.filter(r=>{const t=String(r.t||'').toLowerCase(); return toks.every(w=>t.indexOf(w)>=0)});
+}
+function suggFromComplete(q,c){
+ const ql=String(q).trim().toLowerCase(), pre=lang+'|'+(c||'')+'|';
+ let best=null;
+ for(const [k,v] of suggCache){
+   if(k.indexOf(pre)!==0) continue;
+   const kq=k.slice(pre.length);
+   if(kq.length>=2 && ql.indexOf(kq)===0 && v.total<=v.rows.length && (!best || kq.length>best.len)) best={len:kq.length,rows:v.rows};
+ }
+ return best ? suggFilter(best.rows, ql) : null;
+}
+let suggWarm=false;
+function suggWarmUp(){            // събужда функцията, за да няма студен старт при първата дума
+ if(suggWarm || !remote || !sb || !auth) return; suggWarm=true;
+ sb.functions.invoke('hdb-suggest',{body:{q:'кафе',lang:'bg',niceClass:null,limit:10}}).catch(()=>{});
+}
+
 async function runSugg(){
  const q=(suggQ||'').trim();
  if(q.length<2){ suggRows=[]; suggTotal=0; suggState='idle'; paintSugg(); return }
  if(!remote || !sb){ suggState='offline'; paintSugg(); return }
+
+ const local=suggFromComplete(q,suggCls);
+ if(local){
+  suggRows=local; suggTotal=local.length; suggState='ok'; suggProvisional=false;
+  suggLastQ=q; suggLastCls=suggCls; suggLastRows=local; paintSugg(); return;
+ }
 
  const hit=suggCache.get(suggKey(q,suggCls));
  if(hit){
@@ -5131,9 +5156,16 @@ async function runSugg(){
 
  const asked=q+'|'+suggCls;
  try{
+  const askedCls=suggCls;
   const {data,error}=await sb.functions.invoke('hdb-suggest',
-    {body:{q:q, lang:lang, niceClass:suggCls||null, limit:25}});
-  if((suggQ||'').trim()+'|'+suggCls !== asked) return;   // клиентът е дописал
+    {body:{q:q, lang:lang, niceClass:askedCls||null, limit:SUGG_LIMIT}});
+  if(!error && data && !data.error){            // пазим отговора, дори ако клиентът вече е дописал
+   const rr=data.rows||[]; suggRemember(q, askedCls, rr, data.total||rr.length);
+  }
+  if((suggQ||'').trim()+'|'+suggCls !== asked){
+   if(suggState!=='ok' || suggProvisional) runSugg();   // може вече да има пълен отговор за новата дума
+   return;
+  }
   if(error) throw error;
   if(data && data.error) throw new Error(data.error);
   suggRows=(data&&data.rows)||[]; suggTotal=(data&&data.total)||suggRows.length;
@@ -5181,17 +5213,18 @@ function paintSugg(){
  const waiting = suggProvisional ? note(lang==='bg'
    ? 'Стеснено от вече показаното. Уточняваме от базата на СЕСИС (EUIPO)…'
    : 'Narrowed from what was already shown. Checking the EUIPO database…') : '';
- box.innerHTML = waiting + suggRows.map(r=>{
+ const shown=suggRows.slice(0,SUGG_SHOW);
+ box.innerHTML = waiting + shown.map(r=>{
    const id='hdb:'+r.id, on=chosen.has(id);
    return `<div class="trow" data-add="${esc(id)}" data-c="${r.c}" data-t="${esc(r.t)}" data-on="${on?1:0}">
      <span class="chip">${lang==='bg'?'Кл.':'Cl.'} ${r.c}</span>
      <span>${esc(r.t)}</span>
      <span class="badge hdb">${on?(lang==='bg'?'ДОБАВЕН':'ADDED'):'HDB'}</span>
    </div>`;
- }).join('') + (suggTotal>suggRows.length
+ }).join('') + (suggTotal>shown.length
    ? note(lang==='bg'
-       ? `Показани са първите ${suggRows.length} от ${suggTotal}. Стеснете думата или изберете клас.`
-       : `Showing the first ${suggRows.length} of ${suggTotal}. Narrow the word or pick a class.`)
+       ? `Показани са първите ${shown.length} от ${suggTotal}. Стеснете думата или изберете клас.`
+       : `Showing the first ${shown.length} of ${suggTotal}. Narrow the word or pick a class.`)
    : '');
 
  box.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{
