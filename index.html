@@ -5107,7 +5107,8 @@ function suggNarrow(q){
 /* Пълен отговор = EUIPO е върнал всички съвпадения (общо ≤ получени редове).
    Тогава всяко по-дълго търсене със същото начало е подмножество и се филтрира
    тук, веднага, без ново питане към EUIPO (което за нова дума отнема секунди). */
-const SUGG_LIMIT=50, SUGG_SHOW=25;
+const SUGG_LIMIT=50, SUGG_SHOW=1000, SUGG_MAXPAGES=20;   // до 1000 термина за една дума
+let suggLoading=false, suggLoadSeq=0;
 function suggFilter(rows,q){
  const toks=String(q).toLowerCase().split(/\s+/).filter(Boolean);
  return rows.filter(r=>{const t=String(r.t||'').toLowerCase(); return toks.every(w=>t.indexOf(w)>=0)});
@@ -5121,6 +5122,28 @@ function suggFromComplete(q,c){
    if(kq.length>=2 && ql.indexOf(kq)===0 && v.total<=v.rows.length && (!best || kq.length>best.len)) best={len:kq.length,rows:v.rows};
  }
  return best ? suggFilter(best.rows, ql) : null;
+}
+/* Всички съвпадения, не само първите 50: останалите страници се теглят
+   едновременно и се добавят към списъка, щом пристигнат. */
+async function suggLoadRest(q,cls,first,total){
+ const per=SUGG_LIMIT, pages=Math.min(Math.ceil(total/per), SUGG_MAXPAGES);
+ if(pages<=1) return;
+ const my=++suggLoadSeq, parts=[first];
+ const isCur=()=>my===suggLoadSeq && (suggQ||'').trim()===q && suggCls===cls;
+ const merged=()=>{const seen=new Set(),out=[];for(const p of parts) if(p) for(const r of p){const k=r.id+'|'+r.c; if(!seen.has(k)){seen.add(k);out.push(r)}} return out};
+ suggLoading=true; if(isCur()) paintSugg();
+ await Promise.all(Array.from({length:pages-1},(_,i)=>i+1).map(async pg=>{
+   try{
+     const {data,error}=await sb.functions.invoke('hdb-suggest',{body:{q:q,lang:lang,niceClass:cls||null,limit:per,page:pg}});
+     if(error||!data||data.error) return;
+     parts[pg]=data.rows||[];
+     if(isCur()){ suggRows=merged(); suggLastRows=suggRows; paintSugg(); }
+   }catch(e){}
+ }));
+ const all=merged();
+ suggRemember(q, cls, all, all.length>=total-1 ? all.length : total);   // пълен списък → по-дългите думи се филтрират тук
+ if(isCur()){ suggRows=all; suggLastRows=all; suggTotal=total; suggLoading=false; paintSugg(); }
+ else if(my===suggLoadSeq) suggLoading=false;
 }
 let suggWarm=false;
 function suggWarmUp(){            // събужда функцията, за да няма студен старт при първата дума
@@ -5142,8 +5165,11 @@ async function runSugg(){
  const hit=suggCache.get(suggKey(q,suggCls));
  if(hit){
   suggRows=hit.rows; suggTotal=hit.total; suggState='ok'; suggProvisional=false;
-  suggLastQ=q; suggLastCls=suggCls; suggLastRows=hit.rows; paintSugg(); return;
+  suggLastQ=q; suggLastCls=suggCls; suggLastRows=hit.rows; suggLoading=false; suggLoadSeq++; paintSugg();
+  if(hit.total>hit.rows.length) suggLoadRest(q,suggCls,hit.rows,hit.total);
+  return;
  }
+ suggLoadSeq++; suggLoading=false;
 
  const grows = suggLastRows.length && suggCls===suggLastCls
    && q.toLowerCase().indexOf(String(suggLastQ).toLowerCase())===0;
@@ -5172,6 +5198,7 @@ async function runSugg(){
   suggState='ok'; suggProvisional=false;
   suggRemember(q, suggCls, suggRows, suggTotal);
   suggLastQ=q; suggLastCls=suggCls; suggLastRows=suggRows;
+  if(suggTotal>suggRows.length) suggLoadRest(q, askedCls, suggRows, suggTotal);
  }catch(e){
   suggRows=[]; suggTotal=0; suggState='err'; suggProvisional=false;
   suggErr=(e&&e.message)||String(e);
@@ -5221,10 +5248,17 @@ function paintSugg(){
      <span>${esc(r.t)}</span>
      <span class="badge hdb">${on?(lang==='bg'?'ДОБАВЕН':'ADDED'):'HDB'}</span>
    </div>`;
- }).join('') + (suggTotal>shown.length
+ }).join('') + (suggLoading && suggTotal>shown.length
    ? note(lang==='bg'
-       ? `Показани са първите ${shown.length} от ${suggTotal}. Стеснете думата или изберете клас.`
-       : `Showing the first ${shown.length} of ${suggTotal}. Narrow the word or pick a class.`)
+       ? `Зареждаме всички съвпадения… ${shown.length} от ${suggTotal}`
+       : `Loading all matches… ${shown.length} of ${suggTotal}`)
+   : suggTotal>shown.length
+   ? note(lang==='bg'
+       ? `Показани са ${shown.length} от ${suggTotal}. Стеснете думата или изберете клас.`
+       : `Showing ${shown.length} of ${suggTotal}. Narrow the word or pick a class.`)
+   : suggTotal>25 ? note(suggCls
+       ? (lang==='bg'?`Всички ${shown.length} съвпадения в клас ${suggCls}.`:`All ${shown.length} matches in class ${suggCls}.`)
+       : (lang==='bg'?`Всички ${shown.length} съвпадения във всички класове.`:`All ${shown.length} matches across all classes.`))
    : '');
 
  box.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{
