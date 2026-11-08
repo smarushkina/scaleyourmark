@@ -2,7 +2,7 @@
 // показани в нашия интерфейс. Ключът никога не напуска сървъра.
 //
 // Извиква се от сайта с жетона на влезлия клиент:
-//   POST /functions/v1/hdb-suggest   { q, lang, niceClass, limit }
+//   POST /functions/v1/hdb-suggest   { q, lang, niceClass, limit, page }
 // Диагностика (пак само за влязъл клиент):
 //   POST /functions/v1/hdb-suggest   { probe: true }
 //
@@ -141,8 +141,8 @@ const BASE = SANDBOX
 //            totalElements, totalPages, size, page }
 const cache = new Map<string, { at: number; out: unknown }>();
 
-async function suggest(q: string, lang: string, niceClass: string, limit: number) {
-  const key = [q, lang, niceClass, limit].join('|');
+async function suggest(q: string, lang: string, niceClass: string, limit: number, page = 0) {
+  const key = [q, lang, niceClass, limit, page].join('|');
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < 5 * 60_000) return hit.out;
 
@@ -151,7 +151,7 @@ async function suggest(q: string, lang: string, niceClass: string, limit: number
     termText: q,
     language: lang,
     size: String(Math.max(10, limit)),
-    page: '0',
+    page: String(page),
   });
   if (niceClass) p.set('classNumber', niceClass);
 
@@ -168,7 +168,7 @@ async function suggest(q: string, lang: string, niceClass: string, limit: number
     t: String(x.text || ''),
   })).filter((x: any) => x.id && x.t && x.c >= 1 && x.c <= 45);
 
-  const out = { rows, total: Number(d.totalElements || rows.length) };
+  const out = { rows, total: Number(d.totalElements || rows.length), page, pages: Number(d.totalPages || 1) };
   if (cache.size > 300) cache.clear();
   cache.set(key, { at: Date.now(), out });
   return out;
@@ -224,9 +224,12 @@ Deno.serve(async (req) => {
   const lang = ['bg', 'en'].includes(String(b.lang)) ? String(b.lang) : 'bg';
   const niceClass = /^([1-9]|[1-3][0-9]|4[0-5])$/.test(String(b.niceClass || '')) ? String(b.niceClass) : '';
   const limit = Math.min(Math.max(Number(b.limit) || 25, 10), 50);
+  // Страница от отговора (от 0) — сайтът изтегля всички страници, за да покаже
+  // всички съвпадения от всички класове, не само първите 50.
+  const page = Math.min(Math.max(Math.floor(Number(b.page) || 0), 0), 40);
 
   try {
-    return json(await suggest(q, lang, niceClass, limit));
+    return json(await suggest(q, lang, niceClass, limit, page));
   } catch (e) {
     return json({ error: String(e) }, 502);
   }
