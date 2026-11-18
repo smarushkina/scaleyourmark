@@ -23,7 +23,7 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <style>
 :root{
@@ -659,9 +659,10 @@ body{overflow-wrap:break-word}
 .herox.slog .hx-stage{margin:6px 0}
 .herox.slog .hx-msg{max-width:none; transform:translateX(24px); transition:opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1)}
 .herox.slog .hx-msg.on{transform:none}
-.herox.slog .hx-q{font-style:italic; font-weight:400; color:var(--ink);
+.herox.slog .hx-q,.herox.slog .hx-a{font-family:"Lora","Georgia","Times New Roman",serif; font-variation-settings:normal}
+.herox.slog .hx-q{font-style:italic; font-weight:500; color:var(--ink);
   font-size:clamp(24px,3.4vw,44px); line-height:1.12; letter-spacing:-.02em; text-wrap:pretty}
-.herox.slog .hx-a{font-style:italic; font-weight:300; color:var(--gold);
+.herox.slog .hx-a{font-style:italic; font-weight:400; color:var(--gold);
   font-size:clamp(17px,2vw,25px); margin-top:12px}
 .herox.slog .hx-dot::before{background:rgba(10,23,48,.16)}
 .herox.slog .hx-pause{color:var(--ink); border-color:var(--line)}
@@ -710,6 +711,14 @@ body{overflow-wrap:break-word}
 .wp-n{font-family:"DM Mono",monospace; font-size:12px; color:var(--gold)}
 .wpill h3{font-size:17px; margin:6px 0 8px}
 .wpill .copy{max-width:none; margin:0}
+/* Телефони: ефектите при посочване само там, където има мишка — иначе на
+   iPhone и Android бутонът остава „повдигнат“ след докосване. */
+.whytab,.movebtn,.wpill{-webkit-tap-highlight-color:transparent; touch-action:manipulation}
+@media (hover:none){
+ .whytab:hover,.wpill:hover,.movebtn:hover{transform:none; box-shadow:none}
+ .whytab:not(.on):hover{border-color:var(--line)}
+ .whytab:hover::after{width:0} .whytab.on::after{width:100%}
+}
 .whyhint{margin-top:16px; color:var(--ink-3); font-size:14px; transition:opacity .3s}
 .whyhint.gone{opacity:0; height:0; margin:0; overflow:hidden}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
