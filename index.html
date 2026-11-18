@@ -922,8 +922,8 @@ const STEPS=[
  {n:8,key:'pay',t:{bg:'Плащане',en:'Payment'},
   i:{bg:'Възнаграждението е услуга и е с ДДС. Държавната такса е допълнителен разход и се плаща на ведомството при подаването.',
      en:'The legal fee is a service and carries VAT. The official fee is an additional cost, paid to the office at filing.'},
-  need:{bg:['Карта или банков превод','Данни за фактура (ЕИК, ДДС номер)','Потвърдено съдържание на заявката'],
-        en:['Card or bank transfer','Invoicing details (company and VAT number)','Confirmed contents of the application']},
+  need:{bg:['Дебитна, кредитна или бизнес карта Visa или Mastercard','Данни за фактура (ЕИК, ДДС номер)','Потвърдено съдържание на заявката'],
+        en:['A Visa or Mastercard debit, credit or business card','Invoicing details (company and VAT number)','Confirmed contents of the application']},
   man:{bg:['Плащането с карта минава през виртуалния ПОС на „Банка ДСК“ АД — защитена страница на банката, Visa Secure и Mastercard Identity Check.',
            'Държавната такса още не е стигнала до ведомството в този момент — плаща се от мен при подаването. Затова дотогава възстановяване е възможно.',
            'Таксата на СЕСИС (EUIPO) се плаща в евро; при Мадрид — в швейцарски франкове по курса на СОИС (WIPO).',
@@ -3495,9 +3495,7 @@ function body(k){
   <div class="opts" style="margin-top:0">
    <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банкова карта':'Bank card'}</span>
     <span class="os">${lang==='bg'?'Дебитни, кредитни и бизнес карти Visa и Mastercard — през виртуалния ПОС на „Банка ДСК“ АД, с Visa Secure и Mastercard Identity Check. Не съхраняваме данни за банкови карти.'
-                                  :'Visa and Mastercard debit, credit and business cards — via the Banka DSK virtual POS, with Visa Secure and Mastercard Identity Check. We do not store card data.'}</span></span><span></span></button>
-   <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банков превод (SEPA)':'Bank transfer (SEPA)'}</span>
-    <span class="os">${lang==='bg'?'Преглед след потвърдено постъпване — обичайно един работен ден.':'Review starts once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
+                                  :'Visa and Mastercard debit, credit and business cards — via the Banka DSK virtual POS, with Visa Secure and Mastercard Identity Check. We do not store card data.'}</span></span><span></span></button></div>
   </div>
   <div class="caution" style="margin-top:14px">${madrid?(lang==='bg'
     ?'Сега заплащате само възнаграждението. Таксата на СОИС (WIPO) зависи от посочените от вас държави и от индивидуалните им такси — тя се изчислява след като заявката бъде обработена от адвоката. Точната сума ще получите по имейл, заедно с указания за плащане.'
