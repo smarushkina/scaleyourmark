@@ -646,7 +646,74 @@ body{overflow-wrap:break-word}
 @media (max-width:860px){ .herox{padding-block:18px 16px} .herox .glyph{opacity:.6; right:-18%}
   .herox .hx-stage{margin:8px 0 12px} .herox .hx-dot{width:24px} }
 @media (prefers-reduced-motion:reduce){ .herox .hx-msg{transform:none} }
+/* ---------- Начална страница: послания + раздели с бутони ---------- */
+.whyhero{display:grid; grid-template-columns:1.25fr .85fr; gap:clamp(28px,4vw,64px); align-items:center}
+@media (max-width:900px){ .whyhero{grid-template-columns:1fr} }
+.herox.slog{background:transparent; color:var(--ink); padding:0; overflow:visible}
+.herox.slog::before{display:none}
+.herox.slog .glyph{left:6px; right:auto; top:-92px; transform:none; z-index:-1;
+  font:400 clamp(150px,16vw,230px)/1 "Fraunces",Georgia,serif; color:var(--gold-bright); opacity:.22; -webkit-text-stroke:0}
+.herox.slog .hx-in{position:relative; padding-left:22px; border-left:3px solid var(--gold-bright)}
+.herox.slog .hx-kick{font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--gold)}
+.herox.slog .hx-count{color:var(--gold)}
+.herox.slog .hx-stage{margin:14px 0 18px}
+.herox.slog .hx-msg{transform:translateX(24px); transition:opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1)}
+.herox.slog .hx-msg.on{transform:none}
+.herox.slog .hx-q{font-style:italic; font-weight:400; color:var(--ink);
+  font-size:clamp(24px,3.1vw,40px); line-height:1.12; letter-spacing:-.02em}
+.herox.slog .hx-a{font-style:italic; font-weight:300; color:var(--gold);
+  font-size:clamp(17px,1.8vw,22px); margin-top:12px}
+.herox.slog .hx-dot::before{background:rgba(10,23,48,.16)}
+.herox.slog .hx-pause{color:var(--ink); border-color:var(--line)}
+.whyintro{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:clamp(22px,2.6vw,32px);
+  box-shadow:var(--lift)}
+.whyintro h2{font-size:clamp(21px,2.2vw,27px); margin-top:14px}
+.whyintro .copy{max-width:none}
+.whyintro-cta{display:flex; flex-direction:column; gap:10px; margin-top:20px}
+.btn-navy{background:var(--navy); color:#fff; border-color:var(--navy)}
+.movebtn{display:inline-flex; justify-content:space-between; align-items:center; gap:14px;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s}
+.movebtn:hover{transform:translateY(-2px); box-shadow:var(--lift-lg)}
+.movebtn .mv{display:inline-block; animation:mvbob 1.6s ease-in-out infinite}
+@keyframes mvbob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+.whytabs{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+@media (max-width:640px){ .whytabs{grid-template-columns:1fr} }
+.whytab{position:relative; display:flex; align-items:center; gap:16px; text-align:left; cursor:pointer;
+  padding:20px 22px; border-radius:14px; border:1px solid var(--line); background:var(--surface); color:var(--ink);
+  font:inherit; overflow:hidden; transition:transform .25s ease, box-shadow .25s ease, border-color .25s, background .25s}
+.whytab::after{content:""; position:absolute; left:0; bottom:0; height:3px; width:0; background:var(--gold-bright);
+  transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.whytab:hover{transform:translateY(-3px); box-shadow:var(--lift-lg); border-color:var(--gold-bright)}
+.whytab:hover::after{width:30%}
+.whytab.on{background:var(--navy); border-color:var(--navy); color:#fff}
+.whytab.on::after{width:100%}
+.whytab.on .smark{color:#fff} .whytab.on .smark b{color:var(--gold-bright)}
+.wt-n{font-family:"DM Mono",monospace; font-size:13px; color:var(--gold)}
+.whytab.on .wt-n{color:var(--gold-bright)}
+.wt-t{flex:1; font-family:"Fraunces",Georgia,serif; font-size:clamp(18px,1.9vw,22px); line-height:1.2}
+.wt-ic{width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:20px;
+  border:1px solid currentColor; opacity:.7; transition:transform .35s ease}
+.whytab.on .wt-ic{transform:rotate(45deg)}
+.whypanel{display:grid; grid-template-rows:0fr; transition:grid-template-rows .55s cubic-bezier(.2,.8,.2,1)}
+.whypanel>.wp-in{overflow:hidden; min-height:0}
+.whypanel.open{grid-template-rows:1fr}
+.whypanel.open>.wp-in{padding-top:28px}
+.whypanel .rv{opacity:0; transform:translateY(14px)}
+.whypanel.open .rv{animation:rvin .55s cubic-bezier(.2,.8,.2,1) forwards; animation-delay:var(--d,0ms)}
+@keyframes rvin{to{opacity:1; transform:none}}
+.wpgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+@media (max-width:900px){ .wpgrid{grid-template-columns:1fr 1fr} }
+@media (max-width:600px){ .wpgrid{grid-template-columns:1fr} }
+.wpill{background:var(--surface); border:1px solid var(--line); border-top:3px solid var(--gold-bright); border-radius:12px; padding:20px;
+  transition:transform .25s ease, box-shadow .25s ease}
+.wpill:hover{transform:translateY(-3px); box-shadow:var(--lift-lg)}
+.wp-n{font-family:"DM Mono",monospace; font-size:12px; color:var(--gold)}
+.wpill h3{font-size:17px; margin:6px 0 8px}
+.wpill .copy{max-width:none; margin:0}
+.whyhint{margin-top:16px; color:var(--ink-3); font-size:14px; transition:opacity .3s}
+.whyhint.gone{opacity:0; height:0; margin:0; overflow:hidden}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+@media (prefers-reduced-motion:reduce){ .whypanel.open .rv{opacity:1; transform:none} }
 </style>
 
 <header class="top" id="side">
@@ -2321,7 +2388,7 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  const key=page+'|'+state.step+'|'+guideStep+'|'+newsId;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
- chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();heroWire();
+ chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();heroWire();whyWire();
  renderKey=key;
  /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
  if(!keep.same){
@@ -3718,17 +3785,18 @@ const HERO_SETS={
 const HERO={i:0, key:null, idx:{}, timer:null, hover:false, user:false};
 const HM=()=>HERO_SETS[HERO.key]||HERO_SETS.why;
 
-function heroRotator(key,title,cta){
+function heroRotator(key,title,cta,variant){
+ const slog=variant==='slog';
  /* всяка страница помни докъде е стигнал нейният банер */
  if(HERO.key!==key){ if(HERO.key) HERO.idx[HERO.key]=HERO.i; HERO.key=key; HERO.i=HERO.idx[key]||0; }
  const n=HM().length, pad=x=>String(x).padStart(2,'0');
  const paused=HERO.user;
- return `<section class="herox${paused?' paused':''}" id="herox" aria-roledescription="carousel"
+ return `<${slog?'div':'section'} class="herox${slog?' slog':''}${paused?' paused':''}" id="herox" aria-roledescription="carousel"
    aria-label="${lang==='bg'?'Послания':'Key messages'}" style="--hx-dur:${HERO_MS}ms">
-  <span class="glyph" aria-hidden="true">®</span>
-  <div class="wrap">
+  <span class="glyph" aria-hidden="true">${slog?'„':'®'}</span>
+  <div class="${slog?'hx-in':'wrap'}">
    <div class="hx-top">
-    <h1>${esc(L(title))}</h1>
+    ${slog?`<div class="hx-kick">${esc(L(title))}</div>`:`<h1>${esc(L(title))}</h1>`}
     <span class="hx-count" aria-hidden="true"><span id="hxn">${pad(HERO.i+1)}</span> / ${pad(n)}</span>
    </div>
    <div class="hx-stage" aria-live="${paused?'polite':'off'}">
@@ -3748,7 +3816,7 @@ function heroRotator(key,title,cta){
     </div>
    </div>
   </div>
- </section>`;
+ </${slog?'div':'section'}>`;
 }
 
 function heroShow(k){
@@ -3838,19 +3906,47 @@ function Why(){
  const promise={bg:'Информирайте се безплатно. Подгответе се самостоятелно. Получете професионална подкрепа. Заявете своята търговска марка с ясна и предвидима цена.',
                 en:'Learn what you need at no cost. Prepare it yourself. Get professional support. File your trademark at a clear, predictable price.'};
 
- return `${heroRotator('why',{bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
-  `<button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете заявката →':'Start your application →'}</button>
-   <button class="btn btn-ghost" data-p="mark">${lang==='bg'?'Какво е марката':'What a trademark is'}</button>`)}
+ const tabs=[
+  {id:'idea', t:{bg:'Идеята зад ScaleYourMark',en:'The idea behind ScaleYourMark'}, n:'01'},
+  {id:'why',  t:{bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'}, n:'02'}
+ ];
+ const ideaHtml=`<div class="whygrid">${idea.map((x,k)=>`<p class="copy rv" style="--d:${k*60}ms">${brand(L(x))}</p>`).join('')}</div>`;
+ const whyHtml=`<div class="wpgrid">${pillars.map(([t,d],k)=>`<article class="wpill rv" style="--d:${k*70}ms">
+     <span class="wp-n">${String(k+1).padStart(2,'0')}</span>
+     <h3>${brand(L(t))}</h3>
+     <p class="copy">${brand(L(d))}</p>
+    </article>`).join('')}</div>`;
+
+ return `${pageHead({bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
+  {bg:'Ясен път към регистрацията на вашата търговска марка',
+   en:'A clear path to registering your trademark'})}
 
  <section class="sec sec-warm${lang==='en'?' why-en':''}"${lang==='en'?' lang="en"':''}><div class="wrap">
-  <div class="whygrid">${idea.map(x=>`<p class="copy">${brand(L(x))}</p>`).join('')}</div>
-  <h3 class="whyhead" style="margin:34px 0 18px">${brand(lang==='bg'?'Защо ScaleYourMark':'Why choose ScaleYourMark?')}</h3>
-  <div class="grid2" style="gap:22px 48px">
-   ${pillars.map(([t,d])=>`<div>
-     <h3 style="font-size:17px;margin:0 0 6px">${brand(L(t))}</h3>
-     <p class="copy" style="max-width:none;margin:0">${brand(L(d))}</p>
-    </div>`).join('')}
+  <div class="whyhero">
+   ${heroRotator('why',{bg:'Посланията на ScaleYourMark',en:'What ScaleYourMark stands for'},'','slog')}
+   <aside class="whyintro">
+    <span class="seclabel">${lang==='bg'?'Идеята зад услугата':'The idea'}</span>
+    <h2>${lang==='bg'?'Регистрацията на марка не трябва да бъде сложна':'Registering a trademark shouldn’t be complicated'}</h2>
+    <div class="goldrule" style="margin:14px 0"></div>
+    <p class="copy">${brand(L(idea[5]))}</p>
+    <div class="whyintro-cta">
+     <button class="btn btn-navy movebtn" data-whyopen="why">${lang==='bg'?'Защо ScaleYourMark':'Why ScaleYourMark'} <span class="mv">↓</span></button>
+     <button class="btn btn-ghost movebtn" data-whyopen="idea">${lang==='bg'?'Идеята зад услугата':'The idea behind it'} <span class="mv">↓</span></button>
+    </div>
+   </aside>
   </div>
+ </div></section>
+
+ <section class="sec" id="whytext" style="scroll-margin-top:70px"><div class="wrap">
+  <div class="whytabs" role="tablist">
+   ${tabs.map(x=>`<button class="whytab${whyTab===x.id?' on':''}" role="tab" aria-selected="${whyTab===x.id}"
+      aria-controls="wp-${x.id}" data-whytab="${x.id}">
+     <span class="wt-n">${x.n}</span><span class="wt-t">${brand(L(x.t))}</span><span class="wt-ic" aria-hidden="true">+</span>
+    </button>`).join('')}
+  </div>
+  <div class="whypanel${whyTab==='idea'?' open':''}" id="wp-idea" role="tabpanel"><div class="wp-in">${ideaHtml}</div></div>
+  <div class="whypanel${whyTab==='why'?' open':''}" id="wp-why" role="tabpanel"><div class="wp-in">${whyHtml}</div></div>
+  <p class="whyhint${whyTab?' gone':''}">${lang==='bg'?'Изберете раздел, за да прочетете повече.':'Choose a section to read more.'}</p>
  </div></section>
 
  <section class="sec sec-navy"><div class="wrap">
@@ -3864,6 +3960,22 @@ function Why(){
    </div>
   </div>
  </div></section>`;
+}
+
+/* Раздели на началната: текстът се показва при натискане на бутон.
+   Превключването става без пререндиране, за да тече анимацията. */
+let whyTab=null;
+function whySet(id,scroll){
+ whyTab=(whyTab===id && !scroll)?null:id;
+ app.querySelectorAll('[data-whytab]').forEach(b=>{const on=b.dataset.whytab===whyTab;
+   b.classList.toggle('on',on); b.setAttribute('aria-selected',on)});
+ app.querySelectorAll('.whypanel').forEach(p=>p.classList.toggle('open',p.id==='wp-'+whyTab));
+ const h=app.querySelector('.whyhint'); if(h) h.classList.toggle('gone',!!whyTab);
+ if(scroll){const t=app.querySelector('#whytext'); if(t) t.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function whyWire(){
+ app.querySelectorAll('[data-whytab]').forEach(b=>b.onclick=()=>whySet(b.dataset.whytab,false));
+ app.querySelectorAll('[data-whyopen]').forEach(b=>b.onclick=()=>whySet(b.dataset.whyopen,true));
 }
 
 function Mark(){
