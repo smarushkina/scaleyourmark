@@ -600,6 +600,51 @@ body{overflow-wrap:break-word}
   section.sec{padding-block:26px}
 }
 
+/* ---------- Ротиращ банер на началната страница (heroRotator) ----------
+   Всички послания стоят в една и съща клетка на решетката — височината е тази
+   на най-дългото, затова при смяна страницата не подскача. */
+.herox{position:relative; overflow:hidden; background:var(--band); color:var(--band-ink);
+  padding-block:44px 30px; isolation:isolate}
+.herox::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(120% 90% at 100% 0%, rgba(190,150,102,.13), transparent 55%),
+             linear-gradient(180deg, rgba(255,255,255,.02), transparent)}
+.herox .glyph{position:absolute; right:-2%; top:50%; transform:translateY(-50%); z-index:-1;
+  font:300 clamp(220px,30vw,420px)/1 "Fraunces",Georgia,serif; font-variation-settings:"SOFT" 0,"WONK" 0;
+  color:transparent; -webkit-text-stroke:1px rgba(190,150,102,.16); pointer-events:none; user-select:none}
+.herox .hx-top{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.herox h1{font:500 12px/1.4 "Karla",sans-serif; letter-spacing:.16em; text-transform:uppercase;
+  color:#CFC5B4; margin:0}
+.herox .hx-count{font-family:"DM Mono",monospace; font-size:12px; color:var(--gold-bright); letter-spacing:.06em}
+.herox .hx-stage{display:grid; margin:22px 0 26px; min-height:0}
+.herox .hx-msg{grid-area:1/1; max-width:820px; opacity:0; transform:translateY(10px);
+  transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); visibility:hidden}
+.herox .hx-msg.on{opacity:1; transform:none; visibility:visible}
+.herox .hx-q{font-family:"Fraunces",Georgia,serif; font-variation-settings:"SOFT" 8,"WONK" 0;
+  font-weight:400; font-size:clamp(25px,3.5vw,42px); line-height:1.12; letter-spacing:-.018em;
+  color:#fff; margin:0; text-wrap:balance}
+.herox .hx-a{font-family:"Fraunces",Georgia,serif; font-style:italic; font-weight:300;
+  font-size:clamp(19px,2.2vw,26px); line-height:1.25; color:var(--gold-bright); margin:12px 0 0; text-wrap:balance}
+.herox .hx-bar{display:flex; align-items:center; gap:18px; flex-wrap:wrap; justify-content:space-between}
+.herox .hx-dots{display:flex; gap:6px; align-items:center}
+.herox .hx-dot{position:relative; width:34px; height:22px; padding:0; border:0; background:none; cursor:pointer}
+.herox .hx-dot::before{content:""; position:absolute; left:0; right:0; top:10px; height:2px; border-radius:2px;
+  background:rgba(255,255,255,.2)}
+.herox .hx-dot i{position:absolute; left:0; top:10px; height:2px; width:0; border-radius:2px; background:var(--gold-bright)}
+.herox .hx-dot.done i{width:100%}
+.herox .hx-dot.on i{animation:hxfill var(--hx-dur,7s) linear forwards}
+.herox.paused .hx-dot.on i{animation-play-state:paused}
+.herox .hx-dot:focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px; border-radius:3px}
+@keyframes hxfill{from{width:0}to{width:100%}}
+.herox .hx-pause{width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,.22);
+  background:transparent; color:#fff; cursor:pointer; font-size:11px; line-height:1; display:grid; place-items:center; margin-left:6px}
+.herox .hx-pause:hover{border-color:var(--gold-bright)}
+.herox .hx-cta{display:flex; gap:10px; flex-wrap:wrap}
+.herox .btn-ghost{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.24); color:#fff}
+.herox .btn-ghost:hover{border-color:var(--gold-bright)}
+.herox .hx-q,.herox .hx-a{text-align:left; hyphens:manual}
+@media (max-width:860px){ .herox{padding-block:30px 22px} .herox .glyph{opacity:.6; right:-18%}
+  .herox .hx-stage{margin:16px 0 20px} .herox .hx-dot{width:24px} }
+@media (prefers-reduced-motion:reduce){ .herox .hx-msg{transform:none} }
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 </style>
 
@@ -2275,7 +2320,7 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  const key=page+'|'+state.step+'|'+guideStep+'|'+newsId;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
- chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();
+ chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier}[page]||Why)();wire();heroWire();
  renderKey=key;
  /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
  if(!keep.same){
@@ -3635,6 +3680,121 @@ function About(){
  </div></section>`;
 }
 
+/* ---------- Ротиращ банер (началната страница) ----------
+   Посланията се сменят на HERO_MS. Пауза при задържане на мишката, при фокус
+   с клавиатура и с бутона ‖ (WCAG 2.2.2). Състоянието е глобално, защото
+   render() пренаписва страницата — при връщане банерът продължава оттам. */
+const HERO_MS=7000;
+const HERO_SETS={
+ why:[
+ {q:{bg:'Използвате името от години. Регистрирано ли е — и на чие име?',en:'You’ve used the name for years. Is it registered — and in whose name?'},
+  a:{bg:'Ползването не е право. Регистрацията е.',en:'Use is not a right. Registration is.'}},
+ {q:{bg:'Колко струва ребрандът след писмо от конкурент?',en:'What does a rebrand cost after a letter from a competitor?'},
+  a:{bg:'Неизмеримо повече от една заявка днес.',en:'Far more than an application filed today.'}},
+ {q:{bg:'Консултация само за да разберете откъде да започнете?',en:'A paid consultation just to find out where to start?'},
+  a:{bg:'Тук информацията е безплатна, а стъпките — подредени.',en:'Here the guidance is free and the steps are in order.'}},
+ {q:{bg:'Подадена заявка още не е защитена марка.',en:'A filed application is not yet a protected brand.'},
+  a:{bg:'Вашата марка заслужава правилно изградена защита.',en:'Your brand deserves protection that is properly structured.'}},
+ {q:{bg:'Вие познавате своя бизнес.',en:'You know your business.'},
+  a:{bg:'Ние ви помагаме да защитите неговото име.',en:'We help you protect its name.'}}
+ ],
+ mark:[
+ {q:{bg:'Вашата марка е повече от име.',en:'Your trademark is more than a name.'},
+  a:{bg:'Тя е актив.',en:'It is an asset.'}},
+ {q:{bg:'Фирмата в Търговския регистър и домейнът не са търговска марка.',en:'A company name and a domain are not a trademark.'},
+  a:{bg:'Изключително право дава само регистрацията.',en:'Only registration gives you an exclusive right.'}},
+ {q:{bg:'Без регистрация имате име, което използвате.',en:'Without registration, you have a name you use.'},
+  a:{bg:'С регистрация имате актив, който притежавате.',en:'With registration, you have an asset you own.'}},
+ {q:{bg:'Конкурент със сходно име за сходни стоки?',en:'A competitor with a similar name for similar goods?'},
+  a:{bg:'Регистрираната марка ви дава основание да го спрете.',en:'A registered trademark gives you the grounds to stop it.'}},
+ {q:{bg:'Една неточна дума в списъка със стоки и услуги може да стесни цялата защита.',en:'One imprecise word in the list of goods and services can narrow your entire protection.'},
+  a:{bg:'Решенията преди подаването определят правата след него.',en:'The decisions made before filing define the rights you hold after it.'}},
+ {q:{bg:'Десет години изключително право.',en:'Ten years of exclusive rights.'},
+  a:{bg:'И подновяване без ограничение в броя.',en:'Renewable as many times as you need.'}}
+ ]
+};
+const HERO={i:0, key:null, idx:{}, timer:null, hover:false, user:false};
+const HM=()=>HERO_SETS[HERO.key]||HERO_SETS.why;
+
+function heroRotator(key,title,cta){
+ /* всяка страница помни докъде е стигнал нейният банер */
+ if(HERO.key!==key){ if(HERO.key) HERO.idx[HERO.key]=HERO.i; HERO.key=key; HERO.i=HERO.idx[key]||0; }
+ const n=HM().length, pad=x=>String(x).padStart(2,'0');
+ const paused=HERO.user;
+ return `<section class="herox${paused?' paused':''}" id="herox" aria-roledescription="carousel"
+   aria-label="${lang==='bg'?'Послания':'Key messages'}" style="--hx-dur:${HERO_MS}ms">
+  <span class="glyph" aria-hidden="true">®</span>
+  <div class="wrap">
+   <div class="hx-top">
+    <h1>${esc(L(title))}</h1>
+    <span class="hx-count" aria-hidden="true"><span id="hxn">${pad(HERO.i+1)}</span> / ${pad(n)}</span>
+   </div>
+   <div class="hx-stage" aria-live="${paused?'polite':'off'}">
+    ${HM().map((m,k)=>`<div class="hx-msg${k===HERO.i?' on':''}" role="group" aria-roledescription="slide"
+       aria-label="${k+1} / ${n}"${k===HERO.i?'':' aria-hidden="true"'}>
+      <div class="hx-q">${esc(L(m.q))}</div>
+      <div class="hx-a">${esc(L(m.a))}</div>
+     </div>`).join('')}
+   </div>
+   <div class="hx-bar">
+    <div class="hx-dots">
+     ${HM().map((m,k)=>`<button class="hx-dot${k===HERO.i?' on':''}${k<HERO.i?' done':''}" data-hx="${k}"
+        aria-label="${lang==='bg'?'Послание':'Message'} ${k+1}"${k===HERO.i?' aria-current="true"':''}><i></i></button>`).join('')}
+     <button class="hx-pause" id="hxpause" aria-label="${paused?(lang==='bg'?'Пусни':'Play'):(lang==='bg'?'Пауза':'Pause')}">${paused?'▶':'❚❚'}</button>
+    </div>
+    <div class="hx-cta">${cta||''}
+    </div>
+   </div>
+  </div>
+ </section>`;
+}
+
+function heroShow(k){
+ const root=document.getElementById('herox'); if(!root) return;
+ const n=HM().length; HERO.i=((k%n)+n)%n;
+ root.querySelectorAll('.hx-msg').forEach((el,j)=>{
+   el.classList.toggle('on',j===HERO.i);
+   if(j===HERO.i) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden','true');
+ });
+ root.querySelectorAll('.hx-dot').forEach((el,j)=>{
+   el.classList.remove('on'); el.classList.toggle('done',j<HERO.i);
+   if(j===HERO.i){ void el.offsetWidth; el.classList.add('on'); el.setAttribute('aria-current','true'); }
+   else el.removeAttribute('aria-current');
+ });
+ const c=document.getElementById('hxn'); if(c) c.textContent=String(HERO.i+1).padStart(2,'0');
+ heroArm();
+}
+/* Таймерът се пуска наново при всяка смяна — така лентата и смяната вървят заедно. */
+function heroArm(){
+ clearTimeout(HERO.timer); HERO.timer=null;
+ const root=document.getElementById('herox'); if(!root) return;
+ const stop=HERO.user||HERO.hover;
+ root.classList.toggle('paused',stop);
+ if(!stop) HERO.timer=setTimeout(()=>heroShow(HERO.i+1),HERO_MS);
+}
+function heroWire(){
+ const root=document.getElementById('herox');
+ if(!root){ clearTimeout(HERO.timer); HERO.timer=null; return; }
+ root.querySelectorAll('[data-hx]').forEach(b=>b.onclick=()=>heroShow(+b.dataset.hx));
+ const pb=document.getElementById('hxpause');
+ pb.onclick=()=>{ HERO.user=!HERO.user;
+   pb.textContent=HERO.user?'▶':'❚❚';
+   pb.setAttribute('aria-label',HERO.user?(lang==='bg'?'Пусни':'Play'):(lang==='bg'?'Пауза':'Pause'));
+   root.querySelector('.hx-stage').setAttribute('aria-live',HERO.user?'polite':'off');
+   heroArm(); };
+ root.onmouseenter=()=>{HERO.hover=true; heroArm()};
+ root.onmouseleave=()=>{HERO.hover=false; heroArm()};
+ root.addEventListener('focusin',()=>{HERO.hover=true; heroArm()});
+ root.addEventListener('focusout',e=>{ if(!root.contains(e.relatedTarget)){HERO.hover=false; heroArm()} });
+ root.addEventListener('keydown',e=>{
+   if(e.key==='ArrowRight'){e.preventDefault(); heroShow(HERO.i+1)}
+   if(e.key==='ArrowLeft'){e.preventDefault(); heroShow(HERO.i-1)} });
+ /* при скрит раздел не въртим напразно */
+ if(!HERO.vis){ HERO.vis=true; document.addEventListener('visibilitychange',()=>{
+   if(document.hidden){clearTimeout(HERO.timer)} else heroArm(); }); }
+ HERO.hover=false; heroArm();
+}
+
 function Why(){
  /* Уводът и идеята зад услугата. Първите четири абзаца стоят вляво,
     последните два вдясно над разгъващите се предимства. */
@@ -3678,9 +3838,9 @@ function Why(){
  const promise={bg:'Информирайте се безплатно. Подгответе се самостоятелно. Получете професионална подкрепа. Заявете своята търговска марка с ясна и предвидима цена.',
                 en:'Learn what you need at no cost. Prepare it yourself. Get professional support. File your trademark at a clear, predictable price.'};
 
- return `${pageHead({bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
-  {bg:'Ясен път към регистрацията на вашата търговска марка',
-   en:'A clear path to registering your trademark'})}
+ return `${heroRotator('why',{bg:'Защо ScaleYourMark',en:'Why ScaleYourMark'},
+  `<button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете заявката →':'Start your application →'}</button>
+   <button class="btn btn-ghost" data-p="mark">${lang==='bg'?'Какво е марката':'What a trademark is'}</button>`)}
 
  <section class="sec sec-warm${lang==='en'?' why-en':''}"${lang==='en'?' lang="en"':''}><div class="wrap">
   <div class="whygrid">${idea.map(x=>`<p class="copy">${brand(L(x))}</p>`).join('')}</div>
@@ -3764,10 +3924,9 @@ function Mark(){
    en:'These initial decisions are where the most significant risks lie. A wrong choice may limit the scope of protection and lead to additional costs. That is why successful trademark registration begins not with filling in a form, but with a well-considered legal strategy.'}
  ];
 
- return `${pageHead({bg:'За търговската марка',en:'About trademarks'},
-  {bg:'Вашата марка е повече от име. Тя е актив.',en:'Your trademark is more than a name. It is an asset.'},
-  {bg:'Какво представлява търговската марка, какво ви дава регистрацията и кои решения се вземат, преди заявката изобщо да бъде подадена.',
-   en:'What a trademark is, what registration gives you and which decisions need to be made before the application is filed.'})}
+ return `${heroRotator('mark',{bg:'За търговската марка',en:'About trademarks'},
+  `<button class="btn btn-gold" data-p="file">${lang==='bg'?'Започнете заявката →':'Start your application →'}</button>
+   <button class="btn btn-ghost" data-p="price">${lang==='bg'?'Вижте цените':'See the pricing'}</button>`)}
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
