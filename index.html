@@ -292,6 +292,11 @@ section.sec{padding-block:clamp(30px,4.4vw,52px)}
 .guidebody ul.gcheck li::before{content:'\2713'; position:absolute; left:0; top:0; color:var(--teal); font-weight:700}
 .guidebody .glead{font-family:"Fraunces","Iowan Old Style",Georgia,serif; font-size:19px; line-height:1.45;
   color:var(--ink); border-left:3px solid var(--gold-bright); padding-left:16px; margin:26px 0 0}
+/* стъпка 8: търговец и Общи условия до сумата за плащане */
+.paymerchant{margin-top:14px; padding:10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--raise); font-size:13.5px; line-height:1.5; color:var(--ink-2)}
+.paymerchant .kicker{display:block; margin-bottom:3px}
+.paymerchant a, .payterms-read a{color:var(--gold); overflow-wrap:anywhere}
+.payterms-read{margin:14px 0 0; font-size:14.5px; color:var(--ink-2)}
 /* Общи условия — дълъг правен текст: съдържание отгоре, номерирани раздели, таблица с превъртане на телефон */
 .termswrap{max-width:860px}
 .termsmeta{font-size:14px; color:var(--ink-3); margin:0 0 18px}
@@ -919,11 +924,11 @@ const STEPS=[
      en:'The legal fee is a service and carries VAT. The official fee is an additional cost, paid to the office at filing.'},
   need:{bg:['Карта или банков превод','Данни за фактура (ЕИК, ДДС номер)','Потвърдено съдържание на заявката'],
         en:['Card or bank transfer','Invoicing details (company and VAT number)','Confirmed contents of the application']},
-  man:{bg:['Плащането минава през myPOS Checkout — хоствана страница, 3-D Secure 2, SCA по PSD2.',
+  man:{bg:['Плащането с карта минава през виртуалния ПОС на „Банка ДСК“ АД — защитена страница на банката, Visa Secure и Mastercard Identity Check.',
            'Държавната такса още не е стигнала до ведомството в този момент — плаща се от мен при подаването. Затова дотогава възстановяване е възможно.',
            'Таксата на СЕСИС (EUIPO) се плаща в евро; при Мадрид — в швейцарски франкове по курса на СОИС (WIPO).',
            'Фактурата се разделя на два реда: адвокатско възнаграждение (с ДДС) и държавна такса (допълнителен разход, без ДДС).'],
-       en:['Payment runs through myPOS Checkout — hosted page, 3-D Secure 2, PSD2 SCA.',
+       en:['Card payment runs through the Banka DSK virtual POS — the bank’s secure page, Visa Secure and Mastercard Identity Check.',
            'The official fee has not reached the office at this point — I pay it at filing. Until then a refund is possible.',
            'The EUIPO fee is paid in euro; Madrid in Swiss francs at the WIPO rate.',
            'The invoice splits into two lines: legal fee (with VAT) and official fee (additional cost, no VAT).']},
@@ -1162,6 +1167,7 @@ const KEY='sym_atelier_v1';
 const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,search:null,
   madridCountries:'',
   signatory:'',declared:false,terms:[],done:{},status:'draft',monitor:null,
+  tos_accepted_at:null, tos_version:null, early_start:false, early_start_at:null,
   sigName:'', sigCapacity:'', sigPng:null, poa_signed_at:null, poa_hash:null,
   matter_id:null, ref:null, signed_at:null,
   applicant:{kind:'legal',name:'',id:'',rep:'',addr:'',country:'BG'},
@@ -1912,6 +1918,8 @@ function stepBlockers(n){
   if(pr.claim && pr.claim!=='none' && !(pr.number||'').trim())
     m.push(T('номер на по-ранната заявка','the number of the earlier application'));
  }
+ if(n===8 && !state.tos_accepted_at)
+   m.push(T('приемане на Общите условия','acceptance of the Terms and Conditions'));
  if(n===7){
   if(!sigNameEff()) m.push(sigMissingText());
   if(!state.declared) m.push(T('отметната декларация','the ticked declaration'));
@@ -1931,6 +1939,7 @@ function handoverBlockers(){
  if(!(sigNameEff()||state.signatory||'').trim())
    m.push(lang==='bg'?'име на подписващия в стъпка 7':'the signatory in step 7');
  if(!state.declared) m.push(lang==='bg'?'декларацията в стъпка 7':'the declaration in step 7');
+ if(!state.tos_accepted_at) m.push(lang==='bg'?'приемане на Общите условия в стъпка 8':'acceptance of the Terms and Conditions in step 8');
  if(!state.poa_signed_at)
    m.push(lang==='bg'?'подписано пълномощно в стъпка 7':'the signed power of attorney in step 7');
  if((state.kind==='word'||state.kind==='comb') && !(state.mark||'').trim())
@@ -3484,9 +3493,9 @@ function body(k){
      madrid?money(net*1.2,'EUR'):money(f.v+net*1.2,'EUR')}</td></tr>
    </tbody></table></div>
   <div class="opts" style="margin-top:0">
-   <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">myPOS Checkout</span>
-    <span class="os">${lang==='bg'?'Карта, Apple Pay, Google Pay. Картовите данни не минават през нашия сървър.'
-                                  :'Card, Apple Pay, Google Pay. Card data never touches our server.'}</span></span><span></span></button>
+   <button class="opt" data-on="1"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банкова карта':'Bank card'}</span>
+    <span class="os">${lang==='bg'?'Дебитни, кредитни и бизнес карти Visa и Mastercard — през виртуалния ПОС на „Банка ДСК“ АД, с Visa Secure и Mastercard Identity Check. Не съхраняваме данни за банкови карти.'
+                                  :'Visa and Mastercard debit, credit and business cards — via the Banka DSK virtual POS, with Visa Secure and Mastercard Identity Check. We do not store card data.'}</span></span><span></span></button>
    <button class="opt" data-on="0"><span class="tick"></span><span><span class="ot">${lang==='bg'?'Банков превод (SEPA)':'Bank transfer (SEPA)'}</span>
     <span class="os">${lang==='bg'?'Преглед след потвърдено постъпване — обичайно един работен ден.':'Review starts once funds are confirmed — usually one working day.'}</span></span><span></span></button></div>
   </div>
@@ -3495,7 +3504,8 @@ function body(k){
     :'You are paying the fee for the service only. The WIPO fee depends on the countries you designated and their individual fees — it is calculated once the lawyer has processed the application. You will receive the exact amount by email, together with payment instructions.')
    :(lang==='bg'
     ?'Държавната такса не се превежда към съответното ведомство на този етап, а се заплаща едва при подаване на заявката. В случай че след извършване на предварителния преглед бъде преценено, че марката не следва да бъде подавана за регистрация, заплатената такса се възстановява в пълен размер.'
-    :'The official state fee is not transferred to the relevant authority at this stage; it is payable only upon filing the application. If, following the preliminary review, it is determined that the trademark should not proceed to registration, the fee paid will be refunded in full.')}</div>`;
+    :'The official state fee is not transferred to the relevant authority at this stage; it is payable only upon filing the application. If, following the preliminary review, it is determined that the trademark should not proceed to registration, the fee paid will be refunded in full.')}</div>
+  ${payTermsBlock()}`;
  }
 
  if(k==='handover')return `<div class="rows">
@@ -4056,6 +4066,31 @@ const TERMS_BG = `<nav class="ttoc" aria-label="Съдържание"><div class
 <p><strong>Дата:</strong> _____________________________________________</p>
 <p><strong>Подпис на потребителя:</strong></p>
 </article>`;
+/* Стъпка 8: търговецът, връзка към Общите условия, приемането им (задължително)
+   и съгласието по т. 8.8 за започване преди 14-дневния срок (по избор).
+   Изисквания на Банка ДСК (Приложение 1, т. 2 и 14) и т. 5.1, 5.3 и 8.8 от ОУ. */
+function payTermsBlock(){
+ const bg=lang==='bg', miss=!state.tos_accepted_at && syncState && syncState.type==='err';
+ return `<div class="paymerchant">
+   <span class="kicker">${bg?'Търговец':'Merchant'}</span>
+   <div>${bg?'„СкейлЙорМарк“ ЕООД (ScaleYourMark), ЕИК 208978671 · гр. София, ул. „Добротица Деспот“ 41, вх. Б, ет. 1':
+     'ScaleYourMark EOOD, UIC 208978671 · 41 Dobrotitsa Despot St., entr. B, fl. 1, Sofia, Bulgaria'}
+    · <a href="mailto:office@scaleyourmark.com">office@scaleyourmark.com</a> · +359 898648762</div>
+  </div>
+  <p class="payterms-read">${bg?'Преди плащането прочетете ':'Before paying, please read the '}<a href="./#terms" target="_blank" rel="noopener">${
+    bg?'Общите условия ↗':'Terms and Conditions ↗'}</a>${bg?' — в сила от ':' — in force from '}${TERMS_IN_FORCE}.</p>
+  <button class="opt${miss?' needfix':''}" data-tos="1" data-on="${state.tos_accepted_at?1:0}" style="margin-top:8px">
+   <span class="tick" style="border-radius:6px"></span>
+   <span><span class="ot">${bg?'Приемам Общите условия':'I accept the Terms and Conditions'}</span>
+    <span class="os">${bg?'Запознах се с Общите условия, включително с цените, начина на плащане, правото на отказ и политиката за рекламации, и ги приемам. Задължително.'
+      :'I have read and accept the Terms and Conditions, including prices, payment method, right of withdrawal and complaints policy. Required.'}</span></span><span></span></button>
+  <button class="opt" data-early="1" data-on="${state.early_start?1:0}" style="margin-top:8px">
+   <span class="tick" style="border-radius:6px"></span>
+   <span><span class="ot">${bg?'Започване преди изтичане на срока за отказ':'Start before the withdrawal period ends'}</span>
+    <span class="os">${bg?'Искам изпълнението на услугата да започне преди изтичането на 14-дневния срок за отказ и потвърждавам, че при пълното изпълнение на услугата ще изгубя правото си на отказ, когато това е предвидено в закона. По избор — за потребители (т. 8.8 от Общите условия). Без отметка заявката се подава след изтичане на 14-дневния срок.'
+      :'I want performance of the service to begin before the 14-day withdrawal period ends and I confirm that once the service is fully performed I will lose my right of withdrawal where the law so provides. Optional — for consumers (clause 8.8 of the Terms). Without it, the application is filed after the 14-day period.'}</span></span><span></span></button>`;
+}
+
 function Terms(){
  return `${pageHead({bg:'Правни',en:'Legal'},{bg:'Общи условия',en:'Terms and Conditions'},
    {bg:'за ползване на уебсайта scaleyourmark.com и за предоставяне на услуги по подготовка и подаване на заявка за регистрация на търговска марка',
@@ -5224,6 +5259,12 @@ function peekBody(m){
  ${peekRow(lang==='bg'?'Декларация':'Declaration', d.declared
     ? `<span class="tag v">${lang==='bg'?'отметната':'ticked'}</span>`
     : `<span class="quiet">${lang==='bg'?'не е отметната':'not ticked'}</span>`)}
+ ${peekRow(lang==='bg'?'Общи условия':'Terms and Conditions', d.tos_accepted_at
+    ? `<span class="tag v">${lang==='bg'?'приети':'accepted'}</span> <span class="quiet">${esc(dts(d.tos_accepted_at))}${d.tos_version?' · '+(lang==='bg'?'ред. ':'ver. ')+esc(d.tos_version):''}</span>`
+    : `<span class="quiet">${lang==='bg'?'не са приети':'not accepted'}</span>`)}
+ ${peekRow(lang==='bg'?'Започване преди срока за отказ':'Start before withdrawal period', d.early_start
+    ? `<span class="tag v">${lang==='bg'?'да':'yes'}</span> <span class="quiet">${esc(dts(d.early_start_at))}</span>`
+    : `<span class="quiet">${lang==='bg'?'не — подаване след 14 дни, ако е потребител':'no — filing after 14 days if a consumer'}</span>`)}
  ${peekRow(lang==='bg'?'Готови стъпки':'Steps completed', doneList)}`;
 }
 function openPeek(id){
@@ -5735,6 +5776,14 @@ function wire(){
  app.querySelectorAll('[data-monafter]').forEach(b=>b.onclick=()=>{monitorMsg=null;
    openMonitorDrawer({after:true, ref:b.dataset.ref||state.ref||'', mark:b.dataset.mark||state.mark||''})});
  app.querySelectorAll('[data-declare]').forEach(el=>el.onclick=()=>{state.declared=!state.declared;save();render()});
+ app.querySelectorAll('[data-tos]').forEach(el=>el.onclick=()=>{
+   if(state.tos_accepted_at){state.tos_accepted_at=null;state.tos_version=null}
+   else{state.tos_accepted_at=new Date().toISOString();state.tos_version=TERMS_IN_FORCE;
+        if(syncState&&syncState.type==='err'&&state.step===8) syncState=null}
+   save();render()});
+ app.querySelectorAll('[data-early]').forEach(el=>el.onclick=()=>{
+   state.early_start=!state.early_start; state.early_start_at=state.early_start?new Date().toISOString():null;
+   save();render()});
  if(app.querySelector('#sigpad')) sigPadInit();
  const sgn=app.querySelector('#sgn');
  if(sgn) sgn.oninput=e=>{ state.sigName=e.target.value;
