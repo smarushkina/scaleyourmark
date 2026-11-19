@@ -4697,7 +4697,7 @@ function Why(){
 
 /* Раздели на началната: текстът се показва при натискане на бутон.
    Превключването става без пререндиране, за да тече анимацията. */
-let whyTab=null;
+let whyTab='idea';  // „Идеята зад ScaleYourMark“ е отворена при първо зареждане
 function whySet(id,scroll){
  whyTab=(whyTab===id && !scroll)?null:id;
  app.querySelectorAll('[data-whytab]').forEach(b=>{const on=b.dataset.whytab===whyTab;
