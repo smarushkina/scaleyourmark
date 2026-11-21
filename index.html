@@ -1170,6 +1170,7 @@ const BLANK = {route:'eutm',colour:false,step:1,mark:'',kind:'word',img:null,sea
   tos_accepted_at:null, tos_version:null, early_start:false, early_start_at:null,
   sigName:'', sigCapacity:'', sigPng:null, poa_signed_at:null, poa_hash:null,
   matter_id:null, ref:null, signed_at:null,
+  paid_at:null, paid_pan:null, paid_amount:null,
   applicant:{kind:'legal',name:'',id:'',rep:'',addr:'',country:'BG'},
   priority:{claim:'none',number:'',country:''}};
 let state = Object.assign({}, BLANK, load()||{});
@@ -1941,6 +1942,7 @@ function handoverBlockers(){
    m.push(lang==='bg'?'име на подписващия в стъпка 7':'the signatory in step 7');
  if(!state.declared) m.push(lang==='bg'?'декларацията в стъпка 7':'the declaration in step 7');
  if(!state.tos_accepted_at) m.push(lang==='bg'?'приемане на Общите условия в стъпка 8':'acceptance of the Terms and Conditions in step 8');
+ if(!state.paid_at) m.push(lang==='bg'?'потвърдено плащане в стъпка 8':'a confirmed payment in step 8');
  if(!state.poa_signed_at)
    m.push(lang==='bg'?'подписано пълномощно в стъпка 7':'the signed power of attorney in step 7');
  if((state.kind==='word'||state.kind==='comb') && !(state.mark||'').trim())
@@ -3030,7 +3032,7 @@ function File_(){
       <button class="btn btn-ghost" id="prev" style="padding:9px 17px" ${state.step===1?'disabled':''}>← ${lang==='bg'?'Назад':'Back'}</button>
       <div style="display:flex;gap:10px">
        <button class="btn btn-quiet" id="savebtn" style="padding:9px 8px">${lang==='bg'?'Запази и излез':'Save and exit'}</button>
-       <button class="btn btn-primary" id="next" style="padding:9px 17px">${state.step===9?(lang==='bg'?'Предай на адвоката':'Hand over'):(lang==='bg'?'Напред':'Continue')} →</button>
+       <button class="btn btn-primary" id="next" style="padding:9px 17px">${state.step===9?(lang==='bg'?'Предай на адвоката':'Hand over'):(state.step===8&&!state.paid_at)?(lang==='bg'?'Плащане с карта':'Pay by card'):(lang==='bg'?'Напред':'Continue')} →</button>
       </div>
      </div>
     </div>
@@ -3504,6 +3506,7 @@ function body(k){
    :(lang==='bg'
     ?'Държавната такса не се превежда към съответното ведомство на този етап, а се заплаща едва при подаване на заявката. В случай че след извършване на предварителния преглед бъде преценено, че марката не следва да бъде подавана за регистрация, заплатената такса се възстановява в пълен размер.'
     :'The official state fee is not transferred to the relevant authority at this stage; it is payable only upon filing the application. If, following the preliminary review, it is determined that the trademark should not proceed to registration, the fee paid will be refunded in full.')}</div>
+  ${payStatusBlock()}
   ${payTermsBlock()}`;
  }
 
@@ -4068,6 +4071,105 @@ const TERMS_BG = `<nav class="ttoc" aria-label="Съдържание"><div class
 /* Стъпка 8: търговецът, връзка към Общите условия, приемането им (задължително)
    и съгласието по т. 8.8 за започване преди 14-дневния срок (по избор).
    Изисквания на Банка ДСК (Приложение 1, т. 2 и 14) и т. 5.1, 5.3 и 8.8 от ОУ. */
+/* ——— Плащане с карта: виртуален ПОС на „Банка ДСК“ АД ——————————————
+   Сумата се смята на сървъра (функцията dsk-pay) от записаната чернова.
+   Страницата само пренасочва към платежната страница на банката и после
+   пита сървъра какво е станало. Картови данни тук не влизат.            */
+let payBusy=false, payMsg=null, payEnv=null;
+const DSK_RET=(()=>{ try{
+  const v=new URLSearchParams(location.search||'').get('dsk');
+  return v && /^[0-9a-f-]{36}$/i.test(v) ? v : null;
+ }catch(e){} return null; })();
+
+function payErrText(code){
+ const bg=lang==='bg';
+ return ({
+  locked:      bg?'Тази заявка вече е предадена и не може да се плаща отново.':'This application has already been handed over.',
+  too_many:    bg?'Твърде много опити за плащане за кратко време. Опитайте след час или ни пишете.':'Too many payment attempts. Please try again in an hour or contact us.',
+  over_limit:  bg?'Сумата надхвърля 4000 € — максимума за едно плащане с карта. Пишете ни на office@scaleyourmark.com за плащане по банков път.':'The amount exceeds €4,000, the maximum for one card payment. Email office@scaleyourmark.com to pay by bank transfer.',
+  not_configured: bg?'Плащането с карта още не е включено. Опитайте по-късно.':'Card payment is not switched on yet. Please try again later.',
+  auth:        bg?'Влезте отново в профила си и опитайте пак.':'Please sign in again and retry.',
+  gateway:     bg?'Банката не прие заявката за плащане. Опитайте отново след малко.':'The bank did not accept the payment request. Please try again shortly.'
+ })[code] || (bg?'Плащането не можа да започне. Опитайте отново.':'The payment could not be started. Please try again.');
+}
+
+function payStatusBlock(){
+ const bg=lang==='bg';
+ let h='';
+ if(state.paid_at){
+  h=`<div class="helpbar" style="margin-top:14px"><span class="ht">${bg?'Платено':'Paid'}${state.paid_amount?' · '+money(state.paid_amount,'EUR'):''}${
+     state.paid_pan?' · '+(bg?'карта ':'card ')+esc(state.paid_pan):''} · ${esc(new Date(state.paid_at).toLocaleString(bg?'bg-BG':'en-GB'))}</span></div>`;
+ } else if(payBusy){
+  h=`<div class="helpbar" style="margin-top:14px"><span class="ht">${bg?'Свързваме се с банката…':'Contacting the bank…'}</span></div>`;
+ }
+ if(payMsg) h+=`<div class="caution" style="margin-top:14px">${esc(payMsg.text)}</div>`;
+ if(payEnv==='test') h+=`<p class="quiet" style="margin:8px 0 0">${bg?'Тестова среда на банката — не се теглят истински пари.':'Bank test environment — no real money is charged.'}</p>`;
+ return h;
+}
+
+async function startPay(){
+ if(payBusy) return;
+ if(!remote || !sb || !auth){
+  payMsg={type:'err',text:lang==='bg'?'За плащане трябва да сте влезли в профила си.':'You need to be signed in to pay.'};
+  render(); return;
+ }
+ payBusy=true; payMsg=null; render();
+ try{
+  const id=await ensureMatter(); if(!id) throw new Error('matter');
+  if(draftTimer){clearTimeout(draftTimer); draftTimer=null}
+  if(await pushDraft()===false) throw new Error('draft');   // сървърът смята от записаното
+  const {data,error}=await sb.functions.invoke('dsk-pay',{body:{action:'start',matter_id:id,lang:lang}});
+  let d=data;
+  if(error && error.context && error.context.json){ try{ d=await error.context.json() }catch(x){} }
+  if(d && d.paid){ await checkPay(id); return }
+  if(!d || !d.formUrl) throw new Error((d&&d.error)||'start');
+  payEnv=d.env||null; saveLocal();
+  location.href=d.formUrl;          // към защитената страница на банката
+ }catch(e){
+  payBusy=false;
+  payMsg={type:'err',text:payErrText(e&&e.message)};
+  render();
+ }
+}
+
+/* Пита сървъра (а той — банката) дали поръчката е платена. */
+async function checkPay(id){
+ payBusy=true; render();
+ try{
+  const {data,error}=await sb.functions.invoke('dsk-pay',{body:{action:'status',matter_id:id}});
+  if(error) throw error;
+  payEnv=data&&data.env||null;
+  if(data && data.paid){
+   state.paid_at=data.paid_at||new Date().toISOString();
+   state.paid_pan=data.pan||null; state.paid_amount=data.amount||null;
+   state.done[8]=true; state.step=9; payMsg=null; payBusy=false; saveLocal();
+   page='file'; render();
+   await handover();                  // платеното се предава веднага
+   return;
+  }
+  const st=data&&data.status;
+  payMsg = st==='declined'
+   ? {type:'err',text:(lang==='bg'?'Плащането е отказано от банката':'The bank declined the payment')+
+        (data.message?': '+data.message:'')+'. '+(lang==='bg'?'Можете да опитате отново с друга карта.':'You can try again with another card.')}
+   : st==='registered'||st==='none'
+   ? {type:'err',text:lang==='bg'?'Плащането не е завършено. Ако сте затворили страницата на банката, натиснете „Плащане с карта“ отново.':'The payment was not completed. If you closed the bank page, press “Pay by card” again.'}
+   : {type:'err',text:lang==='bg'?'Плащането не е потвърдено. Пишете ни на office@scaleyourmark.com, ако сумата е изтеглена.':'The payment is not confirmed. Email office@scaleyourmark.com if you were charged.'};
+ }catch(e){
+  payMsg={type:'err',text:lang==='bg'?'Не успяхме да проверим плащането. Презаредете страницата след малко.':'We could not check the payment. Reload the page shortly.'};
+ }
+ payBusy=false; render();
+}
+
+/* Връщане от страницата на банката: ?dsk=<преписка>. */
+async function runPayReturn(){
+ if(!DSK_RET) return;
+ for(let i=0;i<40 && (!remote || !sb || !auth); i++) await new Promise(r=>setTimeout(r,250));
+ if(!remote || !sb || !auth) return;
+ if(state.matter_id!==DSK_RET) return;     // връщане към чужда чернова — не пипаме
+ page='file'; state.step=8; render();
+ await checkPay(DSK_RET);
+}
+
 function payTermsBlock(){
  const bg=lang==='bg', miss=!state.tos_accepted_at && syncState && syncState.type==='err';
  return `<div class="paymerchant">
@@ -5916,6 +6018,7 @@ function wire(){
      const bad=app.querySelector('.needfix'); if(bad&&bad.scrollIntoView) bad.scrollIntoView({block:'center',behavior:'smooth'});
      return;
    }
+   if(state.step===8 && !state.paid_at){ startPay(); return }
    state.done[state.step]=true; syncState=null;
    if(state.step<9){state.step++;save();render();scrollToStep()}else{handover()}};
  if(sbtn)sbtn.onclick=async()=>{
@@ -6350,6 +6453,7 @@ document.getElementById('lang').querySelectorAll('button').forEach(b=>b.onclick=
 document.getElementById('burger').onclick=()=>document.getElementById('side').classList.toggle('open');
 initAuth();
 runNewsletterLink();
+runPayReturn();
 </script>
 
 </body>
