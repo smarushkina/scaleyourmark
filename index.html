@@ -3,11 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ScaleYourMark — заявяване на търговска марка</title>
-<meta name="description" content="ScaleYourMark — заявете търговската си марка сами по ясни стъпки. Адвокат преглежда преписката лично и я подава в ведомството. България, ЕС и Мадридската система.">
-<meta property="og:title" content="ScaleYourMark">
-<meta property="og:description" content="Заявете марката си сами. Адвокат я преглежда и я подава.">
+<title>Регистрация на търговска марка онлайн | ScaleYourMark</title>
+<meta name="description" content="Заявете търговската си марка в България, ЕС или по Мадридската система по ясни стъпки. Адвокат преглежда преписката и я подава във ведомството.">
+<meta property="og:site_name" content="ScaleYourMark">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://scaleyourmark.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0A1730">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <style>
 :root{color-scheme:light dark}
 body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -23,7 +32,6 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <style>
 :root{
@@ -130,16 +138,19 @@ section.sec.pagehead{padding-block:18px; height:152px; display:flex; align-items
 .tag.g{background:var(--gold-soft); color:var(--gold)}
 .opt .op{color:var(--gold)}
 nav.main{display:flex; gap:0; margin-left:auto; padding-left:24px; flex-wrap:nowrap}
-nav.main button{background:none; border:0; padding:9px 8px; font-size:13px; white-space:nowrap; color:#CFC5B4; cursor:pointer; border-radius:8px}
-nav.main button:hover{background:rgba(255,255,255,.08); color:#fff}
-nav.main button[aria-current="page"]{background:none; color:#fff; font-weight:600;
+nav.main a{text-decoration:none; display:block}
+.newslink{color:inherit; text-decoration:none}
+.newslink:hover{text-decoration:underline; text-underline-offset:3px}
+nav.main button,nav.main a{background:none; border:0; padding:9px 8px; font-size:13px; white-space:nowrap; color:#CFC5B4; cursor:pointer; border-radius:8px}
+nav.main button:hover,nav.main a:hover{background:rgba(255,255,255,.08); color:#fff}
+nav.main :is(button,a)[aria-current="page"]{background:none; color:#fff; font-weight:600;
   box-shadow:inset 0 -2px 0 var(--gold-bright)}
 /* „Заявяване“ е действието, към което води целият сайт. Затова не изглежда
    като останалите връзки, а като бутон. */
-nav.main button.cta{background:var(--gold-bright); color:var(--navy); font-weight:700;
+nav.main :is(button,a).cta{background:var(--gold-bright); color:var(--navy); font-weight:700;
   border-radius:999px; padding:8px 16px; margin-inline:6px; box-shadow:none}
-nav.main button.cta:hover{background:#D5B183; color:var(--navy)}
-nav.main button.cta[aria-current="page"]{background:var(--gold-bright); color:var(--navy);
+nav.main :is(button,a).cta:hover{background:#D5B183; color:var(--navy)}
+nav.main :is(button,a).cta[aria-current="page"]{background:var(--gold-bright); color:var(--navy);
   box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)}
 
 /* Плаващ бутон долу вдясно. Стои под завесата на панела (z-index 55), за да
@@ -546,7 +557,7 @@ footer.foot{background:var(--band); color:#ABA294; padding-block:44px; margin-to
   header.top{--logo:34px}
   nav.main{gap:2px; padding-left:0; font-size:14px; flex-wrap:wrap; display:none; order:3; width:100%; margin-left:0; flex-direction:column; padding-bottom:10px}
   header.top.open nav.main{display:flex}
-  nav.main button{text-align:left; padding:12px}
+  nav.main button,nav.main a{text-align:left; padding:12px}
   .burger{display:inline-flex}
   header.top .lang{order:2}
 }
@@ -2387,10 +2398,10 @@ function chrome(){
  const nav=document.getElementById('nav');
  nav.innerHTML=NAV.filter(n=>n.id!=='office'||isAdmin()).map(n=>{
    const g=NAVGROUPS.find(x=>x.after===n.id);
-   return `<button data-p="${n.id}" ${n.id==='file'?'class="cta"':''} ${page===n.id?'aria-current="page"':''}>${esc(L(n))}</button>`
+   return `<a href="${hrefFor(n.id)}" data-p="${n.id}" ${n.id==='file'?'class="cta"':''} ${page===n.id?'aria-current="page"':''}>${esc(L(n))}</a>`
         + (g?`<div class="navgroup">${esc(L(g))}</div>`:'');
  }).join('');
- nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{go(b.dataset.p);document.getElementById('side').classList.remove('open')});
+ nav.querySelectorAll('a[data-p]').forEach(b=>b.onclick=()=>{go(b.dataset.p);document.getElementById('side').classList.remove('open')});
 
  const fab=document.getElementById('fab');
  if(fab){
@@ -2407,11 +2418,11 @@ function chrome(){
      ?'Самостоятелно заявяване на марки в България, ЕС и по Мадридската система. Съдържанието е информационно и не замества правен съвет.'
      :'Self-service trademark applications in Bulgaria, the EU and under the Madrid System. The content of this website is for information purposes only and does not constitute legal advice.'}</p></div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Заявяване':'Filing'}</div>
-   ${['file','guides','price','acct'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+   ${['file','guides','price','acct'].map(id=>`<a href="${hrefFor(id)}" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Дружество':'Company'}</div>
-   ${['about','mark','services','news','contact'].map(id=>`<a href="#" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
+   ${['about','mark','services','news','contact'].map(id=>`<a href="${hrefFor(id)}" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Правни':'Legal'}</div>
-   <a href="#" data-p="terms">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="#" data-p="privacy">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
+   <a href="${hrefFor('terms')}" data-p="terms">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="${hrefFor('privacy')}" data-p="privacy">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
 function go(p){ pwNotice=null; newsId=null; if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
@@ -2427,6 +2438,7 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
  chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier,terms:Terms,privacy:Privacy}[page]||Why)();wire();heroWire();whyWire();
  renderKey=key;
+ syncRoute();
  /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
  if(!keep.same){
    window.scrollTo({top:0, behavior:'instant'});
@@ -3525,14 +3537,14 @@ function Guides(){
   const s = STEPS[guideStep-1];
   return `${pageHead({bg:'Ръководство · стъпка '+guideStep,en:'Guidelines · step '+guideStep}, s.t, s.i)}
    <section class="sec"><div class="wrap">
-    <button class="btn btn-quiet" data-gback="1" style="padding:6px 0;font-size:14px;margin-bottom:18px">${
-      lang==='bg'?'← Всички ръководства':'← All Guidelines'}</button>
+    <a class="btn btn-quiet" href="${hrefFor('guides')}" data-gback="1" style="padding:6px 0;font-size:14px;margin-bottom:18px">${
+      lang==='bg'?'← Всички ръководства':'← All Guidelines'}</a>
     <article class="guidebody">${g.b.map(blockHtml).join('')}</article>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid var(--line-2)">
-     ${guideStep>1?`<button class="btn btn-ghost" data-gstep="${guideStep-1}" style="padding:9px 16px;font-size:14px">${
-        lang==='bg'?'← Стъпка '+(guideStep-1):'← Step '+(guideStep-1)}</button>`:''}
-     ${GUIDE[guideStep+1]?`<button class="btn btn-ghost" data-gstep="${guideStep+1}" style="padding:9px 16px;font-size:14px">${
-        lang==='bg'?'Стъпка '+(guideStep+1)+' →':'Step '+(guideStep+1)+' →'}</button>`:''}
+     ${guideStep>1?`<a class="btn btn-ghost" href="${pathFor('guides',lang,{guide:guideStep-1})}" data-gstep="${guideStep-1}" style="padding:9px 16px;font-size:14px">${
+        lang==='bg'?'← Стъпка '+(guideStep-1):'← Step '+(guideStep-1)}</a>`:''}
+     ${GUIDE[guideStep+1]?`<a class="btn btn-ghost" href="${pathFor('guides',lang,{guide:guideStep+1})}" data-gstep="${guideStep+1}" style="padding:9px 16px;font-size:14px">${
+        lang==='bg'?'Стъпка '+(guideStep+1)+' →':'Step '+(guideStep+1)+' →'}</a>`:''}
      <button class="btn btn-gold" data-p="file" style="padding:9px 16px;font-size:14px">${
         lang==='bg'?'Към заявката':'Go to your application'}</button>
     </div>
@@ -3548,8 +3560,8 @@ function Guides(){
      <div><h4 class="gneed">${lang==='bg'?'Какво ви трябва':'What you need'}</h4>
       <ul class="glist">${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
      <div style="margin-top:auto">
-      ${GUIDE[s.n]?`<button class="btn btn-quiet gread" data-gstep="${s.n}">${
-         lang==='bg'?'Прочетете ръководството →':'Read the Guidelines →'}</button>`:''}
+      ${GUIDE[s.n]?`<a class="btn btn-quiet gread" href="${pathFor('guides',lang,{guide:s.n})}" data-gstep="${s.n}">${
+         lang==='bg'?'Прочетете ръководството →':'Read the Guidelines →'}</a>`:''}
      </div>
     </div>`).join('')}
    <div class="card gcard stack">
@@ -4483,7 +4495,7 @@ function News(){
  const p=newsId&&POSTS.find(x=>x.id===newsId);
  if(p) return `${pageHead({bg:'Новини и казуси',en:'News & Cases'},p.t,p.s)}
  <section class="sec"><div class="wrap" style="max-width:780px">
-  <button class="btn btn-quiet" data-newsback="1" style="padding:6px 14px;font-size:14px;margin-bottom:18px">${B?'← Всички новини и казуси':'← All news & cases'}</button>
+  <a class="btn btn-quiet" href="${hrefFor('news')}" data-newsback="1" style="padding:6px 14px;font-size:14px;margin-bottom:18px">${B?'← Всички новини и казуси':'← All news & cases'}</a>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px">${newsTag(p)}<span class="quiet" style="font-size:13px">${newsDate(p.d)}</span></div>
   <article class="stack" style="gap:14px">${p.body.map(x=>x.h?`<h2 style="font-size:clamp(19px,2vw,22px);margin:14px 0 0">${esc(L(x.h))}</h2>`
      :x.ul?`<ul class="copy" style="max-width:none;margin:0;padding-left:20px">${L(x.ul).map(i=>`<li style="margin-bottom:6px">${esc(i)}</li>`).join('')}</ul>`
@@ -4510,7 +4522,7 @@ function News(){
    ${list.map(x=>`<article class="whyitem svcitem newscard" data-news="${x.id}" tabindex="0" role="button">
      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">${newsTag(x)}</div>
      <div class="quiet" style="font-size:13px;margin-bottom:6px">${newsDate(x.d)}</div>
-     <h3>${esc(L(x.t))}</h3>
+     <h3><a class="newslink" href="${pathFor('news',lang,{news:x.id})}">${esc(L(x.t))}</a></h3>
      <p>${esc(L(x.s))}</p>
      <div style="margin-top:12px;color:var(--gold);font-weight:600;font-size:14.5px">${B?'Прочетете →':'Read →'}</div></article>`).join('')}
   </div>
@@ -6425,12 +6437,265 @@ function addSpecLines(raw, fallbackClass){
 }
 
 
+/* ——— Адреси на страниците и SEO ————————————————————————————————————
+   Всяка страница, всяко ръководство и всяка статия има собствен адрес, на
+   български без представка и на английски под /en/. Адресът се чете при
+   зареждане (applyPath), а render() накрая вика syncRoute(): сменя адреса в
+   лентата и попълва <head> — заглавие, описание, canonical, hreflang, Open
+   Graph и структурирани данни (JSON-LD).
+   Същият код се изпълнява и при сглобяването (build/prerender.mjs), затова
+   готовият HTML на всяка страница идва с текста и таговете още преди
+   JavaScript — това четат Google, Bing, LinkedIn, Facebook и AI търсачките.
+   Нова статия в POSTS получава адрес, страница и ред в sitemap.xml сама. */
+const SITE='https://scaleyourmark.com';
+const SLUG={
+ why:{bg:'',en:''},
+ about:{bg:'za-nas',en:'about'},
+ mark:{bg:'targovska-marka',en:'about-trademarks'},
+ services:{bg:'uslugi',en:'services'},
+ file:{bg:'zayavyavane',en:'file-a-trademark'},
+ guides:{bg:'rakovodstva',en:'guides'},
+ news:{bg:'novini',en:'news'},
+ price:{bg:'tseni',en:'pricing'},
+ contact:{bg:'kontakti',en:'contact'},
+ terms:{bg:'obshti-usloviya',en:'terms'},
+ privacy:{bg:'poveritelnost',en:'privacy'},
+ acct:{bg:'profil',en:'account'},
+ office:{bg:'panel',en:'dashboard'}
+};
+const GSLUG={
+ 1:{bg:'teritoriya',en:'territory'},
+ 2:{bg:'prouchvane',en:'clearance-search'},
+ 3:{bg:'vid-na-markata',en:'type-of-mark'},
+ 4:{bg:'stoki-i-uslugi',en:'goods-and-services'},
+ 5:{bg:'zayavitel',en:'applicant'},
+ 6:{bg:'prioritet',en:'priority'},
+ 7:{bg:'vazlagane-i-podpis',en:'engagement-and-signature'},
+ 8:{bg:'plashtane',en:'payment'},
+ 9:{bg:'sled-podavaneto',en:'after-filing'}
+};
+/* Заглавия на ръководствата в търсачките — с думите, които хората търсят.
+   Заглавието на самата страница (h1) остава въпросът от стъпката. */
+const GSEO={
+ 1:{bg:'Къде да регистрирате марката: България, ЕС или Мадрид',en:'Where to Register a Trademark: Bulgaria, EU or Madrid'},
+ 2:{bg:'Проучване на търговска марка преди заявяване',en:'Trademark Clearance Search Before Filing'},
+ 3:{bg:'Видове марки: словна, фигуративна, комбинирана',en:'Types of Trademarks: Word, Figurative, Combined'},
+ 4:{bg:'Стоки и услуги и класове по Ницската класификация',en:'Goods, Services and Nice Classes for a Trademark'},
+ 5:{bg:'Заявител на търговска марка: кой да е притежател',en:'Trademark Applicant: Who Should Own the Mark'},
+ 6:{bg:'Приоритет при заявяване на търговска марка',en:'Claiming Priority for a Trademark Application'},
+ 7:{bg:'Възлагане и пълномощно за заявяване на марка',en:'Engagement and Power of Attorney for a Trademark'},
+ 8:{bg:'Държавни такси и плащане при заявяване на марка',en:'Official Fees and Payment for a Trademark Filing'},
+ 9:{bg:'След подаването: експертиза, опозиция, регистрация',en:'After Filing: Examination, Opposition, Registration'}
+};
+/* Страници, които не бива да излизат в търсачките. */
+const NOINDEX=['acct','office','dossier'];
+
+/* [заглавие до ~60 знака, описание до ~160 знака] */
+const SEO={
+ why:{bg:['Регистрация на търговска марка онлайн | ScaleYourMark',
+          'Заявете търговската си марка в България, ЕС или по Мадридската система по ясни стъпки. Адвокат преглежда преписката и я подава във ведомството.'],
+      en:['Register a Trademark Online – Bulgaria & EU | ScaleYourMark',
+          'File your trademark in Bulgaria, the EU or under the Madrid System through clear, guided steps. A lawyer reviews your application and files it.']},
+ about:{bg:['За нас – адвокат по търговски марки | ScaleYourMark',
+            'Кой стои зад ScaleYourMark: адвокат Силвия Марушкина и практиката ѝ по регистрация и защита на търговски марки в България и ЕС.'],
+        en:['About Us – Trademark Lawyer in Sofia | ScaleYourMark',
+            'Who is behind ScaleYourMark: attorney Silviya Marushkina and her practice in trademark registration and protection in Bulgaria and the EU.']},
+ mark:{bg:['Какво е търговска марка и защо да я регистрирате | ScaleYourMark',
+           'Какво защитава търговската марка, какво дава регистрацията, кои решения се вземат преди подаването и как се избира територия на закрила.'],
+       en:['What Is a Trademark and Why Register It | ScaleYourMark',
+           'What a trademark protects, what registration gives you, the decisions to make before filing, and how to choose where to protect your brand.']},
+ services:{bg:['Услуги по търговски марки – опозиции, мониторинг | ScaleYourMark',
+               'Стратегия за закрила, мониторинг, подаване и отговор на опозиция, отговор на нередовност или отказ, медиация и подновяване на търговска марка.'],
+           en:['Trademark Services – Oppositions, Watch | ScaleYourMark',
+               'Protection strategy, trademark watch, filing and defending oppositions, replies to deficiencies and refusals, mediation and renewal.']},
+ file:{bg:['Заявяване на търговска марка стъпка по стъпка | ScaleYourMark',
+           'Подгответе заявката за търговска марка онлайн в девет стъпки: територия, проучване, вид на знака, стоки и услуги, заявител и плащане.'],
+       en:['File a Trademark Application Step by Step | ScaleYourMark',
+           'Prepare your trademark application online in nine steps: territory, clearance search, type of mark, goods and services, applicant and payment.']},
+ guides:{bg:['Ръководства за регистрация на търговска марка | ScaleYourMark',
+             'Безплатни подробни ръководства към всяка стъпка от заявяването на търговска марка в България, ЕС и по Мадридската система.'],
+         en:['Trademark Registration Guides | ScaleYourMark',
+             'Free, detailed guides to every step of filing a trademark in Bulgaria, the EU and under the Madrid System.']},
+ news:{bg:['Новини и казуси в марковото право | ScaleYourMark',
+           'Новини от Патентното ведомство, EUIPO и WIPO и кратки анализи на съдебни решения за търговски марки, с поуката за Вашия бизнес.'],
+       en:['Trademark Law News & Case Analyses | ScaleYourMark',
+           'News from the Bulgarian Patent Office, EUIPO and WIPO and short analyses of trademark judgments, with the takeaway for your business.']},
+ price:{bg:['Цена за регистрация на търговска марка и такси | ScaleYourMark',
+            'Фиксирано адвокатско възнаграждение и държавни такси за регистрация на търговска марка в България, ЕС (EUIPO) и по Мадридската система.'],
+        en:['Trademark Registration Cost & Official Fees | ScaleYourMark',
+            'Fixed legal fee and official fees for registering a trademark in Bulgaria, the EU (EUIPO) and under the Madrid System (WIPO).']},
+ contact:{bg:['Контакти | ScaleYourMark',
+              'Въпрос за регистрацията на търговска марка? Пишете ни на office@scaleyourmark.com или през формата за контакт. ScaleYourMark, София.'],
+          en:['Contact | ScaleYourMark',
+              'A question about registering your trademark? Email office@scaleyourmark.com or use the contact form. ScaleYourMark, Sofia, Bulgaria.']},
+ terms:{bg:['Общи условия | ScaleYourMark','Общи условия за ползване на ScaleYourMark и за услугата по заявяване на търговска марка.'],
+        en:['Terms and Conditions | ScaleYourMark','Terms and conditions for using ScaleYourMark and its trademark filing service.']},
+ privacy:{bg:['Политика за поверителност | ScaleYourMark','Как ScaleYourMark обработва и защитава личните данни на клиентите и посетителите на сайта.'],
+          en:['Privacy Policy | ScaleYourMark','How ScaleYourMark processes and protects the personal data of clients and website visitors.']},
+ acct:{bg:['Профил | ScaleYourMark','Вход в профила в ScaleYourMark.'],en:['Account | ScaleYourMark','Sign in to your ScaleYourMark account.']},
+ office:{bg:['Панел | ScaleYourMark',''],en:['Dashboard | ScaleYourMark','']}
+};
+
+let routeKnown=true, routeFirst=true, routeFromPop=false;
+
+function pathFor(p,lg,extra){
+ p=p||page; lg=lg||lang; extra=extra||{};
+ if(p==='dossier') p='office';
+ const s=(SLUG[p]||SLUG.why)[lg];
+ let out='/'+(lg==='en'?'en/':'')+(s?s+'/':'');
+ const nid=('news' in extra)?extra.news:(p===page?newsId:null);
+ const gs =('guide' in extra)?extra.guide:(p===page?guideStep:0);
+ if(p==='news' && nid) out+=encodeURIComponent(nid)+'/';
+ if(p==='guides' && gs && GSLUG[gs]) out+=GSLUG[gs][lg]+'/';
+ return out;
+}
+/* Адрес на раздел без отворена статия или ръководство — за менюто. */
+function hrefFor(p){ return pathFor(p,lang,{news:null,guide:0}) }
+
+function parsePath(pathname){
+ let parts=String(pathname||'/').split('/').filter(Boolean);
+ try{ parts=parts.map(decodeURIComponent) }catch(e){}
+ if(parts.length && /^index\.html?$/i.test(parts[parts.length-1])) parts.pop();
+ const r={lang:'bg',page:'why',news:null,guide:0,known:true};
+ if(parts[0]==='en'){ r.lang='en'; parts.shift() }
+ if(!parts.length) return r;
+ const p=Object.keys(SLUG).find(k=>SLUG[k].bg===parts[0]||SLUG[k].en===parts[0]);
+ if(!p || parts.length>2){ r.known=false; return r }
+ r.page=p;
+ if(parts[1]){
+  if(p==='news' && POSTS.some(x=>x.id===parts[1])) r.news=parts[1];
+  else if(p==='guides'){
+   const n=Object.keys(GSLUG).find(k=>GSLUG[k].bg===parts[1]||GSLUG[k].en===parts[1]);
+   if(n && GUIDE[n]) r.guide=+n; else r.known=false;
+  } else r.known=false;
+ }
+ return r;
+}
+function applyPath(pathname){
+ const r=parsePath(pathname);
+ lang=r.lang; page=r.page; newsId=r.news; guideStep=r.guide; routeKnown=r.known;
+ document.documentElement.lang=lang;
+ document.querySelectorAll('#lang button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.l===lang));
+ return r;
+}
+
+function seoCut(t,n){ t=String(t||'').replace(/\s+/g,' ').trim(); return t.length<=n?t:t.slice(0,n-1).replace(/[\s,.;:–-]+\S*$/,'')+'…' }
+function seoNow(){
+ const p=(page==='dossier')?'office':page;
+ const base=(SEO[p]||SEO.why)[lang];
+ const post=(p==='news'&&newsId)?POSTS.find(x=>x.id===newsId):null;
+ const gs=(p==='guides'&&guideStep&&GUIDE[guideStep])?STEPS[guideStep-1]:null;
+ if(post) return {title:L(post.t)+' | ScaleYourMark', desc:seoCut(L(post.s),160), post};
+ if(gs) return {title:(GSEO[guideStep]?L(GSEO[guideStep]):L(gs.t))+' | ScaleYourMark', desc:seoCut(L(gs.i),160), guide:gs};
+ return {title:base[0], desc:base[1]};
+}
+function headMeta(attr,key,val){
+ let m=document.head.querySelector(`meta[${attr}="${key}"]`);
+ if(val==null){ if(m) m.remove(); return }
+ if(!m){ m=document.createElement('meta'); m.setAttribute(attr,key); document.head.appendChild(m) }
+ m.setAttribute('content',val);
+}
+function headLink(rel,href,hl){
+ const sel=hl?`link[rel="${rel}"][hreflang="${hl}"]`:`link[rel="${rel}"]:not([hreflang])`;
+ let l=document.head.querySelector(sel);
+ if(!l){ l=document.createElement('link'); l.setAttribute('rel',rel); if(hl) l.setAttribute('hreflang',hl); document.head.appendChild(l) }
+ l.setAttribute('href',href);
+}
+function seoDate(d){ return /^\d{4}-\d{2}$/.test(d)?d+'-01':d }
+function applyHead(){
+ const s=seoNow(), url=SITE+pathFor();
+ const hide=NOINDEX.includes(page)||!routeKnown;
+ document.title=s.title;
+ headMeta('name','description',s.desc||null);
+ headMeta('name','robots',hide?'noindex, follow':'index, follow, max-image-preview:large');
+ headLink('canonical',url);
+ headLink('alternate',SITE+pathFor(page,'bg'),'bg');
+ headLink('alternate',SITE+pathFor(page,'en'),'en');
+ headLink('alternate',SITE+pathFor(page,'bg'),'x-default');
+ headMeta('property','og:title',s.title.replace(/ \| ScaleYourMark$/,''));
+ headMeta('property','og:description',s.desc||null);
+ headMeta('property','og:url',url);
+ headMeta('property','og:type',s.post?'article':'website');
+ headMeta('property','og:locale',lang==='bg'?'bg_BG':'en_GB');
+ headMeta('property','og:locale:alternate',lang==='bg'?'en_GB':'bg_BG');
+ headMeta('property','article:published_time',s.post?seoDate(s.post.d):null);
+
+ const org={'@type':['LegalService','Organization'],'@id':SITE+'/#org',name:'ScaleYourMark',
+  legalName:'СкейлЙорМарк ЕООД',url:SITE+'/',logo:SITE+'/logo.png',image:SITE+'/og-image.png',
+  email:'office@scaleyourmark.com',
+  identifier:{'@type':'PropertyValue',propertyID:'ЕИК',value:'208978671'},
+  address:{'@type':'PostalAddress',streetAddress:'ул. „Добротица Деспот“ 41, вх. Б, ет. 1',addressLocality:'София',addressCountry:'BG'},
+  areaServed:[{'@type':'Country',name:'Bulgaria'},{'@type':'Place',name:'European Union'}],
+  availableLanguage:['bg','en'],
+  founder:{'@type':'Person','@id':SITE+'/#lawyer',name:lang==='bg'?'Силвия Марушкина':'Silviya Marushkina',jobTitle:lang==='bg'?'Адвокат':'Attorney-at-law'},
+  knowsAbout:['Trademark registration','EU trade mark','Madrid System','Nice Classification','Trademark opposition']};
+ const site={'@type':'WebSite','@id':SITE+'/#website',url:SITE+'/',name:'ScaleYourMark',inLanguage:['bg','en'],publisher:{'@id':SITE+'/#org'}};
+ const crumbs=[{name:'ScaleYourMark',url:SITE+pathFor('why')}];
+ if(page!=='why'){ const n=NAV.find(x=>x.id===page); crumbs.push({name:n?L(n):s.title.replace(/ \| .*$/,''),url:SITE+hrefFor(page)}) }
+ if(s.post) crumbs.push({name:L(s.post.t),url});
+ if(s.guide) crumbs.push({name:L(s.guide.t),url});
+ const pg={'@type':'WebPage','@id':url+'#page',url,name:s.title,description:s.desc,inLanguage:lang,
+  isPartOf:{'@id':SITE+'/#website'},about:{'@id':SITE+'/#org'},
+  breadcrumb:{'@type':'BreadcrumbList',itemListElement:crumbs.map((c,i)=>({'@type':'ListItem',position:i+1,name:c.name,item:c.url}))}};
+ const graph=[org,site,pg];
+ if(s.post) graph.push({'@type':s.post.type==='news'?'NewsArticle':'Article','@id':url+'#article',
+  headline:seoCut(L(s.post.t),110),description:s.desc,datePublished:seoDate(s.post.d),inLanguage:lang,
+  mainEntityOfPage:{'@id':url+'#page'},image:SITE+'/og-image.png',
+  author:{'@id':SITE+'/#lawyer'},publisher:{'@id':SITE+'/#org'}});
+ if(s.guide) graph.push({'@type':'Article','@id':url+'#article',headline:seoCut(L(s.guide.t),110),description:s.desc,
+  inLanguage:lang,mainEntityOfPage:{'@id':url+'#page'},image:SITE+'/og-image.png',
+  author:{'@id':SITE+'/#lawyer'},publisher:{'@id':SITE+'/#org'}});
+ let ld=document.getElementById('ld-json');
+ if(!ld){ ld=document.createElement('script'); ld.type='application/ld+json'; ld.id='ld-json'; document.head.appendChild(ld) }
+ ld.textContent=JSON.stringify({'@context':'https://schema.org','@graph':graph});
+}
+function syncRoute(){
+ const want=pathFor();
+ if(!(routeFirst && !routeKnown) && location.pathname!==want){
+  try{
+   if(routeFirst||routeFromPop) history.replaceState({},'',want+location.search+location.hash);
+   else history.pushState({},'',want);
+  }catch(e){}
+  routeKnown=true;
+ }
+ routeFirst=false;
+ applyHead();
+}
+/* Връзките в менюто са истински <a href> — за да ги следват търсачките.
+   Обикновеното натискане остава вътре в страницата (без презареждане);
+   Ctrl/⌘/среден бутон отварят адреса в нов раздел. */
+document.addEventListener('click',e=>{
+ const a=e.target.closest&&e.target.closest('a[href^="/"]');
+ if(!a || !a.matches('[data-p],[data-gstep],[data-gback],[data-newsback],.newslink')) return;
+ if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||e.button!==0){ e.stopPropagation(); return }
+ e.preventDefault();
+},true);
+window.addEventListener('popstate',()=>{
+ applyPath(location.pathname); routeFromPop=true;
+ try{ closeDrawer() }catch(e){}
+ render(); routeFromPop=false;
+});
+/* За build/prerender.mjs: всички адреси, които се сглобяват като страници. */
+function seoRoutes(){
+ const out=[];
+ for(const lg of ['bg','en']){
+  for(const p of Object.keys(SLUG)){ if(p==='office') continue;
+   out.push({path:pathFor(p,lg,{news:null,guide:0}),index:!NOINDEX.includes(p),page:p,lang:lg});
+   if(p==='news') POSTS.forEach(x=>out.push({path:pathFor('news',lg,{news:x.id}),index:true,page:p,lang:lg,lastmod:seoDate(x.d)}));
+   if(p==='guides') Object.keys(GUIDE).forEach(n=>GSLUG[n]&&out.push({path:pathFor('guides',lg,{guide:+n}),index:true,page:p,lang:lg}));
+  }
+ }
+ return out;
+}
+
+
 document.getElementById('lang').querySelectorAll('button').forEach(b=>b.onclick=()=>{
  lang=b.dataset.l;
  document.getElementById('lang').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.l===lang));
  document.documentElement.lang=lang; closeDrawer(); render();
 });
 document.getElementById('burger').onclick=()=>document.getElementById('side').classList.toggle('open');
+applyPath(location.pathname);
 initAuth();
 runNewsletterLink();
 runPayReturn();
