@@ -3243,8 +3243,8 @@ function body(k){
   const g={}; state.terms.forEach(t=>{(g[t.c]=g[t.c]||[]).push(t)});
   const madrid = state.route==='madrid';
   return `<p class="quiet" style="margin:0 0 10px">${lang==='bg'
-    ? 'Пишете дума и предложенията идват директно от Хармонизираната база данни на СЕСИС (EUIPO) — същата, която ползват Патентното ведомство и всички европейски служби. Термин оттам се приема без възражение.'
-    : 'Type a word and the suggestions come straight from the EUIPO Harmonised Database — the same one the Bulgarian office and every EU office use. A term from there is accepted without objection.'}</p>
+    ? 'Въвеждате дума и предложенията се извличат директно от Хармонизираната база данни на СЕСИС (EUIPO) — същата официална база, използвана от Патентното ведомство и всички европейски служби. Всеки термин, включен в нея, се приема без възражения.'
+    : 'You type a word and the suggestions are drawn directly from the EUIPO Harmonised Database — the same official database used by the Bulgarian Patent Office and every European office. Any term included in it is accepted without objection.'}</p>
 
    <div class="signrow">
     <input type="text" id="tq" autocomplete="off" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"
