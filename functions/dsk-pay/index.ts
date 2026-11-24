@@ -21,6 +21,7 @@
      DSK_USER           API потребител, завършва на „-api“
      DSK_PASS           паролата му
      DSK_CALLBACK_KEY   общ ключ за checksum (по желание; иска се от банката)
+     DSK_GATEWAY        друг адрес на API-то (по желание)
      SITE_URL           https://scaleyourmark.com (по подразбиране)        */
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -32,9 +33,11 @@ const DSK_PASS     = Deno.env.get("DSK_PASS") ?? "";
 const CB_KEY       = (Deno.env.get("DSK_CALLBACK_KEY") ?? "").trim();
 const SITE         = (Deno.env.get("SITE_URL") ?? "https://scaleyourmark.com").replace(/\/+$/, "");
 
-const GATEWAY = ENV === "prod"
-  ? "https://epg.dskbank.bg/payment/rest/"
-  : "https://uat.dskbank.bg/payment/rest/";
+/* Адресът може да се подмени с тайна DSK_GATEWAY, ако банката даде друг. */
+const GW_OVERRIDE = (Deno.env.get("DSK_GATEWAY") ?? "").trim();
+const GATEWAY = GW_OVERRIDE
+  ? GW_OVERRIDE.replace(/\/*$/, "/")
+  : ENV === "prod" ? "https://epg.dskbank.bg/payment/rest/" : "https://uat.dskbank.bg/payment/rest/";
 const SELF_URL = `${SUPABASE_URL}/functions/v1/dsk-pay`;
 
 const EUR = "978";                // ISO 4217, цифров код
@@ -243,6 +246,15 @@ Deno.serve(async (req) => {
 
   let b: Record<string, unknown>;
   try { b = await req.json(); } catch { return json({ error: "bad_json" }, 400); }
+
+  /* Проверка на връзката и данните за достъп: несъществуваща поръчка.
+     „Достъпът е отказан“ = грешен потребител/парола; „няма такава поръчка“ = всичко е наред. */
+  if (b.action === "probe") {
+    try {
+      const j = await gw("getOrderStatusExtended.do", { orderNumber: "PROBE-" + Date.now(), language: "en" });
+      return json({ env: ENV, gateway: GATEWAY, user: DSK_USER, errorCode: j.errorCode ?? null, errorMessage: j.errorMessage ?? null });
+    } catch (e) { return json({ env: ENV, gateway: GATEWAY, error: String(e) }, 502); }
+  }
   const matterId = String(b.matter_id ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(matterId)) return json({ error: "matter" }, 422);
 
