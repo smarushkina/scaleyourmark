@@ -1,7 +1,12 @@
 name: Публикуване към SuperHosting
 
-# При всяка промяна в main файлът тръгва към хостинга.
+# При всяка промяна в main сайтът се сглобява и тръгва към хостинга.
 # Може и ръчно — Actions → този процес → Run workflow.
+#
+# Сглобяване (build/prerender.mjs): от index.html се прави готов HTML за
+# всяка страница, статия и ръководство на двата езика, плюс sitemap.xml.
+# Ако някоя страница излезе празна или с грешни тагове, процесът спира
+# ПРЕДИ качването — живият сайт остава какъвто е.
 
 on:
   push:
@@ -10,6 +15,8 @@ on:
       - 'index.html'
       - 'robots.txt'
       - '.htaccess'
+      - 'static/**'
+      - 'build/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -23,6 +30,19 @@ jobs:
     steps:
       - name: Взимане на файловете
         uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: build/package-lock.json
+
+      - name: Сглобяване на страниците
+        working-directory: build
+        run: |
+          npm ci --no-audit --no-fund
+          node prerender.mjs --strict
 
       - name: Качване по FTPS
         env:
@@ -49,22 +69,21 @@ jobs:
           printf 'machine %s\nlogin %s\npassword %s\n' "$FTP_HOST" "$FTP_USER" "$FTP_PASS" > "$HOME/.netrc"
           chmod 600 "$HOME/.netrc"
 
-          upload() {
-            local f="$1"
-            if [ ! -f "$f" ]; then
-              echo "Пропуснат (липсва): $f"
-              return 0
-            fi
-            echo "Качване: $f → $FTP_DIR/$f"
+          # Всичко от dist/ — страниците в подпапки, sitemap.xml, robots.txt,
+          # .htaccess и изображенията. Липсващите папки се създават сами.
+          cd dist
+          n=0
+          while IFS= read -r -d '' f; do
+            f="${f#./}"
+            echo "Качване: $f"
             curl --fail --show-error --silent \
-                 --ssl-reqd --netrc \
+                 --ssl-reqd --netrc --ftp-create-dirs \
                  --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 300 \
                  -T "$f" "ftp://$FTP_HOST/$FTP_DIR/$f"
-          }
-
-          upload index.html
-          upload robots.txt
-          upload .htaccess
+            n=$((n+1))
+          done < <(find . -type f -print0 | sort -z)
+          echo "Качени файлове: $n"
+          cd ..
 
           rm -f "$HOME/.netrc"
           echo "Готово."
@@ -74,7 +93,9 @@ jobs:
         continue-on-error: true
         run: |
           set -uo pipefail
-          for host in https://scaleyourmark.com https://www.scaleyourmark.com; do
+          for host in https://scaleyourmark.com https://www.scaleyourmark.com \
+                      https://scaleyourmark.com/targovska-marka/ https://scaleyourmark.com/en/ \
+                      https://scaleyourmark.com/sitemap.xml; do
             code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 30 "$host" || echo "000")
             echo "$host → HTTP $code"
           done

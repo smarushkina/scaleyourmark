@@ -1,0 +1,8 @@
+{
+  "name": "scaleyourmark-build",
+  "private": true,
+  "type": "module",
+  "description": "Сглобява готов HTML за всяка страница на scaleyourmark.com (виж prerender.mjs).",
+  "scripts": { "build": "node prerender.mjs" },
+  "dependencies": { "jsdom": "^26.1.0" }
+}
