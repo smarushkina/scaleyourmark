@@ -39,6 +39,7 @@ const GATEWAY = GW_OVERRIDE
   ? GW_OVERRIDE.replace(/\/*$/, "/")
   : ENV === "prod" ? "https://epg.dskbank.bg/payment/rest/" : "https://uat.dskbank.bg/payment/rest/";
 const SELF_URL = `${SUPABASE_URL}/functions/v1/dsk-pay`;
+const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 
 const EUR = "978";                // ISO 4217, цифров код
 const MAX_EUR = 4000;             // т. 8.5.5 от Общите условия
@@ -226,6 +227,73 @@ async function handleCallback(req: Request) {
   return new Response("OK", { status: 200 });
 }
 
+/* ——— Сверяване по график ———————————————————————————————————————
+   Вика се всяка минута от pg_cron (задача dsk-reconcile) със секретния
+   ключ на проекта в заглавие apikey — както drain-notifications.
+   1) Неприключени поръчки от последните 48 часа се питат в банката.
+   2) Платена поръчка, чиято преписка 15 минути по-късно още е чернова
+      (клиентът не се е върнал на сайта), се съобщава на кантората по имейл.  */
+function secretKeys(): string[] {
+  const out = [SERVICE_KEY];
+  try {
+    const j = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+    for (const v of Object.values(j)) if (typeof v === "string") out.push(v);
+  } catch { /* няма */ }
+  return out.filter(Boolean);
+}
+function isScheduler(req: Request) {
+  const k = (req.headers.get("apikey") ?? "").trim()
+    || (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  return !!k && secretKeys().includes(k);
+}
+
+async function alertPractice(o: any, ref: string) {
+  if (!RESEND_KEY) return false;
+  const st = (await rows("notification_settings?select=practice_email,from_email,from_name&limit=1"))[0] || {};
+  const to = st.practice_email || "office@scaleyourmark.com";
+  const from = `${st.from_name || "ScaleYourMark"} <${st.from_email || "office@scaleyourmark.com"}>`;
+  const amount = (o.amount_minor / 100).toFixed(2).replace(".", ",");
+  const text = `Получено е плащане, но преписката не е предадена.\n\n`
+    + `Преписка: ${ref}\nПоръчка: ${o.order_number}\nСума: ${amount} €\n`
+    + `Карта: ${o.pan_masked || "—"}\nПлатено: ${o.paid_at}\n\n`
+    + `Клиентът не се е върнал на сайта след плащането. Плащането е отбелязано; `
+    + `при следващото му влизане заявката ще бъде предадена автоматично, ако е попълнена. `
+    + `Ако не влезе, свържете се с него или върнете сумата от портала на банката (vpos.dskbank.bg).`;
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from, to: [to], reply_to: to,
+      subject: `Платено, но непредадено — ${ref}`, text,
+      html: `<pre style="font:14px/1.5 sans-serif;white-space:pre-wrap">${text.replace(/[<&]/g, (c) => c === "<" ? "&lt;" : "&amp;")}</pre>` }),
+  });
+  return r.ok;
+}
+
+async function reconcile() {
+  const since = new Date(Date.now() - 48 * 3600_000).toISOString();
+  const open = await rows(`vpos_orders?env=eq.${ENV}&status=in.(registered,approved)&gateway_order_id=not.is.null&created_at=gte.${since}&select=*&order=created_at.asc&limit=25`);
+  let checked = 0, paid = 0;
+  for (const o of open) {
+    try { const n = await refresh(o); checked++; if (n.status === "paid") paid++; } catch (e) { console.error("refresh", o.id, e); }
+  }
+  /* Платени, непредадени, без известие — поне 15 минути след плащането. */
+  const cut = new Date(Date.now() - 15 * 60_000).toISOString();
+  const stale = await rows(`vpos_orders?env=eq.${ENV}&status=eq.paid&alerted_at=is.null&paid_at=lte.${cut}&paid_at=gte.${since}&select=*,matters(ref,status)&limit=10`);
+  let alerted = 0;
+  for (const o of stale) {
+    const m = o.matters || {};
+    if (m.status !== "draft") {            // предадена — няма какво да се съобщава
+      await patch("vpos_orders", `id=eq.${o.id}`, { alerted_at: new Date().toISOString() });
+      continue;
+    }
+    if (await alertPractice(o, m.ref || "")) {
+      await patch("vpos_orders", `id=eq.${o.id}`, { alerted_at: new Date().toISOString() });
+      alerted++;
+    }
+  }
+  return { env: ENV, open: open.length, checked, paid, alerted };
+}
+
 /* ——— Вход ——————————————————————————————————————————————————— */
 Deno.serve(async (req) => {
   const url = new URL(req.url);
@@ -240,6 +308,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: H });
   if (req.method !== "POST") return json({ error: "method" }, 405);
   if (!DSK_USER || !DSK_PASS) return json({ error: "not_configured" }, 503);
+
+  if (isScheduler(req)) {
+    try { return json(await reconcile()); }
+    catch (e) { console.error("reconcile", e); return json({ error: "server" }, 500); }
+  }
 
   const me = await caller(req);
   if (!me) return json({ error: "auth" }, 401);
