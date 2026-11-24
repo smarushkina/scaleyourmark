@@ -2221,7 +2221,7 @@ async function orderMonitorAfter(k, opt){
   monitorMsg={type:'err',text:B?'Заявката не мина. Пишете ни на office@scaleyourmark.com.':'The order could not be sent. Please email us at office@scaleyourmark.com.'};
  }
 }
-/* Видим блок „Мониторинг“ за стъпки 2 и 9. */
+/* Видим блок „Мониторинг“ — само в стъпката с плащането (от 24.11.2026 не е в стъпка 2). */
 function monitorBlock(inPay){
  const B=lang==='bg', p=state.monitor&&MONITOR[state.monitor];
  return `<div class="monbox">
@@ -3224,8 +3224,7 @@ function body(k){
    :state.search==='none'
    ?''
    :`<p class="quiet" style="margin-top:12px">${lang==='bg'
-       ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}
-  ${monitorBlock()}`;
+       ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}`;
 
  if(k==='mark'){
   const eu = state.route==='eutm';
