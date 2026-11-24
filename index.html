@@ -3249,21 +3249,17 @@ function body(k){
    <div class="signrow">
     <input type="text" id="tq" autocomplete="off" placeholder="${lang==='bg'?'софтуер, облекло, кафе…':'software, clothing, coffee…'}"
       aria-label="${lang==='bg'?'Дума за търсене в Хармонизираната база':'Word to search in the Harmonised Database'}">
-    <select id="tc" aria-label="${lang==='bg'?'Клас':'Class'}" style="max-width:165px">
-     <option value="">${lang==='bg'?'всички класове':'all classes'}</option>
-     ${Array.from({length:45},(_,n)=>n+1).map(n=>`<option value="${n}">${lang==='bg'?'Клас':'Class'} ${n}</option>`).join('')}
-    </select>
    </div>
    <div class="tlist" id="sugg" style="margin-top:10px"></div>
    <p class="quiet" style="margin:7px 0 0">${lang==='bg'
-     ? 'Щракнете върху ред, за да го добавите. Ако предпочитате да разгледате базата сама, <a href="#" id="hdbgo" style="color:var(--gold)">отворете я в нов раздел ↗</a>.'
-     : 'Click a row to add it. If you would rather browse the database yourself, <a href="#" id="hdbgo" style="color:var(--gold)">open it in a new tab ↗</a>.'}
+     ? 'Кликнете върху даден ред, за да го добавите. Разгледайте <a href="#" id="hdbgo" style="color:var(--gold)">хармонизираната база данни ↗</a>, за да изберете стоки или услуги или цял клас.'
+     : 'Click a row to add it. Browse the <a href="#" id="hdbgo" style="color:var(--gold)">Harmonised Database ↗</a> to choose goods or services, or a whole class.'}
      ${madrid?(lang==='bg'
         ? ' За международна регистрация проверете и в <a href="https://webaccess.wipo.int/mgs/?lang=bg" target="_blank" rel="noopener" style="color:var(--gold)">Мадридския указател на СОИС (WIPO)</a>.'
         : ' For an international registration also check the <a href="https://webaccess.wipo.int/mgs/?lang=en" target="_blank" rel="noopener" style="color:var(--gold)">WIPO Madrid Goods &amp; Services Manager</a>.'):''}</p>
 
    <div class="field" style="margin-top:14px">
-    <label for="ft">${lang==='bg'?'Или опишете със свои думи и посочете клас към всяка стока или услуга':'Or describe it in your own words and state the class for each item of goods or services'}</label>
+    <label for="ft">${lang==='bg'?'Или опишете със свои думи желаната стока или услуга и/или посочете клас от хармонизираната база данни':'Or describe the goods or services you want in your own words and/or state a class from the Harmonised Database'}</label>
     <textarea id="ft" rows="3" placeholder="${lang==='bg'
       ? 'Един ред = една стока или услуга, с номер на класа отпред, например:\n25 облекло\n42 разработване на софтуер по поръчка'
       : 'One line = one item, with the class number first, for example:\n25 clothing\n42 bespoke software development'}"></textarea>
