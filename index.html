@@ -3199,11 +3199,8 @@ function body(k){
   <div class="opts two" style="margin-top:16px">
    <button class="opt" data-search="full" data-on="${state.search==='full'?1:0}">
     <span class="tick"></span>
-    <span><span class="ot">${lang==='bg'?'Професионално предварително проучване и анализ на идентични и сходни марки':'Trademark clearance search and analysis of identical and similar marks'}</span>
-     <span class="os">${lang==='bg'
-       ?'БПВ, СЕСИС (EUIPO) и Мадридската система. Писмено становище с оценка на риска в 3 работни дни, преди държавната такса.'
-       :'Registers of the Bulgarian Patent Office, EUIPO and the Madrid System. A written clearance opinion with a risk assessment within 3 working days, before the official fee is paid.'}</span></span>
-    <span class="op">${searchFee()}</span></button>
+    <span><span class="ot">${lang==='bg'?'Заяви проучване':'Order a clearance search'}</span></span>
+    <span></span></button>
 
    <button class="opt" data-search="none" data-on="${state.search==='none'?1:0}">
     <span class="tick"></span>
@@ -3211,11 +3208,7 @@ function body(k){
     <span></span></button>
   </div>
 
-  ${state.search==='full'
-   ?`<div class="helpbar" style="margin-top:14px"><span class="ht">${lang==='bg'
-       ?'Проучването влиза в цената, посочена в стъпка 8.':'The clearance search is included in the price shown at step 8.'}</span>
-      <span class="num">${searchFee()}</span></div>`
-   :state.search==='none'
+  ${state.search==='full'||state.search==='none'
    ?''
    :`<p class="quiet" style="margin-top:12px">${lang==='bg'
        ?'Изберете едното, за да продължите.':'Choose one to continue.'}</p>`}`;
