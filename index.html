@@ -4165,7 +4165,12 @@ async function runPayReturn(){
  if(!DSK_RET) return;
  for(let i=0;i<40 && (!remote || !sb || !auth); i++) await new Promise(r=>setTimeout(r,250));
  if(!remote || !sb || !auth) return;
- if(state.matter_id!==DSK_RET) return;     // връщане към чужда чернова — не пипаме
+ /* Друг раздел на сайта може да е подменил местната чернова — зареждаме
+    преписката от сървъра по номера от адреса (RLS пуска само собственика). */
+ if(state.matter_id!==DSK_RET){
+  await resumeMatter(DSK_RET);
+  if(state.matter_id!==DSK_RET) return;    // чужда или вече предадена преписка
+ }
  page='file'; state.step=8; render();
  await checkPay(DSK_RET);
 }
