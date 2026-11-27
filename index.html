@@ -4188,11 +4188,11 @@ function payTermsBlock(){
    <span><span class="ot">${bg?'Приемам Общите условия':'I accept the Terms and Conditions'}</span>
     <span class="os">${bg?'Запознах се с Общите условия, включително с цените, начина на плащане, правото на отказ и политиката за рекламации, и ги приемам. Задължително.'
       :'I have read and accept the Terms and Conditions, including prices, payment method, right of withdrawal and complaints policy. Required.'}</span></span><span></span></button>
-  <button class="opt" data-early="1" data-on="${state.early_start?1:0}" style="margin-top:8px">
+  ${isLegalApplicant()?'':`<button class="opt" data-early="1" data-on="${state.early_start?1:0}" style="margin-top:8px">
    <span class="tick" style="border-radius:6px"></span>
    <span><span class="ot">${bg?'Започване преди изтичане на срока за отказ':'Start before the withdrawal period ends'}</span>
     <span class="os">${bg?'Искам изпълнението на услугата да започне преди изтичането на 14-дневния срок за отказ и потвърждавам, че при пълното изпълнение на услугата ще изгубя правото си на отказ, когато това е предвидено в закона. По избор — за потребители (т. 8.8 от Общите условия). Без отметка заявката се подава след изтичане на 14-дневния срок.'
-      :'I want performance of the service to begin before the 14-day withdrawal period ends and I confirm that once the service is fully performed I will lose my right of withdrawal where the law so provides. Optional — for consumers (clause 8.8 of the Terms). Without it, the application is filed after the 14-day period.'}</span></span><span></span></button>`;
+      :'I want performance of the service to begin before the 14-day withdrawal period ends and I confirm that once the service is fully performed I will lose my right of withdrawal where the law so provides. Optional — for consumers (clause 8.8 of the Terms). Without it, the application is filed after the 14-day period.'}</span></span><span></span></button>`}`;
 }
 
 /* Политиката за поверителност — от „2.1. Politika-za-poveritelnost_clean_amended_19.11.2026.docx“, превърната с pandoc. */
@@ -6123,7 +6123,7 @@ function wire(){
  const nm=app.querySelector('#newmark'); if(nm) nm.onclick=()=>startNewMark();
  app.querySelectorAll('[data-resume]').forEach(b=>b.onclick=()=>resumeMatter(b.dataset.resume));
  const ak=app.querySelectorAll('[data-akind]');
- ak.forEach(el=>el.onclick=()=>{state.applicant.kind=el.dataset.akind;save();render()});
+ ak.forEach(el=>el.onclick=()=>{state.applicant.kind=el.dataset.akind;if(state.applicant.kind==='legal'){state.early_start=false;state.early_start_at=null;}save();render()});
  const an=app.querySelector('#an');if(an)an.oninput=e=>{state.applicant.name=e.target.value;save()};
  const ae=app.querySelector('#ae');if(ae)ae.oninput=e=>{state.applicant.id=e.target.value;save()};
  const aa=app.querySelector('#aa');if(aa)aa.oninput=e=>{state.applicant.addr=e.target.value;save()};
