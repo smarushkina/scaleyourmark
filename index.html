@@ -1379,6 +1379,7 @@ async function initAuth(){
   const deep = String(location.hash||'').replace(/^#/,'');
   if(deep==='terms' || deep==='obshti-usloviya' || qs.get('p')==='terms') page='terms';
   if(deep==='privacy' || deep==='poveritelnost' || qs.get('p')==='privacy') page='privacy';
+  if(deep==='cookies' || deep==='biskvitki' || qs.get('p')==='cookies') page='cookies';
   if(frag.get('type')==='recovery' || qs.get('type')==='recovery'){
    recovering=true; authTab='newpass'; page='acct';
    authMsg={type:'ok',text:lang==='bg'?'Изберете нова парола.':'Choose a new password.'};
@@ -1389,7 +1390,7 @@ async function initAuth(){
      :'The link has expired or has already been used. Request a new one.'};
   }
   /* Жетонът не бива да остава в адреса — при презареждане вече не важи. */
-  if((location.hash || location.search) && page!=='terms' && page!=='privacy') history.replaceState({}, '', location.pathname);
+  if((location.hash || location.search) && page!=='terms' && page!=='privacy' && page!=='cookies') history.replaceState({}, '', location.pathname);
  }catch(e){}
 
  render();
@@ -2429,7 +2430,7 @@ function chrome(){
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Дружество':'Company'}</div>
    ${['about','mark','services','news','contact'].map(id=>`<a href="${hrefFor(id)}" data-p="${id}">${esc(L(NAV.find(n=>n.id===id)))}</a>`).join('')}</div>
   <div><div class="kicker" style="margin-bottom:10px">${lang==='bg'?'Правни':'Legal'}</div>
-   <a href="${hrefFor('terms')}" data-p="terms">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="${hrefFor('privacy')}" data-p="privacy">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="#">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
+   <a href="${hrefFor('terms')}" data-p="terms">${lang==='bg'?'Общи условия':'Terms and Conditions'}</a><a href="${hrefFor('privacy')}" data-p="privacy">${lang==='bg'?'Поверителност':'Privacy Policy'}</a><a href="${hrefFor('cookies')}" data-p="cookies">${lang==='bg'?'Бисквитки':'Cookie Policy'}</a></div>`;
  document.getElementById('foot').querySelectorAll('a[data-p]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.p)});
 }
 function go(p){ pwNotice=null; newsId=null; if(p!=='guides') guideStep=0;if(p==='office'&&!isAdmin())p='acct'; page=p;closeDrawer();window.scrollTo({top:0,behavior:'instant'});render()}
@@ -2443,7 +2444,7 @@ function render(){if((page==='office'||page==='dossier')&&!isAdmin())page='acct'
  const key=page+'|'+state.step+'|'+guideStep+'|'+newsId;
  const sb=app.querySelector('.stepbody'), sh=app.querySelector('#poasheet');
  const keep={same:(key===renderKey), body:sb?sb.scrollTop:0, sheet:sh?sh.scrollTop:0, win:window.scrollY};
- chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier,terms:Terms,privacy:Privacy}[page]||Why)();wire();heroWire();whyWire();
+ chrome();app.innerHTML=({why:Why,services:Services,news:News,file:File_,guides:Guides,price:Price,about:About,mark:Mark,contact:Contact,acct:Acct,office:Office,dossier:Dossier,terms:Terms,privacy:Privacy,cookies:Cookies}[page]||Why)();wire();heroWire();whyWire();
  renderKey=key;
  syncRoute();
  /* нова страница, меню или стъпка — винаги от началото, отгоре надолу */
@@ -4390,6 +4391,86 @@ const PRIVACY_BG = `<nav class="ttoc" aria-label="Съдържание"><div cla
 <p>Настоящата Политика влиза в сила на 18.11.2026 г.</p>
 <p>Одобрена от Силвия Марушкина, управител на „СкейлЙорМарк“ ЕООД, с решение от 18.11.2026 г.</p>
 </article>`;
+/* Политиката за бисквитки — от „3.Politika-za-biskvitki-ScaleYourMark_27.11.2026.docx“.
+   Описва сайта без бисквитки. При добавяне на анализ или реклама тя става невярна и се сменя заедно с банера. */
+const COOKIES_IN_FORCE = '27.11.2026';
+const COOKIES_BG = `<article class="guidebody termsdoc">
+<p>Настоящата политика описва какво уебсайтът scaleyourmark.com („Сайта“) записва в крайното Ви устройство. Тя е част от информационната рамка на Сайта по т. 13.4 и т. 18.5 от Общите условия и се прилага заедно с Политиката за защита на личните данни.</p>
+<h2 id="ck-1">1. Кой отговаря за Сайта</h2>
+<p><strong>„СкейлЙорМарк“ ЕООД</strong> (ScaleYourMark), ЕИК 208978671, гр. София, ул. „Добротица Деспот“ № 41, вх. Б, ет. 1, телефон +359 898648762, office@scaleyourmark.com („Дружеството“).</p>
+<h2 id="ck-2">2. Накратко</h2>
+<ul>
+<li><p><strong>Сайтът не поставя бисквитки.</strong> Не използваме инструменти за анализ на посещаемостта, рекламни пиксели и проследяване между сайтове.</p></li>
+<li><p>Затова няма банер за съгласие — няма за какво да искаме съгласие.</p></li>
+<li><p>В браузъра Ви се записват само няколко данни, без които Сайтът не може да работи. Те са изброени поименно в т. 4.</p></li>
+</ul>
+<h2 id="ck-3">3. Бисквитки и локално съхранение</h2>
+<p>Бисквитката е малък текстов файл, който уебсайтът записва в браузъра Ви и който се изпраща към сървъра при следващи заявки. Локалното съхранение (localStorage) и съхранението за сесията (sessionStorage) са места в самия браузър, където страницата записва данни; те не се изпращат автоматично към сървъра. Първото остава и след затваряне на браузъра, второто се изтрива при затваряне на раздела.</p>
+<p>Съгласно Закона за електронната търговия и чл. 5, § 3 от Директива 2002/58/ЕО записването на информация в крайното Ви устройство изисква Вашето информирано съгласие, освен когато е строго необходимо за предоставянето на услуга, която изрично сте поискали. Всички записи по т. 4 попадат в това изключение.</p>
+<h2 id="ck-4">4. Какво се записва в браузъра Ви</h2>
+<div class="ttable"><table>
+
+<thead>
+<tr class="header">
+<th><strong>Наименование</strong></th>
+<th><strong>За какво служи</strong></th>
+<th><strong>Срок</strong></th>
+</tr>
+<tr class="odd">
+<th>sym_atelier_v1 (localStorage)</th>
+<th>Черновата на заявката — за да не се губи попълненото при прекъсване</th>
+<th>до изтриване от Вас</th>
+</tr>
+<tr class="header">
+<th>sb-shxfpymoydvvkssnoujq-auth-token (localStorage)</th>
+<th>Активната сесия след вход в профила, за да не въвеждате паролата при всяко действие</th>
+<th>до излизане от профила или изтичане на сесията</th>
+</tr>
+<tr class="odd">
+<th>sym_auth_v1, sym_users_v1 (localStorage)</th>
+<th>Само в ограничен режим, когато Сайтът не може да се свърже със сървъра; при нормална работа не се създават</th>
+<th>до изтриване от Вас</th>
+</tr>
+<tr class="header">
+<th>sym_reset_email (sessionStorage)</th>
+<th>Адресът, на който е изпратен кодът за нова парола</th>
+<th>до затваряне на раздела</th>
+</tr>
+<tr class="odd">
+<th>sym_poa_stage (sessionStorage)</th>
+<th>Етапът на подписване на пълномощното в стъпка 7</th>
+<th>до затваряне на раздела</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table></div>
+<p>Светлата и тъмната тема не се записват — Сайтът следва настройката на устройството Ви.</p>
+<h2 id="ck-5">5. Външни ресурси</h2>
+<p>При зареждане на Сайта браузърът Ви изтегля шрифтове от Google Fonts (fonts.googleapis.com, fonts.gstatic.com) и библиотеката за връзка с базата данни от jsDelivr (cdn.jsdelivr.net). Тези заявки не поставят бисквитки, но IP адресът на устройството Ви става известен на съответния доставчик.</p>
+<p>Плащането с банкова карта се извършва на защитената страница на „Банка ДСК“ АД. Бисквитките, които банката използва на своята страница, се уреждат от нейните правила.</p>
+<h2 id="ck-6">6. Как да изтриете тези данни</h2>
+<ul>
+<li><p><strong>Изход от профила</strong> — изтрива записа за сесията.</p></li>
+<li><p><strong>Затваряне на раздела</strong> — изтрива записите в съхранението за сесията.</p></li>
+<li><p><strong>Настройките на браузъра</strong> — изтриване на данните за сайта премахва всички записи.</p></li>
+</ul>
+<p>След изтриването ще излезете от профила и незапазената в браузъра чернова ще изчезне. Стъпките, записани в профила Ви, остават на сървъра и се зареждат отново при следващото влизане. Ако блокирате изцяло локалното съхранение, влизането в профил няма да е възможно.</p>
+<h2 id="ck-7">7. Ако това се промени</h2>
+<p>Ако Дружеството добави инструмент, който поставя бисквитки или записва данни, които не са строго необходими — например за анализ на посещаемостта или за реклама, ще поиска съгласието Ви предварително чрез банер с еднакво лесни „Приемам“ и „Отказвам“ и ще обнови настоящата политика преди това.</p>
+<h2 id="ck-8">8. Връзка с другите документи</h2>
+<p>Какви лични данни обработваме, на какво основание и какви са правата Ви, е описано в Политиката за защита на личните данни. Правилата за ползване на Сайта са в Общите условия. Въпроси: office@scaleyourmark.com.</p>
+</article>`;
+function Cookies(){
+ return `${pageHead({bg:'Правни',en:'Legal'},{bg:'Политика за бисквитки',en:'Cookie Policy'},
+   {bg:'Какво записва сайтът в браузъра Ви — и какво не',en:'What the site stores in your browser — and what it does not'})}
+ <section class="sec"><div class="wrap termswrap">
+  ${lang==='bg'?'':`<div class="caution" style="margin:0 0 20px"><strong>Bulgarian text</strong><br>The Cookie Policy is currently published in Bulgarian only. In short: the site sets no cookies and uses no analytics or advertising trackers. An English version will follow; until then the Bulgarian text applies.</div>`}
+  <p class="termsmeta">${lang==='bg'?'В сила от':'In force from'} ${COOKIES_IN_FORCE}</p>
+  ${COOKIES_BG}
+ </div></section>`;
+}
+
 function Privacy(){
  return `${pageHead({bg:'Правни',en:'Legal'},{bg:'Политика за защита на личните данни',en:'Privacy Policy'},
    {bg:'„СкейлЙорМарк“ ЕООД — как обработваме и защитаваме личните данни',
@@ -6554,6 +6635,7 @@ const SLUG={
  contact:{bg:'kontakti',en:'contact'},
  terms:{bg:'obshti-usloviya',en:'terms'},
  privacy:{bg:'poveritelnost',en:'privacy'},
+ cookies:{bg:'biskvitki',en:'cookies'},
  acct:{bg:'profil',en:'account'},
  office:{bg:'panel',en:'dashboard'}
 };
@@ -6626,6 +6708,8 @@ const SEO={
         en:['Terms and Conditions | ScaleYourMark','Terms and conditions for using ScaleYourMark and its trademark filing service.']},
  privacy:{bg:['Политика за поверителност | ScaleYourMark','Как ScaleYourMark обработва и защитава личните данни на клиентите и посетителите на сайта.'],
           en:['Privacy Policy | ScaleYourMark','How ScaleYourMark processes and protects the personal data of clients and website visitors.']},
+ cookies:{bg:['Политика за бисквитки | ScaleYourMark','Сайтът scaleyourmark.com не поставя бисквитки и не използва проследяване. Какво се записва в браузъра и защо.'],
+          en:['Cookie Policy | ScaleYourMark','scaleyourmark.com sets no cookies and uses no tracking. What the site stores in your browser and why.']},
  acct:{bg:['Профил | ScaleYourMark','Вход в профила в ScaleYourMark.'],en:['Account | ScaleYourMark','Sign in to your ScaleYourMark account.']},
  office:{bg:['Панел | ScaleYourMark',''],en:['Dashboard | ScaleYourMark','']}
 };
