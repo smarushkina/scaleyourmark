@@ -876,8 +876,8 @@ const STEPS=[
   err:{bg:'Честа грешка: логото се заявява с адрес или слоган в изображението. Всичко в квадратчето става част от марката.',
        en:'Common mistake: filing the logo with an address or strapline in the image. Everything in the box becomes the mark.'}},
  {n:4,key:'goods',t:{bg:'Какво продавате?',en:'What do you sell?'},
-  i:{bg:'Класовете определят и цената, и обхвата. Работим с Хармонизираната база данни — над 70 000 термина, приети автоматично от СЕСИС (EUIPO) и всички национални ведомства в ЕС.',
-     en:'Classes drive both price and scope. We work from the Harmonised Database — 70 000+ terms accepted automatically by EUIPO and every EU national office.'},
+  i:{bg:'Класовете определят както обхвата на правната закрила на марката, така и размера на дължимите такси. За определянето им се използва Хармонизираната база данни на EUIPO (TMclass), съдържаща над 70 000 стандартизирани термина, признати от EUIPO и националните ведомства за интелектуална собственост в ЕС.\nПри въвеждане на ключова дума системата предлага съответстващи термини директно от официалната база данни, което улеснява избора и осигурява съответствие с приетата терминология.',
+     en:'The classes determine both the scope of the trademark\'s legal protection and the amount of the fees payable. They are identified using the EUIPO Harmonised Database (TMclass), which contains more than 70,000 standardised terms recognised by the EUIPO and the national intellectual property offices of the EU.\nWhen you enter a keyword, the system suggests matching terms directly from the official database, making selection easier and ensuring consistency with accepted terminology.'},
   need:{bg:['Какво продавате днес','Какво ще продавате след 5 години','Стока, услуга или и двете'],
         en:['What you sell today','What you will sell in five years','Goods, services or both']},
   man:{bg:['Термин от Хармонизираната база минава без възражение. Свободен текст отива на експертиза и бави заявката.',
@@ -2397,7 +2397,7 @@ function pageHead(k,t,l,extra){
    ${k?`<div class="kicker">${esc(L(k))}</div>`:''}
    <h1 style="font-size:clamp(20px,2.1vw,26px)">${esc(L(t))}</h1>
    <div class="goldrule"></div>
-   ${l?`<p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(l))}</p>`:''}
+   ${l?`<p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(l)).replace(/\n/g,"<br>")}</p>`:''}
    ${extra||''}
   </div></section>`;
 }
@@ -2469,7 +2469,7 @@ function openDrawer(n){
  d.innerHTML=`<button class="close" id="dclose" aria-label="Close">✕</button>
   <div class="kicker">${lang==='bg'?'Ръководство · стъпка':'Guidelines · step'} ${s.n}</div>
   <h2 style="margin:8px 0 14px">${esc(L(s.t))}</h2>
-  <p style="color:var(--ink-2);font-size:15.5px">${esc(L(s.i))}</p>
+  <p style="color:var(--ink-2);font-size:15.5px">${esc(L(s.i)).replace(/\n/g,"<br>")}</p>
   ${g?`<article class="guidebody" style="margin-top:22px">${g.b.map(blockHtml).join('')}</article>`
      /* Трите кратки блока повтаряха ръководството и отпаднаха. Стоят само
         когато за стъпката няма ръководство — тогава са единствената помощ. */
@@ -3023,7 +3023,7 @@ function File_(){
       <div><div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${s.n} / 9</div>
        <h2 style="font-size:clamp(19px,2.2vw,23px);margin-top:3px">${esc(L(s.t))}</h2></div>
      </div>
-     <p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(s.i))}</p>
+     <p class="lede" style="font-size:14.5px;line-height:1.45">${esc(L(s.i)).replace(/\n/g,"<br>")}</p>
      <div class="stepbody">${body(s.key)}</div>
      ${syncState?`<div class="${syncState.type==='err'?'caution':'helpbar'}" style="margin:0">
        <span ${syncState.type==='err'?'':'class="ht"'}>${esc(syncState.text)}</span>
@@ -3567,7 +3567,7 @@ function Guides(){
    ${STEPS.map(s=>`<div class="card gcard stack">
      <div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${String(s.n).padStart(2,'0')}</div>
      <h3 class="gtitle">${esc(L(s.t))}</h3>
-     <p class="gintro">${esc(L(s.i))}</p>
+     <p class="gintro">${esc(L(s.i)).replace(/\n/g,"<br>")}</p>
      <div><h4 class="gneed">${lang==='bg'?'Какво ви трябва':'What you need'}</h4>
       <ul class="glist">${L(s.need).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
      <div style="margin-top:auto">
