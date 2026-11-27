@@ -539,6 +539,14 @@ input.needfix, textarea.needfix{border-color:var(--gold-bright)}
 /* Еднаква височина има смисъл само докато каретата са едно до друго. */
 @media (max-width:900px){ .contactgrid{grid-auto-rows:auto} }
 .gcard{padding:17px 19px 16px; gap:9px}
+.ggrid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; max-width:1180px}
+@media (max-width:980px){ .ggrid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:640px){ .ggrid{grid-template-columns:1fr} }
+.ggrid .gcard{padding:14px 16px 13px; gap:6px}
+.ggrid .gtitle{font-size:16px}
+#app .ggrid .gcard :is(p,li){font-size:13.5px!important; line-height:1.5!important}
+.ggrid .gintro{text-align:left!important}
+.ggrid .glist{margin-top:4px}
 .gtitle{font-size:17px; font-weight:400; line-height:1.3; margin:0}
 .gintro{font-size:14.5px; line-height:1.6; color:var(--ink-3); margin:0}
 .gneed{font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); font-weight:600; margin:3px 0 0}
@@ -3390,7 +3398,7 @@ function Guides(){
  }
  return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства за регистрация на търговска марка',en:'Trademark registration guides'},
   {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The guidance from each step of the application, brought together so you can read it before you begin.'})}
- <section class="sec"><div class="wrap grid2" style="gap:18px">
+ <section class="sec"><div class="wrap ggrid">
    ${STEPS.map(s=>`<div class="card gcard stack">
      <div class="kicker">${lang==='bg'?'Стъпка':'Step'} ${String(s.n).padStart(2,'0')}</div>
      <h3 class="gtitle">${esc(L(s.t))}</h3>
