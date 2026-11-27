@@ -24,6 +24,7 @@
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, copyFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -67,7 +68,7 @@ function render(path) {
   doc.getElementById('drawer').innerHTML = '';
   doc.getElementById('drawer').classList.remove('open');
   doc.getElementById('scrim').classList.remove('on');
-  const html = '<!doctype html>\n' + doc.documentElement.outerHTML + '\n';
+  const html = optimize('<!doctype html>\n' + doc.documentElement.outerHTML + '\n');
   const info = {
     title: doc.title,
     lang: doc.documentElement.lang,
@@ -79,6 +80,38 @@ function render(path) {
   };
   window.close();
   return { html, info };
+}
+
+/* ---- олекотяване на готовия HTML ----
+ * 1. Големият скрипт на сайта (~750 KB) отива в отделен файл
+ *    /assets/app.<отпечатък>.js с defer. Браузърът го тегли веднъж и го пази;
+ *    при всяка следваща страница идва само HTML-ът (~60 KB). Отпечатъкът
+ *    в името гарантира, че след промяна се тегли новата версия.
+ *    Supabase също получава defer — двата скрипта се изпълняват в същия ред,
+ *    след като страницата е прочетена, тоест кодът вижда същия DOM.
+ * 2. Вградените изображения в самата разметка (логото, снимката в „За нас“)
+ *    стават файлове в /assets/ — HTML-ът олеква, а браузърът ги кешира.
+ *    В кода на сайта остават вградени, така че нищо не се чупи.
+ * 3. Логото получава width/height, за да не „подскача“ страницата. */
+const assets = new Map();               // съдържание → име на файл
+function asset(buf, ext) {
+  const name = `/assets/${ext === 'js' ? 'app' : 'img'}.${createHash('sha256').update(buf).digest('hex').slice(0, 10)}.${ext}`;
+  assets.set(name, buf);
+  return name;
+}
+function optimize(html) {
+  html = html.replace(/<script src="(https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase[^"]+)"><\/script>/, '<script src="$1" defer></script>');
+  // най-големият вграден скрипт (без type) е кодът на сайта
+  let best = null;
+  for (const m of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) if (!best || m[1].length > best[1].length) best = m;
+  if (best && best[1].length > 100000) {
+    const src = asset(Buffer.from(best[1], 'utf8'), 'js');
+    html = html.slice(0, best.index) + `<script src="${src}" defer></script>` + html.slice(best.index + best[0].length);
+  }
+  html = html.replace(/src="data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]{3000,})"/g,
+    (_, t, b64) => `src="${asset(Buffer.from(b64, 'base64'), t === 'jpeg' ? 'jpg' : t)}"`);
+  html = html.replace(/<img class="brandlogo" /g, '<img class="brandlogo" width="441" height="71" ');
+  return html;
 }
 
 function write(rel, content) {
@@ -113,6 +146,8 @@ for (const r of routes) {
 
 /* ---- 3. страница за несъществуващ адрес ---- */
 write('404.html', render('/404/').html);
+
+for (const [name, buf] of assets) write(name.slice(1), buf);
 
 /* ---- 4. sitemap.xml с двете езикови версии на всяка страница ---- */
 const pair = p => {             // BG ↔ EN адрес на същата страница

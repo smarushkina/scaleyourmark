@@ -16,7 +16,9 @@
 <link rel="apple-touch-icon" href="/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Lora:ital,wght@1,400;1,500&family=Karla:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <style>
 :root{color-scheme:light dark}
 body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -473,6 +475,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 /* generic bits */
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:26px; grid-auto-rows:1fr}
+.faqgrid{grid-auto-rows:auto; gap:18px}
+.relgrid{grid-auto-rows:auto; gap:18px 30px}
+.rellist{list-style:none; margin:0; padding:0; display:grid; gap:8px}
+a.inl{color:var(--gold); font-weight:600; text-decoration:none}
+a.inl:hover{text-decoration:underline; text-underline-offset:3px}
 .whylist{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; grid-auto-rows:1fr; margin-top:4px}
 .whyitem{background:var(--surface); border:1px solid var(--line); border-top:2px solid var(--gold-bright);
          border-radius:12px; padding:18px 20px 19px}
@@ -2959,7 +2966,7 @@ function Services(){
     en:'Drafting of trademark assignment and licence agreements and their recordal with the relevant office, so that the change takes effect against third parties.'}]
  ];
  return `${pageHead({bg:'Други услуги',en:'Other services'},
-   {bg:'Допълнителни услуги по защитата на марката',en:'Additional Trademark Protection Services'},
+   {bg:'Услуги по защита на търговската марка след регистрацията',en:'Trademark protection services beyond registration'},
    {bg:'Правна помощ извън самото заявяване — при спорове, възражения и поддържане на регистрацията.',
     en:'Legal support beyond filing itself: in disputes, objections and maintaining your registration.'})}
  <section class="sec sec-warm"><div class="wrap">
@@ -2988,12 +2995,12 @@ function File_(){
  const s=STEPS[state.step-1], pct=Math.round((state.step-1)/9*100);
  const done=Object.keys(state.done).length;
  if(!auth) return `${pageHead({bg:'Заявяване на марка',en:'Filing a trademark'},
-  {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
+  {bg:'Заявка за регистрация на търговска марка стъпка по стъпка',en:'Trademark application, step by step'},
   {bg:'Заявката се попълва в девет стъпки.',
    en:'The application is completed in nine steps.'})}${authGate()}${rolesSection()}`;   // формата за профил е първа, без превъртане
 
  return `${pageHead({bg:'Заявяване на марка',en:'Filing a trademark'},
-  {bg:'Попълнете заявката стъпка по стъпка',en:'Complete the application step by step'},
+  {bg:'Заявка за регистрация на търговска марка стъпка по стъпка',en:'Trademark application, step by step'},
   {bg:'Заявката се попълва в девет стъпки.',
    en:'The application is completed in nine steps.'})}
 
@@ -3545,12 +3552,15 @@ function Guides(){
         lang==='bg'?'← Стъпка '+(guideStep-1):'← Step '+(guideStep-1)}</a>`:''}
      ${GUIDE[guideStep+1]?`<a class="btn btn-ghost" href="${pathFor('guides',lang,{guide:guideStep+1})}" data-gstep="${guideStep+1}" style="padding:9px 16px;font-size:14px">${
         lang==='bg'?'Стъпка '+(guideStep+1)+' →':'Step '+(guideStep+1)+' →'}</a>`:''}
-     <button class="btn btn-gold" data-p="file" style="padding:9px 16px;font-size:14px">${
-        lang==='bg'?'Към заявката':'Go to your application'}</button>
+     <a class="btn btn-gold" href="${hrefFor('file')}" data-p="file" style="padding:9px 16px;font-size:14px">${
+        lang==='bg'?'Към заявката':'Go to your application'}</a>
     </div>
+    <p class="quiet" style="margin-top:16px;font-size:14.5px">${lang==='bg'?'Вижте също':'See also'}: ${
+      [['mark',{bg:'Какво е търговска марка',en:'What is a trademark'}],['price',{bg:'Цени и държавни такси',en:'Fees and official charges'}],['news',{bg:'Новини и казуси',en:'News & cases'}]]
+      .map(([k,t])=>`<a class="inl" href="${hrefFor(k)}" data-p="${k}">${esc(L(t))}</a>`).join(' · ')}</p>
    </div></section>`;
  }
- return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства по стъпки',en:'Step-by-step Guidelines'},
+ return `${pageHead({bg:'Библиотека',en:'Resources'},{bg:'Ръководства за регистрация на търговска марка',en:'Trademark registration guides'},
   {bg:'Същите указания от заявката, събрани за четене преди да започнете.',en:'The guidance from each step of the application, brought together so you can read it before you begin.'})}
  <section class="sec"><div class="wrap grid2" style="gap:18px">
    ${STEPS.map(s=>`<div class="card gcard stack">
@@ -4408,7 +4418,7 @@ function Price(){
  const rows=[['bg_nat',{bg:'Само България. До 3 класа в държавната такса.',en:'Bulgaria only. The official fee covers up to three classes.'}],
              ['eutm',{bg:'27 държави членки с едно заявяване.',en:'All 27 EU Member States with a single application.'}],
              ['madrid',{bg:'Разширяване към 130+ територии.',en:'Extension to more than 130 territories.'}]];
- return `${pageHead({bg:'Цени',en:'Pricing'},{bg:'Цени без изненади',en:'Transparent pricing, no surprises'},
+ return `${pageHead({bg:'Цени',en:'Pricing'},{bg:'Цена за регистрация на търговска марка — без изненади',en:'Trademark registration cost — no surprises'},
   {bg:'Фиксирано възнаграждение. Държавната такса се показва отделно и е възстановима до подаването.',
    en:'A fixed professional fee. Official fees are shown separately and are fully refundable until the application is filed.'})}
  <section class="sec"><div class="wrap stack" style="gap:24px">
@@ -4472,7 +4482,8 @@ function Price(){
      <div><button class="btn btn-gold" data-p="services" style="padding:9px 16px;font-size:14px;margin-top:4px">${
        lang==='bg'?'Други услуги →':'Other services →'}</button></div>
     </div>
-   </div></div></section>`;
+   </div></div></section>
+ ${faqSection('price')}`;
 }
 
 /* ---------- Новини и казуси ------------------------------------------------ */
@@ -4507,6 +4518,7 @@ function News(){
     ?`${B?'Източник':'Source'}: <a href="${esc(p.src.url)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">${esc(p.src.label)}</a>`
     :`${p.type==='article'?(B?'Цитирано решение':'Judgment referred to'):(B?'Решение':'Decision')}: <strong>${esc(L(p.court))}</strong>`}</p>
   <p class="quiet" style="font-size:13px">${B?'Материалът е информационен и не представлява правен съвет по конкретен случай.':'This material is for information purposes only and does not constitute legal advice on any specific matter.'}</p>
+  ${postRelated(p)}
  </div></section>`;
  const list=POSTS.filter(x=>newsFilter==='all'||x.type===newsFilter).slice().sort((a,b)=>b.d.localeCompare(a.d));
  const fb=(k,lb)=>`<button class="btn ${newsFilter===k?'btn-primary':'btn-quiet'}" data-newsf="${k}" style="padding:7px 16px;font-size:14px">${lb}</button>`;
@@ -4555,7 +4567,7 @@ function About(){
 
 
  return `${pageHead({bg:'За нас',en:'About us'},
-  {bg:'Създадено от адвокат',en:'Created by an attorney-at-law'},
+  {bg:'Регистрация на търговска марка, създадена от адвокат',en:'Trademark registration, created by an attorney-at-law'},
   {bg:'Адвокат с над 10 години опит в защитата на интелектуалната собственост, с фокус върху търговските марки.',
    en:'An attorney-at-law with more than ten years of experience in intellectual property, specialising in trademarks.'})}
 
@@ -4864,9 +4876,9 @@ function Mark(){
  ];
 
  return `${pageHead({bg:'За търговската марка',en:'About trademarks'},
-  {bg:'Вашата марка е повече от име. Тя е актив.',en:'Your trademark is more than a name. It is an asset.'},
-  {bg:'Какво представлява търговската марка, какво ви дава регистрацията и кои решения се вземат, преди заявката изобщо да бъде подадена.',
-   en:'What a trademark is, what registration gives you and which decisions need to be made before the application is filed.'})}
+  {bg:'Какво е търговска марка и защо да я регистрирате',en:'What a trademark is and why you should register it'},
+  {bg:'Вашата марка е повече от име — тя е актив. Какво представлява, какво ви дава регистрацията и кои решения се вземат, преди заявката изобщо да бъде подадена.',
+   en:'Your trademark is more than a name — it is an asset. What it is, what registration gives you and which decisions need to be made before the application is filed.'})}
 
  <section class="sec sec-warm"><div class="wrap">
   <div class="sechead">
@@ -4946,6 +4958,8 @@ function Mark(){
      <p class="quiet" style="font-size:14.5px">${esc(L(d))}</p></div>`).join('')}
   </div>
  </div></section>
+
+ ${faqSection('mark')}
 
  <section class="sec sec-warm"><div class="wrap">
   <p class="quiet" style="font-size:15px;line-height:1.62;max-width:70ch;margin:0">${lang==='bg'
@@ -6437,6 +6451,86 @@ function addSpecLines(raw, fallbackClass){
 }
 
 
+/* Връзки в края на всяка статия — към свързано ръководство, към цените и
+   заявката, и към три други статии. Помагат на читателя да продължи и на
+   търсачките да разберат как са свързани страниците. */
+function postRelated(p){
+ const B=lang==='bg', txt=JSON.stringify([p.t,p.s,p.body]).toLowerCase();
+ const g = /мадрид|madrid|wipo|соис/.test(txt)?1
+        : /клас|class|ница|nice|стоки и услуги|goods and services/.test(txt)?4
+        : /сходн|similar|обърк|confusion|опозиц|opposition/.test(txt)?2
+        : /euipo|марка на ес|eu trade ?mark|eutm/.test(txt)?1 : 2;
+ const more=POSTS.filter(x=>x.id!==p.id).slice().sort((a,b)=>b.d.localeCompare(a.d)).slice(0,3);
+ const link=(k,t,extra)=>`<li><a class="inl" href="${extra?pathFor(k,lang,extra):hrefFor(k)}" ${extra&&extra.guide?`data-gstep="${extra.guide}"`:`data-p="${k}"`}>${esc(t)}</a></li>`;
+ return `<div class="grid2 relgrid" style="margin-top:26px;padding-top:22px;border-top:1px solid var(--line-2)">
+  <div><div class="kicker" style="margin-bottom:8px">${B?'Следваща стъпка':'Next step'}</div><ul class="rellist">
+   ${link('guides',(B?'Ръководство: ':'Guide: ')+L(GSEO[g]),{guide:g})}
+   ${link('price',B?'Цена за регистрация на търговска марка':'Trademark registration cost')}
+   ${link('file',B?'Заявете марка онлайн':'File a trademark online')}</ul></div>
+  <div><div class="kicker" style="margin-bottom:8px">${B?'Още от марковото право':'More on trademark law'}</div><ul class="rellist">
+   ${more.map(x=>`<li><a class="inl newslink" href="${pathFor('news',lang,{news:x.id})}" data-news="${x.id}">${esc(L(x.t))}</a></li>`).join('')}</ul></div>
+ </div>`;
+}
+
+/* ——— Често задавани въпроси ————————————————————————————————————————
+   Показват се като обикновен текст (без разгъване) най-долу на „Цени“ и
+   „За търговската марка“ и влизат в структурираните данни като FAQPage.
+   Сумите идват от SERVICE, SEARCH_FEE и ROUTES — при промяна на цена
+   отговорите се сменят сами. */
+const FAQ={
+ price:[
+  {q:{bg:'Колко струва регистрацията на търговска марка в България?',en:'How much does it cost to register a trademark in Bulgaria?'},
+   a:()=>({bg:`Адвокатското възнаграждение е ${money(SERVICE.bg_nat,'EUR')} без ДДС. Държавната такса на Патентното ведомство е ${money(ROUTES.bg_nat.base,'EUR')} за до три класа, плюс ${money(ROUTES.bg_nat.extra,'EUR')} за всеки следващ клас и ${money(ROUTES.bg_nat.cert,'EUR')} за издаване на свидетелството за регистрация.`,
+           en:`The legal fee is ${money(SERVICE.bg_nat,'EUR')} excluding VAT. The Bulgarian Patent Office fee is ${money(ROUTES.bg_nat.base,'EUR')} for up to three classes, plus ${money(ROUTES.bg_nat.extra,'EUR')} for each further class and ${money(ROUTES.bg_nat.cert,'EUR')} for issuing the registration certificate.`})},
+  {q:{bg:'Колко струва марка на Европейския съюз?',en:'How much does an EU trademark cost?'},
+   a:()=>({bg:`Адвокатското възнаграждение е ${money(SERVICE.eutm,'EUR')} без ДДС. Таксата на EUIPO е ${money(ROUTES.eutm.base,'EUR')} за един клас, ${money(ROUTES.eutm.second,'EUR')} за втория и ${money(ROUTES.eutm.third,'EUR')} за всеки следващ. Марката важи във всичките 27 държави членки.`,
+           en:`The legal fee is ${money(SERVICE.eutm,'EUR')} excluding VAT. The EUIPO fee is ${money(ROUTES.eutm.base,'EUR')} for one class, ${money(ROUTES.eutm.second,'EUR')} for the second and ${money(ROUTES.eutm.third,'EUR')} for each further class. The mark covers all 27 Member States.`})},
+  {q:{bg:'Колко струва международна регистрация по Мадридската система?',en:'How much does an international registration under the Madrid System cost?'},
+   a:()=>({bg:`Адвокатското възнаграждение е ${money(SERVICE.madrid,'EUR')} без ДДС. Основната такса на СОИС е ${money0(ROUTES.madrid.base,'CHF')} за черно-бяла и ${money0(ROUTES.madrid.colour,'CHF')} за цветна марка, а към нея се добавят таксите за всяка посочена държава. Точната сума ви изпращаме по имейл след преглед на заявката.`,
+           en:`The legal fee is ${money(SERVICE.madrid,'EUR')} excluding VAT. The WIPO basic fee is ${money0(ROUTES.madrid.base,'CHF')} for a black-and-white and ${money0(ROUTES.madrid.colour,'CHF')} for a colour mark, plus a fee for each designated country. We email you the exact amount after reviewing the application.`})},
+  {q:{bg:'Включен ли е ДДС в цените?',en:'Is VAT included in the prices?'},
+   a:()=>({bg:'Не. Адвокатското възнаграждение е без ДДС; данъкът се начислява отделно и се вижда в стъпка 8, преди да платите. Държавните такси не се облагат с ДДС.',
+           en:'No. The legal fee is shown excluding VAT; VAT is charged separately and shown at step 8 before you pay. Official fees are not subject to VAT.'})},
+  {q:{bg:'Връща ли се държавната такса, ако се откажа?',en:'Is the official fee refunded if I change my mind?'},
+   a:()=>({bg:'Държавната такса се плаща на ведомството едва при подаването на заявката. Дотогава тя е възстановима. Подробностите са в Общите условия.',
+           en:'The official fee is paid to the office only when the application is filed. Until then it is refundable. The details are in the Terms and Conditions.'})},
+  {q:{bg:'Задължително ли е предварителното проучване?',en:'Is the clearance search mandatory?'},
+   a:()=>({bg:`Не, по избор е и се заявява в стъпка 2. Струва ${money(SEARCH_FEE,'EUR')} без ДДС и включва писмено становище с оценка на риска до 3 работни дни. Препоръчваме го, защото Патентното ведомство и EUIPO не отказват заявка заради по-ранна сходна марка — това прави притежателят ѝ с опозиция, след като вече сте платили таксите.`,
+           en:`No, it is optional and ordered at step 2. It costs ${money(SEARCH_FEE,'EUR')} excluding VAT and includes a written risk opinion within three working days. We recommend it, because the Bulgarian Patent Office and the EUIPO do not refuse an application over an earlier similar mark — its owner does, by opposition, after you have already paid the fees.`})}
+ ],
+ mark:[
+  {q:{bg:'Какво е търговска марка?',en:'What is a trademark?'},
+   a:()=>({bg:'Знак — дума, лого, комбинация от тях, цвят или звук, — по който клиентите разпознават вашите стоки или услуги и ги отличават от тези на другите. Регистрацията превръща това разпознаване в изключително право.',
+           en:'A sign — a word, a logo, a combination of both, a colour or a sound — by which customers recognise your goods or services and tell them apart from others. Registration turns that recognition into an exclusive right.'})},
+  {q:{bg:'Колко години е валидна регистрацията на марка?',en:'How long is a trademark registration valid?'},
+   a:()=>({bg:'Десет години от датата на подаване на заявката. Регистрацията може да се подновява за нови периоди от по десет години без ограничение в броя.',
+           en:'Ten years from the filing date. It can be renewed for further ten-year periods with no limit on the number of renewals.'})},
+  {q:{bg:'Каква е разликата между национална марка, марка на ЕС и Мадрид?',en:'What is the difference between a national mark, an EU trademark and Madrid?'},
+   a:()=>({bg:'Националната марка дава закрила само в България. Марката на ЕС е едно право за всичките 27 държави членки. Международната регистрация по Мадридската система надгражда съществуваща марка и я разширява към избрани държави от над 130 територии.',
+           en:'A national mark protects you in Bulgaria only. An EU trademark is a single right for all 27 Member States. An international registration under the Madrid System builds on an existing mark and extends it to chosen countries among more than 130 territories.'})},
+  {q:{bg:'Колко време отнема регистрацията?',en:'How long does registration take?'},
+   a:()=>({bg:'Зависи от ведомството. След проверката заявката се публикува и тече тримесечен срок, в който трети лица могат да подадат опозиция. Ако няма възражения и нередовности, марката се регистрира след него — обикновено в рамките на няколко месеца от подаването.',
+           en:'It depends on the office. After examination the application is published and a three-month period opens in which third parties may oppose it. If there are no objections or deficiencies, the mark is registered after that — usually within a few months of filing.'})},
+  {q:{bg:'Какво са класовете по Ницската класификация?',en:'What are the Nice classes?'},
+   a:()=>({bg:'Стоките и услугите се разпределят в 45 класа по международната Ницска класификация. Марката е защитена само за посочените стоки и услуги, а държавната такса зависи от броя на класовете. Термините от Хармонизираната база данни се приемат без забележки и ускоряват проверката.',
+           en:'Goods and services are grouped into 45 classes under the international Nice Classification. A mark is protected only for the goods and services listed, and the official fee depends on the number of classes. Terms from the Harmonised Database are accepted without objection and speed up examination.'})},
+  {q:{bg:'Трябва ли ми адвокат, за да регистрирам марка?',en:'Do I need a lawyer to register a trademark?'},
+   a:()=>({bg:'Заявител от ЕИП може да подаде и сам. Заявител без седалище или местожителство в ЕИП обаче трябва да бъде представляван пред EUIPO. В ScaleYourMark вие попълвате заявката, а адвокат я преглежда лично и я подава от ваше име.',
+           en:'An applicant based in the EEA may file on their own. An applicant with no seat or domicile in the EEA, however, must be represented before the EUIPO. With ScaleYourMark you complete the application, and an attorney reviews it personally and files it on your behalf.'})}
+ ]
+};
+function faqSection(key){
+ const items=FAQ[key]; if(!items) return '';
+ return `<section class="sec" id="faq"><div class="wrap stack" style="gap:22px">
+  <div><span class="seclabel">${lang==='bg'?'Въпроси и отговори':'FAQ'}</span></div>
+  <h2>${lang==='bg'?'Често задавани въпроси':'Frequently asked questions'}</h2>
+  <div class="goldrule"></div>
+  <div class="grid2 faqgrid">${items.map(x=>`<div class="card pad stack" style="gap:8px">
+    <h3 style="font-size:17px">${esc(L(x.q))}</h3>
+    <p class="quiet" style="font-size:14.5px;margin:0">${esc(L(x.a()))}</p></div>`).join('')}</div>
+ </div></section>`;
+}
+
 /* ——— Адреси на страниците и SEO ————————————————————————————————————
    Всяка страница, всяко ръководство и всяка статия има собствен адрес, на
    български без представка и на английски под /en/. Адресът се чете при
@@ -6645,6 +6739,8 @@ function applyHead(){
  if(s.guide) graph.push({'@type':'Article','@id':url+'#article',headline:seoCut(L(s.guide.t),110),description:s.desc,
   inLanguage:lang,mainEntityOfPage:{'@id':url+'#page'},image:SITE+'/og-image.png',
   author:{'@id':SITE+'/#lawyer'},publisher:{'@id':SITE+'/#org'}});
+ if(FAQ[page]) graph.push({'@type':'FAQPage','@id':url+'#faq',inLanguage:lang,
+  mainEntity:FAQ[page].map(x=>({'@type':'Question',name:L(x.q),acceptedAnswer:{'@type':'Answer',text:L(x.a())}}))});
  let ld=document.getElementById('ld-json');
  if(!ld){ ld=document.createElement('script'); ld.type='application/ld+json'; ld.id='ld-json'; document.head.appendChild(ld) }
  ld.textContent=JSON.stringify({'@context':'https://schema.org','@graph':graph});
@@ -6666,7 +6762,7 @@ function syncRoute(){
    Ctrl/⌘/среден бутон отварят адреса в нов раздел. */
 document.addEventListener('click',e=>{
  const a=e.target.closest&&e.target.closest('a[href^="/"]');
- if(!a || !a.matches('[data-p],[data-gstep],[data-gback],[data-newsback],.newslink')) return;
+ if(!a || !a.matches('[data-p],[data-gstep],[data-gback],[data-newsback],[data-news],.newslink')) return;
  if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||e.button!==0){ e.stopPropagation(); return }
  e.preventDefault();
 },true);
