@@ -12,6 +12,12 @@
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
   </FilesMatch>
+  # /assets/ — кодът и изображенията на сайта. Името съдържа отпечатък на
+  # съдържанието, тоест при промяна файлът е с ново име — затова може да се
+  # пази „завинаги“.
+  <FilesMatch "^(app|img)\.[0-9a-f]{10}\.(js|png|jpg|webp)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
   # Изображенията (og-image, лого, иконка) се сменят рядко.
   <FilesMatch "\.(png|jpe?g|webp|svg|ico)$">
     Header set Cache-Control "public, max-age=2592000"
@@ -42,5 +48,5 @@ ErrorDocument 404 /404.html
 
 # Компресия — страниците са ~860 KB, след gzip около четири пъти по-малко.
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/javascript application/json image/svg+xml
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/javascript text/javascript application/json image/svg+xml
 </IfModule>
