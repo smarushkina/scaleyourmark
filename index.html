@@ -859,8 +859,8 @@ const STEPS=[
   err:{bg:'Честа грешка: търсене само на точното изписване. Тествайте фонетични и визуални варианти.',
        en:'Common mistake: searching only the exact spelling. Test phonetic and visual variants.'}},
  {n:3,key:'mark',t:{bg:'Как изглежда марката?',en:'What does the mark look like?'},
-  i:{bg:'Това, което подадете тук, се фиксира завинаги — изображението не се променя след датата на подаване.',
-     en:'What you file here is frozen — the representation cannot be amended after the filing date.'},
+  i:{bg:'Посочвате точното изображение на марката, за което се претендира правна закрила. Представеното изображение се счита за окончателно към датата на подаване на заявката и не подлежи на последваща промяна.',
+     en:'Provide the exact representation of the trademark for which legal protection is sought. The representation submitted is deemed final as of the filing date and cannot subsequently be amended.'},
   need:{bg:['Словна марка: само текст','Фигуративна или комбинирана: JPEG или PNG до 1,5 MB','Звукова: MP3 до 2 MB; с движение: MP4 до 20 MB'],
         en:['Word mark: text only','Figurative or combined: JPEG or PNG up to 1.5 MB','Sound: MP3 up to 2 MB; motion: MP4 up to 20 MB']},
   man:{bg:['Файлът за фигуративна или комбинирана марка: JPEG или PNG до 1,5 MB, бял фон, препоръчително поне 945 × 945 px. Без рамки, водни знаци и текст, който описва марката. За звукова марка — MP3; за марка с движение или мултимедийна — MP4.',
@@ -3251,9 +3251,9 @@ function body(k){
      <input type="text" id="mk" value="${esc(state.mark||'')}" placeholder="ORBITA">
      <span class="hint">${lang==='bg'
        ?((state.kind==='comb'||figText)?'Текстовата част от знака, точно както е в изображението. Без ®.'
-                            :'Точно както ще се използва, без ®.')
+                            :'')
        :((state.kind==='comb'||figText)?'The word element of the sign, exactly as it appears in the image. No ®.'
-                            :'Exactly as it will be used, without ®.')}</span></div>`:''}
+                            :'')}</span></div>`:''}
    ${needsFile?uploader():''}
    ${(needsText&&needsFile)?'</div>':''}
    ${!state.kind?`<p class="quiet" style="margin-top:12px">${lang==='bg'?'Изберете вид, за да продължите.':'Choose a kind to continue.'}</p>`:''}`;
